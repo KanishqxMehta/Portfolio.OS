@@ -170,7 +170,8 @@ export const BlockEditor = ({ block }: { block: any }) => {
   }
 
   if (block.type === "PROJECTS") {
-    const items = block.content?.items || [{ title: "", description: "" }];
+    // Look closely here: we added 'link: ""' to the default fallback array item
+    const items = block.content?.items || [{ title: "", description: "", link: "" }];
 
     const updateProject = (index: number, fields: any) => {
       const newItems = [...items];
@@ -179,7 +180,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
     };
 
     const addProject = () => {
-      handleUpdate({ items: [...items, { title: "", description: "" }] });
+      handleUpdate({ items: [...items, { title: "", description: "", link: "" }] });
     };
 
     const removeProject = (index: number) => {
@@ -210,6 +211,14 @@ export const BlockEditor = ({ block }: { block: any }) => {
               onChange={(e) => updateProject(idx, { title: e.target.value })}
               className={fieldClass}
             />
+
+            <Input
+              placeholder="Project URL (optional, e.g., https://...)"
+              value={item.link || ""}
+              onChange={(e) => updateProject(idx, { link: e.target.value })}
+              className={fieldClass}
+            />
+
             <Textarea
               placeholder="What did you build?"
               value={item.description || ""}

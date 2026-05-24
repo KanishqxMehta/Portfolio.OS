@@ -62,7 +62,7 @@ export default function EditPortfolioPage() {
   const publicUrl = `${process.env.NEXT_PUBLIC_BASE_URL + "p/" + username}`;
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 font-[family-name:var(--font-geist-sans)]">
+    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100">
       {/* Navbar */}
       <nav className="h-13 bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800 px-5 flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-5">

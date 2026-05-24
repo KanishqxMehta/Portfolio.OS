@@ -1,0 +1,23 @@
+* {
+  cursor: none !important;
+}
+
+.smooth-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 99999;
+  opacity: 0;
+  will-change: transform;
+  mix-blend-mode: difference;
+
+  margin-top: -2px;
+  margin-left: -2px;
+}
+
+.smooth-cursor svg {
+  display: block;
+  filter: drop-shadow(0 5px 3px rgba(255, 255, 255, 0.0));
+}
+

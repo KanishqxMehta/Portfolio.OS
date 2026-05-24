@@ -1,6 +1,6 @@
 import React from "react";
 import * as motion from "framer-motion/client";
-import { ExternalLink, Terminal, Briefcase, Zap } from "lucide-react";
+import { ExternalLink, Terminal, Briefcase, Zap, Code2 } from "lucide-react";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -92,9 +92,21 @@ const Projects = ({ data }: any) => {
               className="group relative rounded-2xl bg-zinc-900/50 border border-zinc-800/80 p-6 sm:p-8 hover:bg-zinc-900 transition-all duration-300 hover:border-violet-500/50 hover:shadow-[0_0_30px_-10px_rgba(124,58,237,0.3)] flex flex-col h-full"
             >
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 group-hover:text-violet-400 transition-colors">
-                  <ExternalLink className="w-5 h-5" />
-                </div>
+                {item.link ? (
+                  <a 
+                    href={item.link} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-violet-400 hover:border-violet-500/50 bg-gradient-to-br hover:from-zinc-800 hover:to-zinc-900 transition-all duration-200 shadow-md"
+                  >
+                    <ExternalLink className="w-5 h-5" />
+                  </a>
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600 transition-colors cursor-default">
+                    <Code2 className="w-5 h-5" />
+                  </div>
+                )}
+                
                 <span className="font-mono text-xs text-zinc-600">
                   {String(i + 1).padStart(2, "0")}
                 </span>
