@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       create: {
         publicSlug: body.username,
         content: body.content as any,
-        userId: "1234", 
+        userId: "1234",
       },
     });
 
