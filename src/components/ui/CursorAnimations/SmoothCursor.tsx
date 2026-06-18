@@ -22,8 +22,8 @@ export default function SmoothCursor() {
     const onUp = () => {};
 
     const loop = () => {
-      current.current.x += (pos.current.x - current.current.x) * 0.12;
-      current.current.y += (pos.current.y - current.current.y) * 0.12;
+      current.current.x += (pos.current.x - current.current.x) * 0.22;
+      current.current.y += (pos.current.y - current.current.y) * 0.22;
       cursor.style.transform = `translate(${current.current.x}px, ${current.current.y}px)`;
       raf.current = requestAnimationFrame(loop);
     };

@@ -1,8 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { PortfolioRenderer } from "@/components/portfolio/Renderer";
 import { BlockEditor } from "../BlockEditor";
+import { ThemePicker } from "./ThemePicker";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +20,10 @@ import {
   Trash2,
   Layers,
   Globe,
+  LogOut,
+  LayoutDashboard,
+  Check,
+  UserCircle,
 } from "lucide-react";
 import {
   Dialog,
@@ -40,97 +49,227 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export default function EditPortfolioPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [activeSidebarTab, setActiveSidebarTab] = useState<"content" | "design">("content");
   const {
     sections,
+    theme,
     addBlock,
     username,
     setUsername,
     savePortfolio,
     isSaving,
+    isLoading,
+    loadPortfolio,
     moveBlock,
     removeBlock,
   } = usePortfolioStore();
 
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      const sessionUsername = (session?.user as any)?.username;
+      if (sessionUsername && !username) {
+        setUsername(sessionUsername);
+      }
+      loadPortfolio();
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-user-menu]')) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const handleSave = async () => {
     await savePortfolio();
     setIsSuccessOpen(true);
   };
 
-  const publicUrl = `${process.env.NEXT_PUBLIC_BASE_URL + "p/" + username}`;
+  const publicUrl = `${process.env.NEXT_PUBLIC_BASE_URL}p/${username}`;
+  const userInitial = session?.user?.name?.charAt(0)?.toUpperCase() || session?.user?.email?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100">
-      {/* Navbar */}
-      <nav className="h-13 bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800 px-5 flex items-center justify-between z-20 shrink-0">
-        <div className="flex items-center gap-5">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-200 transition-colors duration-500">
+      {/* Top Header */}
+      <header className="h-16 border-b border-zinc-200 dark:border-zinc-900/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500">
+        <div className="flex items-center gap-6">
           {/* Wordmark */}
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-              <Layers className="w-3.5 h-3.5 text-white" />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center group-hover:scale-105 shadow-md shadow-violet-500/20 transition-all">
+              <Layers className="w-4 h-4 text-white" />
             </div>
-            <span className="text-sm font-semibold tracking-tight text-zinc-100">
-              Portfolio<span className="text-zinc-500">.os</span>
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
+              Portfolio<span className="text-zinc-500 dark:text-zinc-400">.os</span>
             </span>
-          </div>
+          </Link>
 
           {/* Divider */}
-          <div className="w-px h-5 bg-zinc-800" />
+          <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800/80" />
 
           {/* Username field */}
-          <div className="flex items-center gap-1.5 bg-zinc-800/60 border border-zinc-700/60 rounded-md px-2.5 py-1.5 focus-within:border-violet-500/50 transition-colors">
+          <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900/50 hover:bg-zinc-200 dark:hover:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-1.5 transition-colors cursor-default">
             <Globe className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-            <span className="text-zinc-600 text-sm">p/</span>
+            <span className="text-zinc-500 text-sm font-medium">p/</span>
             <Input
               placeholder="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="h-auto w-28 border-none bg-transparent p-0 text-sm shadow-none focus-visible:ring-0 placeholder:text-zinc-600 font-medium text-zinc-200"
+              readOnly
+              className="h-auto w-auto min-w-[80px] max-w-[150px] border-none bg-transparent p-0 text-sm shadow-none placeholder:text-zinc-400 font-medium text-zinc-900 dark:text-zinc-200 cursor-default focus-visible:ring-0"
             />
           </div>
         </div>
 
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="h-8 px-4 text-sm font-medium rounded-md bg-violet-600 hover:bg-violet-500 text-white border-0 transition-all disabled:opacity-50"
-        >
-          {isSaving ? (
-            <span className="flex items-center gap-2">
-              <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-              Saving
-            </span>
-          ) : (
-            "Publish"
-          )}
-        </Button>
-      </nav>
+        {/* Group Actions on the Right */}
+        <div className="flex items-center gap-5">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="h-8 px-4 text-sm font-medium rounded-full bg-violet-600 hover:bg-violet-500 text-white border-0 transition-all shadow-md shadow-violet-500/20 hover:shadow-violet-500/40 disabled:opacity-50"
+          >
+            {isSaving ? (
+              <span className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                Saving
+              </span>
+            ) : (
+              "Publish Changes"
+            )}
+          </Button>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Editor Sidebar */}
-        <aside className="w-[360px] bg-zinc-900 border-r border-zinc-800 flex flex-col z-10">
-          {/* Sidebar header */}
-          <div className="px-5 py-4 border-b border-zinc-800">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
-              Content Blocks
-            </p>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 mr-2">
+            {isSaving ? (
+              <span className="flex items-center gap-1.5 text-zinc-400">
+                <span className="w-2.5 h-2.5 rounded-full border-2 border-zinc-600 border-t-zinc-300 animate-spin" />
+                Saving...
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-500">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Saved
+              </span>
+            )}
           </div>
 
-          {/* Blocks list */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {sections.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center mb-3">
-                  <Layers className="w-5 h-5 text-zinc-600" />
+          <ThemeToggle />
+
+          {/* User menu */}
+          {status === "loading" ? (
+            <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+          ) : (
+            <div data-user-menu className="relative">
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900/50 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800/80 transition-all cursor-pointer ring-2 ring-transparent hover:ring-violet-500/20"
+              >
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-inner shadow-violet-400/20">
+                  {userInitial}
                 </div>
-                <p className="text-sm text-zinc-500">No blocks yet</p>
-                <p className="text-xs text-zinc-700 mt-1">
+                <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+              </button>
+              {menuOpen && (
+                <div
+                  className="absolute right-0 top-11 w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 shadow-2xl shadow-black/10 dark:shadow-black/80 overflow-hidden z-50 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200"
+                >
+                  <div className="px-4 py-3.5 border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/50">
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-200 truncate">{session?.user?.name || session?.user?.email}</p>
+                    <p className="text-[11px] text-zinc-500 truncate mt-0.5">{session?.user?.email}</p>
+                  </div>
+                  <div className="p-1.5">
+                    <Link
+                      href="/dashboard/profile"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    >
+                      <UserCircle className="w-4 h-4" />
+                      Edit Profile
+                    </Link>
+                    <Link
+                      href="/"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Home
+                    </Link>
+                    <button
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer text-left mt-1"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Log out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Main Workspace */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar */}
+        <aside className="w-[360px] border-r border-zinc-200 dark:border-zinc-900 flex flex-col bg-zinc-50/80 dark:bg-zinc-950/50 backdrop-blur-xl shrink-0 z-30 shadow-lg dark:shadow-2xl dark:shadow-black/40 transition-colors duration-500">
+          {/* Sidebar header */}
+          <div className="flex border-b border-zinc-200 dark:border-zinc-900 transition-colors duration-500">
+            <button
+              onClick={() => setActiveSidebarTab("content")}
+              className={cn(
+                "flex-1 py-4 text-[11px] font-semibold uppercase tracking-widest border-b-2 transition-colors",
+                activeSidebarTab === "content" ? "border-violet-500 text-violet-600 dark:text-violet-400" : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-400"
+              )}
+            >
+              Content Blocks
+            </button>
+            <button
+              onClick={() => setActiveSidebarTab("design")}
+              className={cn(
+                "flex-1 py-4 text-[11px] font-semibold uppercase tracking-widest border-b-2 transition-colors",
+                activeSidebarTab === "design" ? "border-violet-500 text-violet-600 dark:text-violet-400" : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-400"
+              )}
+            >
+              Theme & Design
+            </button>
+          </div>
+
+          {activeSidebarTab === "design" ? (
+            <div className="flex-1 overflow-y-auto p-4" data-lenis-prevent>
+              <ThemePicker />
+            </div>
+          ) : (
+            <>
+              {/* Blocks list */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2" data-lenis-prevent>
+                {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <span className="w-5 h-5 rounded-full border-2 border-zinc-300 dark:border-zinc-600 border-t-zinc-600 dark:border-t-zinc-300 animate-spin" />
+              </div>
+            ) : sections.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center mb-3">
+                  <Layers className="w-5 h-5 text-zinc-400 dark:text-zinc-600" />
+                </div>
+                <p className="text-sm text-zinc-600 dark:text-zinc-500">No blocks yet</p>
+                <p className="text-xs text-zinc-400 mt-1">
                   Add one below to get started
                 </p>
               </div>
-            )}
+            ) : null}
 
             {sections.map((section, index) => (
               <div
@@ -140,8 +279,8 @@ export default function EditPortfolioPage() {
                 className={cn(
                   "rounded-xl border transition-all duration-200",
                   hoveredId === section.id
-                    ? "border-zinc-700 bg-zinc-800/60"
-                    : "border-zinc-800 bg-zinc-800/30"
+                    ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/60"
+                    : "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30"
                 )}
               >
                 {/* Block header */}
@@ -151,12 +290,12 @@ export default function EditPortfolioPage() {
                       className={cn(
                         "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
                         TYPE_COLORS[section.type] ??
-                          "bg-zinc-700 text-zinc-300 border-zinc-600"
+                          "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600"
                       )}
                     >
                       {section.type}
                     </span>
-                    <span className="text-[10px] text-zinc-600">
+                    <span className="text-[10px] text-zinc-400">
                       #{index + 1}
                     </span>
                   </div>
@@ -167,21 +306,43 @@ export default function EditPortfolioPage() {
                       hoveredId === section.id ? "opacity-100" : "opacity-0"
                     )}
                   >
-                    <button
-                      onClick={() => moveBlock!(section.id, "up")}
-                      className="w-6 h-6 rounded flex items-center justify-center text-zinc-500 hover:text-zinc-200 hover:bg-zinc-700 transition-colors"
-                    >
-                      <ChevronUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => moveBlock!(section.id, "down")}
-                      className="w-6 h-6 rounded flex items-center justify-center text-zinc-500 hover:text-zinc-200 hover:bg-zinc-700 transition-colors"
-                    >
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
+                    {section.type !== "HERO" && (
+                      <>
+                        <button
+                          onClick={() => {
+                            const isFirst = index === 0 || (index === 1 && sections[0].type === "HERO");
+                            if (!isFirst) moveBlock!(section.id, "up");
+                          }}
+                          disabled={index === 0 || (index === 1 && sections[0].type === "HERO")}
+                          className={cn(
+                            "w-6 h-6 rounded flex items-center justify-center transition-colors",
+                            (index === 0 || (index === 1 && sections[0].type === "HERO"))
+                              ? "text-zinc-300 dark:text-zinc-800 cursor-not-allowed opacity-30"
+                              : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+                          )}
+                        >
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            const isLast = index === sections.length - 1;
+                            if (!isLast) moveBlock!(section.id, "down");
+                          }}
+                          disabled={index === sections.length - 1}
+                          className={cn(
+                            "w-6 h-6 rounded flex items-center justify-center transition-colors",
+                            (index === sections.length - 1)
+                              ? "text-zinc-300 dark:text-zinc-800 cursor-not-allowed opacity-30"
+                              : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+                          )}
+                        >
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
                     <button
                       onClick={() => removeBlock!(section.id)}
-                      className="w-6 h-6 rounded flex items-center justify-center text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors ml-1"
+                      className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors ml-1"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -197,57 +358,71 @@ export default function EditPortfolioPage() {
           </div>
 
           {/* Add block panel */}
-          <div className="p-4 border-t border-zinc-800 bg-zinc-900">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-3 px-1">
+          <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-3 px-1">
               Add Block
             </p>
             <div className="grid grid-cols-2 gap-1.5">
-              {BLOCK_TYPES.map(({ type, label, description }) => (
-                <button
-                  key={type}
-                  onClick={() => addBlock(type, label)}
-                  className="flex flex-col items-start gap-0.5 px-3 py-2.5 rounded-lg border border-zinc-800 bg-zinc-800/40 hover:bg-zinc-800 hover:border-zinc-700 transition-all text-left group"
-                >
-                  <div className="flex items-center gap-1.5 w-full">
-                    <Plus className="w-3 h-3 text-violet-500 group-hover:text-violet-400 transition-colors" />
-                    <span className="text-sm font-medium text-zinc-300">
-                      {label}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-zinc-600 pl-4">
-                    {description}
-                  </span>
-                </button>
-              ))}
+              {BLOCK_TYPES.map(({ type, label, description }) => {
+                const isAdded = sections.some((s) => s.type === type);
+                return (
+                  <button
+                    key={type}
+                    onClick={() => !isAdded && addBlock(type, label)}
+                    disabled={isAdded}
+                    className={cn(
+                      "flex flex-col items-start gap-0.5 px-3 py-2.5 rounded-lg border text-left transition-all",
+                      isAdded
+                        ? "border-zinc-200 dark:border-zinc-800/40 bg-zinc-50 dark:bg-zinc-900/10 cursor-not-allowed opacity-40"
+                        : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/40 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 cursor-pointer group"
+                    )}
+                  >
+                    <div className="flex items-center gap-1.5 w-full">
+                      {isAdded ? (
+                        <Check className="w-3 h-3 text-emerald-500" />
+                      ) : (
+                        <Plus className="w-3 h-3 text-violet-500 group-hover:text-violet-400 transition-colors" />
+                      )}
+                      <span className={cn(
+                        "text-sm font-medium",
+                        isAdded ? "text-zinc-400" : "text-zinc-900 dark:text-zinc-300"
+                      )}>
+                        {label}
+                      </span>
+                    </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+            </>
+          )}
         </aside>
 
         {/* Preview pane */}
-        <main className="flex-1 overflow-y-auto bg-zinc-950 flex flex-col items-center py-10 px-8">
-          {/* Browser chrome */}
-          <div className="w-full max-w-3xl">
-            <div className="bg-zinc-900 rounded-t-xl border border-zinc-800 h-10 flex items-center px-4 gap-2">
-              <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-2 mt-1">
+        <main className="flex-1 overflow-y-auto bg-zinc-100 dark:bg-zinc-950 flex flex-col items-center py-10 px-8 transition-colors duration-500" data-lenis-prevent>
+          {/* Preview Container Wrapper */}
+          <div className="max-w-[1000px] mx-auto w-full">
+            {/* macOS window chrome */}
+            <div className="rounded-t-2xl bg-zinc-200 dark:bg-zinc-900 border-x border-t border-zinc-300 dark:border-zinc-800 flex items-center px-4 h-10 gap-2 transition-colors duration-500">
+              <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E]" />
                 <div className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123]" />
                 <div className="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29]" />
               </div>
-              </div>
-              <div className="ml-3 flex-1 bg-zinc-800/80 rounded px-3 py-1 text-[10px] text-zinc-500 font-mono truncate border border-zinc-700/50">
+              <div className="mx-auto bg-zinc-300/50 dark:bg-zinc-950 px-3 py-1 rounded text-[10px] text-zinc-500 dark:text-zinc-500 font-mono flex-1 max-w-[300px] text-center ml-4 border border-zinc-300 dark:border-zinc-800 shadow-inner transition-colors duration-500 truncate">
                 {publicUrl}
               </div>
             </div>
 
             {/* Preview content */}
-            <div className="bg-zinc-950 border-x border-b border-zinc-800 rounded-b-xl overflow-hidden shadow-2xl shadow-black/50 min-h-[40rem] relative">
-              <PortfolioRenderer sections={sections} />
+            <div className="border border-zinc-300 dark:border-zinc-800 rounded-b-2xl overflow-hidden bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/60 relative min-h-[600px] transition-colors duration-500">
+              <PortfolioRenderer sections={sections} theme={theme} />
 
               {sections.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-32 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
-                    <Layers className="w-7 h-7 text-zinc-400" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
+                  <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center mb-4">
+                    <Layers className="w-7 h-7 text-zinc-300 dark:text-zinc-700" />
                   </div>
                   <p className="text-base font-semibold text-zinc-400">
                     Your portfolio is empty

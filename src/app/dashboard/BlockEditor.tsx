@@ -5,10 +5,10 @@ import { Trash2, Plus, X } from "lucide-react";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 const fieldClass =
-  "bg-zinc-900 border-zinc-700 text-zinc-200 placeholder:text-zinc-600 focus-visible:ring-violet-500/30 focus-visible:border-violet-500/60 h-9 text-sm rounded-lg";
+  "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus-visible:ring-violet-500/30 focus-visible:border-violet-500/60 h-9 text-sm rounded-lg transition-colors";
 
 const labelClass =
-  "text-[10px] font-semibold uppercase tracking-widest text-zinc-500";
+  "text-[10px] font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-500";
 
 export const BlockEditor = ({ block }: { block: any }) => {
   const updateBlockData = usePortfolioStore((state) => state.updateBlockData);
@@ -59,7 +59,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
     return (
       <div className="space-y-3">
         {/* Skills display */}
-        <div className="flex flex-wrap gap-1.5 min-h-[42px] p-2.5 rounded-lg border border-zinc-700 bg-zinc-900/50">
+        <div className="flex flex-wrap gap-1.5 min-h-[42px] p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 transition-colors">
           {skills.length === 0 && (
             <span className="text-[11px] text-zinc-600 italic self-center">
               Add skills below...
@@ -68,7 +68,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
           {skills.map((skill: string, idx: number) => (
             <span
               key={idx}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-zinc-300"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 shadow-sm dark:shadow-none transition-colors"
             >
               {skill}
               <button
@@ -77,7 +77,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
                     items: skills.filter((s: string) => s !== skill),
                   })
                 }
-                className="text-zinc-600 hover:text-zinc-300 transition-colors"
+                className="text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
               >
                 <X className="w-2.5 h-2.5" />
               </button>
@@ -103,7 +103,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
         {items.map((item: any, idx: number) => (
           <div
             key={idx}
-            className="p-3 rounded-lg border border-zinc-700/60 bg-zinc-900/40 space-y-2 group/exp"
+            className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/exp transition-colors"
           >
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">
@@ -115,7 +115,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
                     items: items.filter((_: any, i: number) => i !== idx),
                   })
                 }
-                className="opacity-0 group-hover/exp:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-600 hover:text-red-400 transition-all"
+                className="opacity-0 group-hover/exp:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
               >
                 <Trash2 className="w-3 h-3" />
               </button>
@@ -161,7 +161,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
               items: [...items, { company: "", role: "", years: "" }],
             })
           }
-          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-700 text-[11px] font-medium text-zinc-600 hover:text-zinc-300 hover:border-zinc-600 hover:bg-zinc-800/30 transition-all"
+          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all"
         >
           <Plus className="w-3 h-3" /> Add Entry
         </button>
@@ -192,7 +192,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
         {items.map((item: any, idx: number) => (
           <div
             key={idx}
-            className="p-3 rounded-lg border border-zinc-700/60 bg-zinc-900/40 space-y-2 group/proj"
+            className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/proj transition-colors"
           >
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">
@@ -200,7 +200,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
               </span>
               <button
                 onClick={() => removeProject(idx)}
-                className="opacity-0 group-hover/proj:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-600 hover:text-red-400 transition-all"
+                className="opacity-0 group-hover/proj:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
               >
                 <Trash2 className="w-3 h-3" />
               </button>
@@ -232,7 +232,7 @@ export const BlockEditor = ({ block }: { block: any }) => {
 
         <button
           onClick={addProject}
-          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-700 text-[11px] font-medium text-zinc-600 hover:text-zinc-300 hover:border-zinc-600 hover:bg-zinc-800/30 transition-all"
+          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all"
         >
           <Plus className="w-3 h-3" /> Add Project
         </button>
