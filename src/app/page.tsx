@@ -91,23 +91,25 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-4">
             <Link
               href="#features"
-              className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 rounded-full transition-all"
+              className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all"
             >
               Features
             </Link>
             <Link
               href="/dashboard/edit"
-              className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 rounded-full transition-all"
+              className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all"
             >
               Editor
             </Link>
-            <div className="relative group/pricing px-4 py-2 cursor-pointer rounded-full hover:bg-zinc-800/50 transition-all">
-              <span className="text-sm font-medium text-zinc-400 group-hover/pricing:text-zinc-100 flex items-center gap-2 transition-colors">
-                Pricing
+            <div className="relative group/pricing px-4 py-2 cursor-pointer rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-all">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover/pricing:text-zinc-900 dark:group-hover/pricing:text-zinc-100 transition-colors">
+                  Pricing
+                </span>
                 <span className="text-[9px] font-bold bg-violet-500/10 text-violet-400 px-1.5 py-0.5 rounded-full border border-violet-500/20 uppercase tracking-wider scale-95 shadow-[0_0_10px_rgba(139,92,246,0.1)]">
                   Free Beta
                 </span>
-              </span>
+              </div>
             </div>
           </div>
 
@@ -170,13 +172,13 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/login"
-                  className="px-5 py-2.5 text-sm font-medium text-white bg-zinc-100 text-zinc-900 hover:bg-white rounded-full transition-all shadow-lg shadow-white/5 hover:shadow-white/10 hover:scale-105 active:scale-95"
+                  className="px-5 py-2.5 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white rounded-full transition-all shadow-lg shadow-black/5 dark:shadow-white/5 hover:shadow-black/10 dark:hover:shadow-white/10 hover:scale-105 active:scale-95"
                 >
                   Get Started
                 </Link>
@@ -199,7 +201,7 @@ export default function Home() {
             ) : null}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all cursor-pointer"
+              className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -212,44 +214,44 @@ export default function Home() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden absolute top-full left-0 right-0 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-2xl p-6 flex flex-col gap-2 shadow-2xl shadow-black/80"
+            className="md:hidden absolute top-full left-0 right-0 border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-2xl p-6 flex flex-col gap-2 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/80"
           >
             <Link
               href="#features"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-base font-medium text-zinc-400 hover:text-zinc-100 transition-colors p-3 rounded-xl hover:bg-zinc-900/50"
+              className="text-base font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50"
             >
               Features
             </Link>
             <Link
               href="/dashboard/edit"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-base font-medium text-zinc-400 hover:text-zinc-100 transition-colors p-3 rounded-xl hover:bg-zinc-900/50"
+              className="text-base font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50"
             >
               Editor
             </Link>
-            <div className="text-base font-medium text-zinc-400 p-3 rounded-xl hover:bg-zinc-900/50 flex items-center justify-between">
+            <div className="text-base font-medium text-zinc-600 dark:text-zinc-400 p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50 flex items-center justify-between transition-colors">
               <span>Pricing</span>
-              <span className="text-[10px] font-bold bg-violet-500/10 text-violet-400 px-2 py-0.5 rounded border border-violet-500/20 uppercase tracking-wider">
+              <span className="text-[10px] font-bold bg-violet-500/10 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded border border-violet-500/20 uppercase tracking-wider">
                 Free Beta
               </span>
             </div>
 
-            <div className="h-px bg-zinc-900 my-2" />
+            <div className="h-px bg-zinc-200 dark:bg-zinc-900 my-2" />
 
             {status !== "loading" && status !== "authenticated" && (
               <div className="flex flex-col gap-3 mt-2">
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-3.5 text-center text-sm font-medium text-zinc-300 bg-zinc-900 hover:bg-zinc-800 rounded-xl transition-all border border-zinc-800"
+                  className="w-full py-3.5 text-center text-sm font-medium text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-all border border-zinc-200 dark:border-zinc-800"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-3.5 text-center text-sm font-medium text-zinc-900 bg-zinc-100 hover:bg-white rounded-xl transition-all"
+                  className="w-full py-3.5 text-center text-sm font-medium text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-white rounded-xl transition-all"
                 >
                   Get Started Free
                 </Link>
@@ -261,7 +263,7 @@ export default function Home() {
                 <Link
                   href="/dashboard/profile"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-3.5 text-center text-sm font-medium text-zinc-300 bg-zinc-900 hover:bg-zinc-800 rounded-xl transition-all border border-zinc-800 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 text-center text-sm font-medium text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-all border border-zinc-200 dark:border-zinc-800 flex items-center justify-center gap-2"
                 >
                   <UserCircle className="w-4 h-4" />
                   Edit Profile
@@ -271,7 +273,7 @@ export default function Home() {
                     setMobileMenuOpen(false);
                     signOut();
                   }}
-                  className="w-full py-3.5 text-center text-sm font-medium text-red-400 hover:text-red-300 bg-red-950/20 hover:bg-red-950/30 rounded-xl transition-all border border-red-900/30 flex items-center justify-center gap-2 cursor-pointer mt-1"
+                  className="w-full py-3.5 text-center text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/30 rounded-xl transition-all border border-red-200 dark:border-red-900/30 flex items-center justify-center gap-2 cursor-pointer mt-1"
                 >
                   <LogOut className="w-4 h-4" />
                   Log out

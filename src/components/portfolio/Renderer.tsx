@@ -1,6 +1,6 @@
 import React from "react";
 import * as motion from "framer-motion/client";
-import { ExternalLink, Terminal, Briefcase, Zap, Code2 } from "lucide-react";
+import { ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send } from "lucide-react";
 import { THEMES } from "@/lib/themes";
 
 const fadeInUp = {
@@ -221,11 +221,114 @@ const Experience = ({ data }: any) => (
   </section>
 );
 
+const Education = ({ data }: any) => (
+  <section className="theme-bg py-24 px-8 sm:px-12 transition-colors duration-500">
+    <motion.div
+      initial="initial"
+      whileInView="animate"
+      viewport={{ once: true }}
+      variants={staggerContainer}
+      className="max-w-3xl mx-auto w-full"
+    >
+      <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-16">
+        <GraduationCap className="w-5 h-5 text-[var(--p-primary)] transition-colors duration-500" />
+        <span className="text-sm font-black uppercase tracking-[0.2em] text-[var(--p-fg)] transition-colors duration-500">
+          Education
+        </span>
+        <div className="h-px flex-1 bg-[var(--p-border)] transition-colors duration-500" />
+      </motion.div>
+
+      <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 pl-8 sm:pl-12 transition-colors duration-500">
+        {data.items?.map((item: any, i: number) => (
+          <motion.div key={i} variants={fadeInUp} className="relative pb-12 last:pb-0 group">
+            <div className="theme-dot absolute -left-[37px] sm:-left-[53px] top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
+              <h3 className="text-xl font-bold text-[var(--p-fg)] transition-colors duration-500">{item.degree}</h3>
+              <span className="text-xs font-mono text-[var(--p-fg-muted)] bg-[var(--p-bg-secondary)] border border-[var(--p-border)] px-3 py-1 rounded-full w-fit transition-colors duration-500">{item.year}</span>
+            </div>
+            <p className="text-base text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors">{item.school}</p>
+          </motion.div>
+        ))}
+        {(!data.items || data.items.length === 0) && (
+          <p className="text-sm text-[var(--p-fg-muted)] transition-colors duration-500">No education entries yet.</p>
+        )}
+      </div>
+    </motion.div>
+  </section>
+);
+
+const Testimonials = ({ data }: any) => (
+  <section className="theme-bg py-24 px-8 sm:px-12 transition-colors duration-500">
+    <motion.div
+      initial="initial"
+      whileInView="animate"
+      viewport={{ once: true }}
+      variants={staggerContainer}
+      className="max-w-4xl mx-auto w-full"
+    >
+      <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-16">
+        <MessageSquare className="w-5 h-5 text-[var(--p-primary)] transition-colors duration-500" />
+        <span className="text-sm font-black uppercase tracking-[0.2em] text-[var(--p-fg)] transition-colors duration-500">
+          Recommendations
+        </span>
+        <div className="h-px flex-1 bg-[var(--p-border)] transition-colors duration-500" />
+      </motion.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {data.items?.map((item: any, i: number) => (
+          <motion.div key={i} variants={fadeInUp} className="p-8 theme-bg-secondary border border-[var(--p-border)] relative group hover:border-[var(--p-primary)] transition-all duration-500 shadow-sm hover:shadow-xl" style={{ borderRadius: 'var(--p-radius)' }}>
+            <Quote className="w-10 h-10 text-[var(--p-primary)] opacity-20 absolute top-6 right-6 group-hover:opacity-40 transition-opacity duration-500" />
+            <p className="text-base leading-relaxed text-[var(--p-fg)] font-medium mb-8 relative z-10">"{item.quote}"</p>
+            <div className="flex flex-col gap-0.5">
+              <span className="font-bold text-[var(--p-fg)]">{item.author}</span>
+              <span className="text-sm text-[var(--p-fg-muted)]">{item.role}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  </section>
+);
+
+const ContactForm = ({ data }: any) => {
+  const email = data.emailTarget || "hello@example.com";
+  const btnText = data.buttonText || "Get in Touch";
+  return (
+    <section className="theme-bg py-32 px-8 sm:px-12 transition-colors duration-500 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--p-bg-secondary)] opacity-50" />
+      <motion.div
+        initial="initial"
+        whileInView="animate"
+        viewport={{ once: true }}
+        variants={staggerContainer}
+        className="max-w-2xl mx-auto w-full text-center relative z-10"
+      >
+        <motion.div variants={fadeInUp}>
+          <h2 className="text-3xl sm:text-5xl font-black text-[var(--p-fg)] mb-6 tracking-tight">Let's work together.</h2>
+          <p className="text-lg text-[var(--p-fg-muted)] mb-10 max-w-lg mx-auto leading-relaxed">
+            I'm currently open for new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!
+          </p>
+          <a
+            href={`mailto:${email}`}
+            className="theme-pill inline-flex items-center gap-3 px-8 py-4 text-base font-bold text-[var(--p-fg)] border-[var(--p-border)] shadow-[var(--p-shadow)] hover:shadow-[var(--p-shadow-hover)] hover:scale-105 active:scale-95 transition-all group/mail"
+          >
+            <Send className="w-4 h-4 group-hover/mail:translate-x-1 group-hover/mail:-translate-y-1 transition-transform" />
+            {btnText}
+          </a>
+        </motion.div>
+      </motion.div>
+    </section>
+  );
+};
+
 const BlockMap: Record<string, React.FC<any>> = {
   HERO: Hero,
   PROJECTS: Projects,
   SKILLS: Skills,
   EXPERIENCE: Experience,
+  EDUCATION: Education,
+  TESTIMONIALS: Testimonials,
+  CONTACT_FORM: ContactForm,
 };
 
 const InkSplashes = () => (

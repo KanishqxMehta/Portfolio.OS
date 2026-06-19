@@ -64,6 +64,17 @@ model Portfolio {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pageViews  PageView[]
 
   @@index([userId])
+}
+
+model PageView {
+  id          String   @id @default(cuid())
+  portfolioId String
+  createdAt   DateTime @default(now())
+
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioId])
 }

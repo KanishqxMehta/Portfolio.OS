@@ -239,6 +239,95 @@ export const BlockEditor = ({ block }: { block: any }) => {
       </div>
     );
   }
+  if (block.type === "EDUCATION") {
+    const items = block.content?.items || [{ school: "", degree: "", year: "" }];
+
+    const updateEducation = (index: number, fields: any) => {
+      const newItems = [...items];
+      newItems[index] = { ...newItems[index], ...fields };
+      handleUpdate({ items: newItems });
+    };
+
+    const removeEducation = (index: number) => {
+      handleUpdate({ items: items.filter((_: any, i: number) => i !== index) });
+    };
+
+    return (
+      <div className="space-y-2">
+        {items.map((item: any, idx: number) => (
+          <div key={idx} className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/edu transition-colors">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">Degree {idx + 1}</span>
+              <button onClick={() => removeEducation(idx)} className="opacity-0 group-hover/edu:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all">
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+            <Input placeholder="University or School" value={item.school || ""} onChange={(e) => updateEducation(idx, { school: e.target.value })} className={fieldClass} />
+            <div className="grid grid-cols-2 gap-2">
+              <Input placeholder="B.S. Computer Science" value={item.degree || ""} onChange={(e) => updateEducation(idx, { degree: e.target.value })} className={fieldClass} />
+              <Input placeholder="2018 - 2022" value={item.year || ""} onChange={(e) => updateEducation(idx, { year: e.target.value })} className={fieldClass} />
+            </div>
+          </div>
+        ))}
+        <button onClick={() => handleUpdate({ items: [...items, { school: "", degree: "", year: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
+          <Plus className="w-3 h-3" /> Add Degree
+        </button>
+      </div>
+    );
+  }
+
+  if (block.type === "TESTIMONIALS") {
+    const items = block.content?.items || [{ quote: "", author: "", role: "" }];
+
+    const updateTestimonial = (index: number, fields: any) => {
+      const newItems = [...items];
+      newItems[index] = { ...newItems[index], ...fields };
+      handleUpdate({ items: newItems });
+    };
+
+    const removeTestimonial = (index: number) => {
+      handleUpdate({ items: items.filter((_: any, i: number) => i !== index) });
+    };
+
+    return (
+      <div className="space-y-2">
+        {items.map((item: any, idx: number) => (
+          <div key={idx} className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/test transition-colors">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">Testimonial {idx + 1}</span>
+              <button onClick={() => removeTestimonial(idx)} className="opacity-0 group-hover/test:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all">
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+            <Textarea placeholder="“Amazing developer to work with...”" value={item.quote || ""} onChange={(e) => updateTestimonial(idx, { quote: e.target.value })} className={`${fieldClass} min-h-[80px] h-auto resize-none`} />
+            <div className="grid grid-cols-2 gap-2">
+              <Input placeholder="John Doe" value={item.author || ""} onChange={(e) => updateTestimonial(idx, { author: e.target.value })} className={fieldClass} />
+              <Input placeholder="CTO @ TechCorp" value={item.role || ""} onChange={(e) => updateTestimonial(idx, { role: e.target.value })} className={fieldClass} />
+            </div>
+          </div>
+        ))}
+        <button onClick={() => handleUpdate({ items: [...items, { quote: "", author: "", role: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
+          <Plus className="w-3 h-3" /> Add Testimonial
+        </button>
+      </div>
+    );
+  }
+
+  if (block.type === "CONTACT_FORM") {
+    return (
+      <div className="space-y-3">
+        <div className="space-y-1.5">
+          <label className={labelClass}>Target Email Address</label>
+          <Input placeholder="you@example.com" value={block.content?.emailTarget || ""} onChange={(e) => handleUpdate({ emailTarget: e.target.value })} className={fieldClass} />
+          <p className="text-[10px] text-zinc-500 mt-1">Visitors clicking the button will open their native mail app with this address pre-filled.</p>
+        </div>
+        <div className="space-y-1.5">
+          <label className={labelClass}>Button Text</label>
+          <Input placeholder="Send me an email" value={block.content?.buttonText || ""} onChange={(e) => handleUpdate({ buttonText: e.target.value })} className={fieldClass} />
+        </div>
+      </div>
+    );
+  }
 
   return null;
 };

@@ -42,30 +42,30 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-200 flex">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-200 flex transition-colors">
       {/* Left — Brand panel */}
-      <div className="hidden lg:flex w-1/2 flex-col justify-between p-12 border-r border-zinc-800/50 bg-zinc-900/30">
+      <div className="hidden lg:flex w-1/2 flex-col justify-between p-12 border-r border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-900/30 transition-colors">
         <div>
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
               <Layers className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-zinc-100 tracking-tight">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
               Portfolio<span className="text-zinc-500">.os</span>
             </span>
           </Link>
         </div>
         <div className="space-y-4">
           <blockquote className="border-l-2 border-violet-500/50 pl-6">
-            <p className="text-lg text-zinc-300 font-light leading-relaxed">
+            <p className="text-lg text-zinc-700 dark:text-zinc-300 font-light leading-relaxed transition-colors">
               "Your portfolio is your story. Make it count."
             </p>
           </blockquote>
-          <p className="text-sm text-zinc-600 pl-6">
+          <p className="text-sm text-zinc-600 dark:text-zinc-600 pl-6 transition-colors">
             Build your developer portfolio block by block.
           </p>
         </div>
-        <div className="text-xs text-zinc-700">
+        <div className="text-xs text-zinc-500 dark:text-zinc-700 transition-colors">
           &copy; {new Date().getFullYear()} Portfolio.os
         </div>
       </div>
@@ -78,13 +78,13 @@ function LoginForm() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
               <Layers className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-zinc-100 tracking-tight">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
               Portfolio<span className="text-zinc-500">.os</span>
             </span>
           </Link>
 
           <div className="text-center">
-            <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight">
+            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
               Welcome back
             </h1>
             <p className="text-sm text-zinc-500 mt-2">
@@ -105,7 +105,7 @@ function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors"
+                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors shadow-sm dark:shadow-none"
                 />
               </div>
             </div>
@@ -122,7 +122,7 @@ function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="w-full h-10 pl-10 pr-10 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors"
+                  className="w-full h-10 pl-10 pr-10 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors shadow-sm dark:shadow-none"
                 />
                 <button
                   type="button"
@@ -156,10 +156,10 @@ function LoginForm() {
           {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-800" />
+              <div className="w-full border-t border-zinc-200 dark:border-zinc-800 transition-colors" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-zinc-950 px-3 text-zinc-600">or continue with</span>
+              <span className="bg-zinc-50 dark:bg-zinc-950 px-3 text-zinc-500 dark:text-zinc-600 transition-colors">or continue with</span>
             </div>
           </div>
 
@@ -169,7 +169,7 @@ function LoginForm() {
               type="button"
               onClick={() => handleOAuth("google")}
               disabled={loading}
-              className="h-10 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-sm font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="h-10 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm dark:shadow-none"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -183,7 +183,7 @@ function LoginForm() {
               type="button"
               onClick={() => handleOAuth("github")}
               disabled={loading}
-              className="h-10 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-sm font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="h-10 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm dark:shadow-none"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>

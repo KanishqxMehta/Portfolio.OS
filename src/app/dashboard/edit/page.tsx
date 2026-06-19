@@ -36,9 +36,12 @@ import { cn } from "@/lib/utils";
 
 const BLOCK_TYPES = [
   { type: "HERO", label: "Hero", description: "Name & bio" },
-  { type: "PROJECTS", label: "Projects", description: "Work showcase" },
-  { type: "SKILLS", label: "Skills", description: "Tech stack" },
+  { type: "SKILLS", label: "Skills", description: "List of tech" },
   { type: "EXPERIENCE", label: "Experience", description: "Work history" },
+  { type: "PROJECTS", label: "Projects", description: "Your portfolio" },
+  { type: "EDUCATION", label: "Education", description: "Degrees & certs" },
+  { type: "TESTIMONIALS", label: "Testimonials", description: "Quotes from peers" },
+  { type: "CONTACT_FORM", label: "Contact Form", description: "Email you directly" },
 ] as const;
 
 const TYPE_COLORS: Record<string, string> = {
@@ -104,7 +107,7 @@ export default function EditPortfolioPage() {
   const userInitial = session?.user?.name?.charAt(0)?.toUpperCase() || session?.user?.email?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-200 transition-colors duration-500">
+    <div className="h-[100dvh] bg-white dark:bg-zinc-950 flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-200 transition-colors duration-500 overflow-hidden">
       {/* Top Header */}
       <header className="h-16 border-b border-zinc-200 dark:border-zinc-900/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500">
         <div className="flex items-center gap-6">
@@ -113,13 +116,26 @@ export default function EditPortfolioPage() {
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center group-hover:scale-105 shadow-md shadow-violet-500/20 transition-all">
               <Layers className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors hidden sm:block">
               Portfolio<span className="text-zinc-500 dark:text-zinc-400">.os</span>
             </span>
           </Link>
 
           {/* Divider */}
-          <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800/80" />
+          <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800/80 hidden sm:block" />
+
+          {/* Navigation Switch */}
+          <div className="hidden sm:flex bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-lg">
+            <div className="px-3 py-1.5 text-xs font-medium rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm border border-zinc-200 dark:border-zinc-700/50">
+              Editor
+            </div>
+            <Link
+              href="/dashboard/analytics"
+              className="px-3 py-1.5 text-xs font-medium rounded-md text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
+            >
+              Analytics
+            </Link>
+          </div>
 
           {/* Username field */}
           <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900/50 hover:bg-zinc-200 dark:hover:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-1.5 transition-colors cursor-default">
@@ -358,12 +374,18 @@ export default function EditPortfolioPage() {
           </div>
 
           {/* Add block panel */}
-          <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-3 px-1">
-              Add Block
-            </p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {BLOCK_TYPES.map(({ type, label, description }) => {
+          <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shrink-0 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-none">
+            <div className="flex items-center justify-between mb-3 px-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                Add Block
+              </p>
+              <p className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+                {sections.length}/{BLOCK_TYPES.length} Active
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              {BLOCK_TYPES.map(({ type, label }) => {
                 const isAdded = sections.some((s) => s.type === type);
                 return (
                   <button
@@ -371,30 +393,23 @@ export default function EditPortfolioPage() {
                     onClick={() => !isAdded && addBlock(type, label)}
                     disabled={isAdded}
                     className={cn(
-                      "flex flex-col items-start gap-0.5 px-3 py-2.5 rounded-lg border text-left transition-all",
+                      "group flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all whitespace-nowrap",
                       isAdded
-                        ? "border-zinc-200 dark:border-zinc-800/40 bg-zinc-50 dark:bg-zinc-900/10 cursor-not-allowed opacity-40"
-                        : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/40 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 cursor-pointer group"
+                        ? "border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
+                        : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-700 dark:hover:text-violet-300 cursor-pointer shadow-sm hover:shadow"
                     )}
                   >
-                    <div className="flex items-center gap-1.5 w-full">
-                      {isAdded ? (
-                        <Check className="w-3 h-3 text-emerald-500" />
-                      ) : (
-                        <Plus className="w-3 h-3 text-violet-500 group-hover:text-violet-400 transition-colors" />
-                      )}
-                      <span className={cn(
-                        "text-sm font-medium",
-                        isAdded ? "text-zinc-400" : "text-zinc-900 dark:text-zinc-300"
-                      )}>
-                        {label}
-                      </span>
-                    </div>
-                    </button>
-                  );
-                })}
-              </div>
+                    {isAdded ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-500/50" />
+                    ) : (
+                      <Plus className="w-3.5 h-3.5 text-violet-500 group-hover:scale-110 transition-transform" />
+                    )}
+                    {label}
+                  </button>
+                );
+              })}
             </div>
+          </div>
             </>
           )}
         </aside>

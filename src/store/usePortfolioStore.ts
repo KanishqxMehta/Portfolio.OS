@@ -13,6 +13,7 @@ interface PortfolioState {
   removeBlock: (id: string) => void;
   updateBlockData: (id: string, newData: any) => void;
   moveBlock: (id: string, direction: 'up' | 'down') => void;
+  theme: string;
   setTheme: (theme: string) => void;
 }
 

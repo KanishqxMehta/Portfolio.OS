@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Layers, ArrowRight } from "lucide-react";
 import { THEMES } from "@/lib/themes";
+import { ViewTracker } from "@/components/portfolio/ViewTracker";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -36,6 +37,7 @@ export default async function PublicPortfolioPage({ params }: PageProps) {
         color: "var(--p-fg)",
       } as React.CSSProperties}
     >
+      <ViewTracker slug={slug} />
       {/* Publicly visible main content */}
       <main className="flex-1 w-full">
         <PortfolioRenderer sections={sections} theme={theme} />
