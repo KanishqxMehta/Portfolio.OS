@@ -40,7 +40,7 @@ export default function SetupUsernamePage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-200 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 flex items-center justify-center p-8">
       <div className="w-full max-w-sm space-y-8">
         <Link href="/" className="flex items-center gap-2 justify-center">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">

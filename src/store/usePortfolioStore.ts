@@ -1,14 +1,16 @@
 import { create } from 'zustand';
+import { useToastStore } from './useToastStore';
+import { Section, portfolioSchema } from '@/lib/validations/portfolio';
 
 interface PortfolioState {
-  sections: any[];
+  sections: Section[];
   username: string;
   isSaving: boolean;
   isLoading: boolean;
   setUsername: (username: string) => void;
-  setSections: (sections: any[]) => void;
+  setSections: (sections: Section[]) => void;
   addBlock: (type: string, title: string) => void;
-  savePortfolio: () => Promise<void>;
+  savePortfolio: () => Promise<boolean>;
   loadPortfolio: () => Promise<void>;
   removeBlock: (id: string) => void;
   updateBlockData: (id: string, newData: any) => void;
@@ -22,7 +24,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   username: "",
   theme: "classic",
   isSaving: false,
-  isLoading: false,
+  isLoading: true,
 
   setTheme: (theme) => set({ theme }),
 
@@ -42,13 +44,22 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       return {};
     }
 
+    let defaultContent: any = {};
+    if (type === "HERO") defaultContent = { fullName: "", bio: "" };
+    else if (type === "SKILLS") defaultContent = { items: [] };
+    else if (type === "EXPERIENCE") defaultContent = { items: [] };
+    else if (type === "PROJECTS") defaultContent = { items: [] };
+    else if (type === "EDUCATION") defaultContent = { items: [] };
+    else if (type === "TESTIMONIALS") defaultContent = { items: [] };
+    else if (type === "CONTACT_FORM") defaultContent = { emailTarget: "", buttonText: "" };
+
     const newBlock = {
       id: crypto.randomUUID(),
       type,
       title,
-      content: {},
+      content: defaultContent,
       isVisible: true,
-    };
+    } as Section;
 
     let newSections;
     if (type === "HERO") {
@@ -83,7 +94,21 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
   savePortfolio: async () => {
     const { sections, username, theme } = get();
-    if (!username) return alert("Please set a username first!");
+    if (!username) {
+      useToastStore.getState().toast("Please set a username first!", "error");
+      return false;
+    }
+
+    const validation = portfolioSchema.safeParse({
+      username,
+      content: { theme, sections }
+    });
+
+    if (!validation.success) {
+      const errorMsg = validation.error.issues[0]?.message || "Invalid fields in block";
+      useToastStore.getState().toast(`Please fix error: ${errorMsg}`, "error");
+      return false;
+    }
 
     set({ isSaving: true });
     try {
@@ -103,10 +128,12 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
         const err = await response.json();
         throw new Error(err.error || "Failed to save");
       }
-      alert("Portfolio saved successfully!");
+      useToastStore.getState().toast("Portfolio saved successfully!", "success");
+      return true;
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Error saving portfolio");
+      useToastStore.getState().toast(error.message || "Error saving portfolio", "error");
+      return false;
     } finally {
       set({ isSaving: false });
     }

@@ -72,7 +72,7 @@ export default async function AnalyticsPage() {
   // We'll keep it simple for now
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-200">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100">
       {/* Topbar */}
       <header className="h-16 border-b border-zinc-200 dark:border-zinc-900/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500">
         <div className="flex items-center gap-6">

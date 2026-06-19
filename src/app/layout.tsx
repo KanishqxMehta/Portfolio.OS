@@ -7,6 +7,8 @@ import CursorScatter from "@/components/ui/CursorAnimations/CursorScatter";
 import SmoothCursor from "@/components/ui/CursorAnimations/SmoothCursor";
 import SmoothScroll from "@/components/ui/Scroll/SmoothScroll";
 
+import { Toaster } from "@/components/ui/Toaster";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -40,6 +42,7 @@ export default function RootLayout({
               <CursorScatter />
               {children}
               <SmoothCursor />
+              <Toaster />
             </SmoothScroll>
           </SessionProvider>
         </ThemeProvider>

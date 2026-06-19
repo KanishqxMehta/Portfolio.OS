@@ -2,6 +2,16 @@ import React from "react";
 import * as motion from "framer-motion/client";
 import { ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send } from "lucide-react";
 import { THEMES } from "@/lib/themes";
+import {
+  Section,
+  HeroContent,
+  SkillsContent,
+  ExperienceContent,
+  ProjectsContent,
+  EducationContent,
+  TestimonialsContent,
+  ContactFormContent,
+} from "@/lib/validations/portfolio";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -17,7 +27,7 @@ const staggerContainer = {
   },
 };
 
-const Hero = ({ data }: any) => (
+const Hero = ({ data }: { data: HeroContent }) => (
   <section className="theme-bg relative pt-32 pb-24 px-8 sm:px-12 overflow-hidden min-h-[60vh] flex flex-col justify-center transition-colors duration-500">
     <div
       className="absolute inset-0 opacity-20"
@@ -63,7 +73,7 @@ const Hero = ({ data }: any) => (
   </section>
 );
 
-const Projects = ({ data }: any) => {
+const Projects = ({ data }: { data: ProjectsContent }) => {
   const items = data.items || [];
   return (
     <section className="theme-bg py-24 px-8 sm:px-12 border-t border-[var(--p-border)] transition-colors duration-500">
@@ -134,7 +144,7 @@ const Projects = ({ data }: any) => {
   );
 };
 
-const Skills = ({ data }: any) => {
+const Skills = ({ data }: { data: SkillsContent }) => {
   const skills = data.items || [];
   return (
     <section className="theme-bg-secondary py-20 px-8 sm:px-12 border-y border-[var(--p-border)] relative overflow-hidden transition-colors duration-500">
@@ -171,7 +181,7 @@ const Skills = ({ data }: any) => {
   );
 };
 
-const Experience = ({ data }: any) => (
+const Experience = ({ data }: { data: ExperienceContent }) => (
   <section className="theme-bg py-24 px-8 sm:px-12 transition-colors duration-500">
     <motion.div
       initial="initial"
@@ -196,7 +206,7 @@ const Experience = ({ data }: any) => (
             className="relative pb-16 last:pb-0 group"
           >
             {/* Timeline dot */}
-            <div className="theme-dot absolute -left-[37px] sm:-left-[53px] top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
+            <div className="theme-dot absolute -left-[40px] sm:-left-[56px] top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
 
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
               <h3 className="text-xl font-bold text-[var(--p-fg)] transition-colors duration-500">
@@ -221,7 +231,7 @@ const Experience = ({ data }: any) => (
   </section>
 );
 
-const Education = ({ data }: any) => (
+const Education = ({ data }: { data: EducationContent }) => (
   <section className="theme-bg py-24 px-8 sm:px-12 transition-colors duration-500">
     <motion.div
       initial="initial"
@@ -241,7 +251,7 @@ const Education = ({ data }: any) => (
       <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 pl-8 sm:pl-12 transition-colors duration-500">
         {data.items?.map((item: any, i: number) => (
           <motion.div key={i} variants={fadeInUp} className="relative pb-12 last:pb-0 group">
-            <div className="theme-dot absolute -left-[37px] sm:-left-[53px] top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
+            <div className="theme-dot absolute -left-[40px] sm:-left-[56px] top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
               <h3 className="text-xl font-bold text-[var(--p-fg)] transition-colors duration-500">{item.degree}</h3>
               <span className="text-xs font-mono text-[var(--p-fg-muted)] bg-[var(--p-bg-secondary)] border border-[var(--p-border)] px-3 py-1 rounded-full w-fit transition-colors duration-500">{item.year}</span>
@@ -257,7 +267,7 @@ const Education = ({ data }: any) => (
   </section>
 );
 
-const Testimonials = ({ data }: any) => (
+const Testimonials = ({ data }: { data: TestimonialsContent }) => (
   <section className="theme-bg py-24 px-8 sm:px-12 transition-colors duration-500">
     <motion.div
       initial="initial"
@@ -290,7 +300,7 @@ const Testimonials = ({ data }: any) => (
   </section>
 );
 
-const ContactForm = ({ data }: any) => {
+const ContactForm = ({ data }: { data: ContactFormContent }) => {
   const email = data.emailTarget || "hello@example.com";
   const btnText = data.buttonText || "Get in Touch";
   return (
@@ -321,7 +331,7 @@ const ContactForm = ({ data }: any) => {
   );
 };
 
-const BlockMap: Record<string, React.FC<any>> = {
+const BlockMap: Record<string, React.FC<{ data: any }>> = {
   HERO: Hero,
   PROJECTS: Projects,
   SKILLS: Skills,
@@ -356,7 +366,7 @@ const InkSplashes = () => (
   </div>
 );
 
-export const PortfolioRenderer = ({ sections, theme = "classic" }: { sections: any[], theme?: string }) => {
+export const PortfolioRenderer = ({ sections, theme = "classic" }: { sections: Section[], theme?: string }) => {
   const activeTheme = THEMES[theme] || THEMES["classic"];
   
   return (

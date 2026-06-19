@@ -99,15 +99,17 @@ export default function EditPortfolioPage() {
   }, []);
 
   const handleSave = async () => {
-    await savePortfolio();
-    setIsSuccessOpen(true);
+    const success = await savePortfolio();
+    if (success) {
+      setIsSuccessOpen(true);
+    }
   };
 
   const publicUrl = `${process.env.NEXT_PUBLIC_BASE_URL}p/${username}`;
   const userInitial = session?.user?.name?.charAt(0)?.toUpperCase() || session?.user?.email?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <div className="h-[100dvh] bg-white dark:bg-zinc-950 flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-200 transition-colors duration-500 overflow-hidden">
+    <div className="h-[100dvh] bg-white dark:bg-zinc-950 flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 transition-colors duration-500 overflow-hidden">
       {/* Top Header */}
       <header className="h-16 border-b border-zinc-200 dark:border-zinc-900/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500">
         <div className="flex items-center gap-6">
@@ -238,7 +240,13 @@ export default function EditPortfolioPage() {
       </header>
 
       {/* Main Workspace */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-sm z-[100] flex flex-col items-center justify-center gap-3 transition-opacity">
+            <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 animate-pulse">Loading portfolio...</p>
+          </div>
+        )}
         {/* Left Sidebar */}
         <aside className="w-[360px] border-r border-zinc-200 dark:border-zinc-900 flex flex-col bg-zinc-50/80 dark:bg-zinc-950/50 backdrop-blur-xl shrink-0 z-30 shadow-lg dark:shadow-2xl dark:shadow-black/40 transition-colors duration-500">
           {/* Sidebar header */}
@@ -434,7 +442,7 @@ export default function EditPortfolioPage() {
             <div className="border border-zinc-300 dark:border-zinc-800 rounded-b-2xl overflow-hidden bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/60 relative min-h-[600px] transition-colors duration-500">
               <PortfolioRenderer sections={sections} theme={theme} />
 
-              {sections.length === 0 && (
+              {sections.length === 0 && !isLoading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
                   <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center mb-4">
                     <Layers className="w-7 h-7 text-zinc-300 dark:text-zinc-700" />
@@ -454,31 +462,31 @@ export default function EditPortfolioPage() {
 
       {/* Success dialog */}
       <Dialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
-        <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800 text-zinc-100 rounded-2xl">
+        <DialogContent className="sm:max-w-md bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-2xl">
           <DialogHeader className="flex flex-col items-center space-y-3 pt-2">
             <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-              <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+              <CheckCircle2 className="w-7 h-7 text-emerald-500 dark:text-emerald-400" />
             </div>
-            <DialogTitle className="text-xl font-semibold text-zinc-100">
+            <DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
               Portfolio Published
             </DialogTitle>
-            <DialogDescription className="text-center text-zinc-400 text-sm">
+            <DialogDescription className="text-center text-zinc-500 dark:text-zinc-400 text-sm">
               Your portfolio is live and ready to share.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex items-center gap-3 bg-zinc-800/60 border border-zinc-700/60 p-3 rounded-xl mt-2">
+          <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 p-3 rounded-xl mt-2">
             <div className="flex-1 overflow-hidden">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 mb-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">
                 Public URL
               </p>
-              <p className="text-sm font-mono text-zinc-300 truncate">
+              <p className="text-sm font-mono text-zinc-600 dark:text-zinc-300 truncate">
                 {publicUrl}
               </p>
             </div>
             <button
               onClick={() => navigator.clipboard.writeText(publicUrl)}
-              className="w-8 h-8 rounded-lg bg-zinc-700 hover:bg-zinc-600 flex items-center justify-center text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="w-8 h-8 rounded-lg bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
             >
               <Copy className="w-3.5 h-3.5" />
             </button>
@@ -486,14 +494,14 @@ export default function EditPortfolioPage() {
 
           <div className="flex flex-col gap-2 mt-2">
             <a href={publicUrl} target="_blank" rel="noreferrer">
-              <Button className="w-full h-11 bg-violet-600 hover:bg-violet-500 text-white border-0 rounded-xl font-medium">
+              <Button className="w-full h-11 bg-violet-600 hover:bg-violet-500 text-white border-0 rounded-xl font-medium cursor-pointer">
                 View Live Site <ExternalLink className="ml-2 w-4 h-4" />
               </Button>
             </a>
             <Button
               variant="ghost"
               onClick={() => setIsSuccessOpen(false)}
-              className="w-full text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded-xl"
+              className="w-full text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl cursor-pointer"
             >
               Back to Editor
             </Button>

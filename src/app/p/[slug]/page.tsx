@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Layers, ArrowRight } from "lucide-react";
 import { THEMES } from "@/lib/themes";
 import { ViewTracker } from "@/components/portfolio/ViewTracker";
+import { Suspense } from "react";
+import Loading from "./loading";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -13,6 +15,14 @@ interface PageProps {
 export default async function PublicPortfolioPage({ params }: PageProps) {
   const { slug } = await params;
 
+  return (
+    <Suspense fallback={<Loading />}>
+      <PortfolioContent slug={slug} />
+    </Suspense>
+  );
+}
+
+async function PortfolioContent({ slug }: { slug: string }) {
   const result = await pool.query(
     'SELECT content FROM "Portfolio" WHERE "publicSlug" = $1',
     [slug]
@@ -30,7 +40,7 @@ export default async function PublicPortfolioPage({ params }: PageProps) {
   return (
     <div 
       data-theme={theme}
-      className="min-h-screen theme-bg font-sans transition-colors duration-500 flex flex-col justify-between relative selection:bg-violet-500/30 selection:text-violet-200"
+      className="min-h-screen theme-bg font-sans transition-colors duration-500 flex flex-col justify-between relative selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100"
       style={{
         ...activeTheme.cssVars,
         fontFamily: activeTheme.cssVars["--p-font"],

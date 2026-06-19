@@ -67,7 +67,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-200 flex">
+    <div className="min-h-screen bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 flex">
       {/* Left — Brand panel */}
       <div className="hidden lg:flex w-1/2 flex-col justify-between p-12 border-r border-zinc-800/50 bg-zinc-900/30">
         <div>
