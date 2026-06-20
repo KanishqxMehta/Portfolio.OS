@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { PortfolioRenderer } from "@/components/portfolio/Renderer";
 import { BlockEditor } from "../BlockEditor";
@@ -24,6 +25,11 @@ import {
   LayoutDashboard,
   Check,
   UserCircle,
+  Eye,
+  Edit3,
+  Sun,
+  Moon,
+  TrendingUp,
 } from "lucide-react";
 import {
   Dialog,
@@ -54,7 +60,9 @@ const TYPE_COLORS: Record<string, string> = {
 export default function EditPortfolioPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { theme: activeMode, setTheme: setActiveMode } = useTheme();
   const [activeSidebarTab, setActiveSidebarTab] = useState<"content" | "design">("content");
+  const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const {
     sections,
     theme,
@@ -140,7 +148,7 @@ export default function EditPortfolioPage() {
           </div>
 
           {/* Username field */}
-          <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900/50 hover:bg-zinc-200 dark:hover:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-1.5 transition-colors cursor-default">
+          <div className="hidden md:flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900/50 hover:bg-zinc-200 dark:hover:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-1.5 transition-colors cursor-default">
             <Globe className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
             <span className="text-zinc-500 text-sm font-medium">p/</span>
             <Input
@@ -153,23 +161,26 @@ export default function EditPortfolioPage() {
         </div>
 
         {/* Group Actions on the Right */}
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-2 sm:gap-4 md:gap-5">
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="h-8 px-4 text-sm font-medium rounded-full bg-violet-600 hover:bg-violet-500 text-white border-0 transition-all shadow-md shadow-violet-500/20 hover:shadow-violet-500/40 disabled:opacity-50"
+            className="h-8 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-full bg-violet-600 hover:bg-violet-500 text-white border-0 transition-all shadow-md shadow-violet-500/20 hover:shadow-violet-500/40 disabled:opacity-50 cursor-pointer"
           >
             {isSaving ? (
-              <span className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                Saving
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                <span className="hidden xs:inline">Saving</span>
               </span>
             ) : (
-              "Publish Changes"
+              <>
+                <span className="sm:hidden">Publish</span>
+                <span className="hidden sm:inline">Publish Changes</span>
+              </>
             )}
           </Button>
 
-          <div className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 mr-2">
+          <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 mr-1">
             {isSaving ? (
               <span className="flex items-center gap-1.5 text-zinc-400">
                 <span className="w-2.5 h-2.5 rounded-full border-2 border-zinc-600 border-t-zinc-300 animate-spin" />
@@ -183,7 +194,9 @@ export default function EditPortfolioPage() {
             )}
           </div>
 
-          <ThemeToggle />
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
 
           {/* User menu */}
           {status === "loading" ? (
@@ -208,6 +221,35 @@ export default function EditPortfolioPage() {
                     <p className="text-[11px] text-zinc-500 truncate mt-0.5">{session?.user?.email}</p>
                   </div>
                   <div className="p-1.5">
+                    {/* Mobile-only Analytics Link */}
+                    <Link
+                      href="/dashboard/analytics"
+                      onClick={() => setMenuOpen(false)}
+                      className="sm:hidden flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    >
+                      <TrendingUp className="w-4 h-4" />
+                      View Analytics
+                    </Link>
+                    {/* Mobile-only Theme Toggle */}
+                    <button
+                      onClick={() => {
+                        setActiveMode(activeMode === "dark" ? "light" : "dark");
+                        setMenuOpen(false);
+                      }}
+                      className="sm:hidden w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-left"
+                    >
+                      {activeMode === "dark" ? (
+                        <span className="flex items-center gap-2.5">
+                          <Sun className="w-4 h-4" />
+                          Light Mode
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2.5">
+                          <Moon className="w-4 h-4" />
+                          Dark Mode
+                        </span>
+                      )}
+                    </button>
                     <Link
                       href="/dashboard/profile"
                       onClick={() => setMenuOpen(false)}
@@ -248,7 +290,7 @@ export default function EditPortfolioPage() {
           </div>
         )}
         {/* Left Sidebar */}
-        <aside className="w-[360px] border-r border-zinc-200 dark:border-zinc-900 flex flex-col bg-zinc-50/80 dark:bg-zinc-950/50 backdrop-blur-xl shrink-0 z-30 shadow-lg dark:shadow-2xl dark:shadow-black/40 transition-colors duration-500">
+        <aside className={cn("w-full md:w-[360px] border-r border-zinc-200 dark:border-zinc-900 flex flex-col bg-zinc-50/80 dark:bg-zinc-950/50 backdrop-blur-xl shrink-0 z-30 shadow-lg dark:shadow-2xl dark:shadow-black/40 transition-colors duration-500", mobileView === "edit" ? "flex" : "hidden md:flex")}>
           {/* Sidebar header */}
           <div className="flex border-b border-zinc-200 dark:border-zinc-900 transition-colors duration-500">
             <button
@@ -423,7 +465,7 @@ export default function EditPortfolioPage() {
         </aside>
 
         {/* Preview pane */}
-        <main className="flex-1 overflow-y-auto bg-zinc-100 dark:bg-zinc-950 flex flex-col items-center py-10 px-8 transition-colors duration-500" data-lenis-prevent>
+        <main className={cn("flex-1 overflow-y-auto bg-zinc-100 dark:bg-zinc-950 flex flex-col items-center py-6 md:py-10 px-4 md:px-8 transition-colors duration-500", mobileView === "preview" ? "flex" : "hidden md:flex")} data-lenis-prevent>
           {/* Preview Container Wrapper */}
           <div className="max-w-[1000px] mx-auto w-full">
             {/* macOS window chrome */}
@@ -508,6 +550,26 @@ export default function EditPortfolioPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile view toggle floating button */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden">
+        <button
+          onClick={() => setMobileView(mobileView === "edit" ? "preview" : "edit")}
+          className="bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-900 px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs font-bold uppercase tracking-wider hover:scale-105 active:scale-95 transition-all border border-zinc-800 dark:border-zinc-200/85 cursor-pointer"
+        >
+          {mobileView === "edit" ? (
+            <>
+              <Eye className="w-4 h-4 shrink-0" />
+              <span>Preview</span>
+            </>
+          ) : (
+            <>
+              <Edit3 className="w-4 h-4 shrink-0" />
+              <span>Edit Blocks</span>
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

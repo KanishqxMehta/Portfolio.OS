@@ -45,7 +45,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     }
 
     let defaultContent: any = {};
-    if (type === "HERO") defaultContent = { fullName: "", bio: "" };
+    if (type === "HERO") defaultContent = { fullName: "", bio: "", github: "", linkedin: "", instagram: "", twitter: "" };
     else if (type === "SKILLS") defaultContent = { items: [] };
     else if (type === "EXPERIENCE") defaultContent = { items: [] };
     else if (type === "PROJECTS") defaultContent = { items: [] };

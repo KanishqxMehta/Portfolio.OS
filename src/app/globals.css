@@ -130,3 +130,9 @@
     @apply font-sans;
   }
 }
+
+@media (max-width: 768px) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+}

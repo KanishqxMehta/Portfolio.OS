@@ -4,6 +4,10 @@ import { z } from "zod";
 export const HeroContentSchema = z.object({
   fullName: z.string().min(1, "Full Name is required"),
   bio: z.string().min(1, "Bio is required"),
+  github: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
+  linkedin: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
+  instagram: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
+  twitter: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
 });
 
 export const SkillsContentSchema = z.object({

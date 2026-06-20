@@ -64,6 +64,65 @@ export const BlockEditor = ({ block }: { block: Section }) => {
             <p className="text-[10px] text-red-500 mt-0.5">Bio is required.</p>
           )}
         </div>
+
+        {/* Social Links Sub-section */}
+        <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/80 space-y-3">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 block">Social Profiles (Optional)</span>
+          
+          <div className="grid grid-cols-1 gap-3">
+            <div className="space-y-1.2">
+              <label className={labelClass}>GitHub URL</label>
+              <Input
+                placeholder="https://github.com/username"
+                value={block.content?.github || ""}
+                onChange={(e) => handleUpdate({ github: e.target.value })}
+                className={cn(fieldClass, block.content?.github && !isValidUrl(block.content.github) && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+              />
+              {block.content?.github && !isValidUrl(block.content.github) && (
+                <p className="text-[10px] text-red-500 mt-0.5">Please enter a valid URL (e.g., https://github.com/...)</p>
+              )}
+            </div>
+
+            <div className="space-y-1.2">
+              <label className={labelClass}>LinkedIn URL</label>
+              <Input
+                placeholder="https://linkedin.com/in/username"
+                value={block.content?.linkedin || ""}
+                onChange={(e) => handleUpdate({ linkedin: e.target.value })}
+                className={cn(fieldClass, block.content?.linkedin && !isValidUrl(block.content.linkedin) && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+              />
+              {block.content?.linkedin && !isValidUrl(block.content.linkedin) && (
+                <p className="text-[10px] text-red-500 mt-0.5">Please enter a valid URL (e.g., https://linkedin.com/in/...)</p>
+              )}
+            </div>
+
+            <div className="space-y-1.2">
+              <label className={labelClass}>Instagram URL</label>
+              <Input
+                placeholder="https://instagram.com/username"
+                value={block.content?.instagram || ""}
+                onChange={(e) => handleUpdate({ instagram: e.target.value })}
+                className={cn(fieldClass, block.content?.instagram && !isValidUrl(block.content.instagram) && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+              />
+              {block.content?.instagram && !isValidUrl(block.content.instagram) && (
+                <p className="text-[10px] text-red-500 mt-0.5">Please enter a valid URL (e.g., https://instagram.com/...)</p>
+              )}
+            </div>
+
+            <div className="space-y-1.2">
+              <label className={labelClass}>Twitter / X URL</label>
+              <Input
+                placeholder="https://x.com/username"
+                value={block.content?.twitter || ""}
+                onChange={(e) => handleUpdate({ twitter: e.target.value })}
+                className={cn(fieldClass, block.content?.twitter && !isValidUrl(block.content.twitter) && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+              />
+              {block.content?.twitter && !isValidUrl(block.content.twitter) && (
+                <p className="text-[10px] text-red-500 mt-0.5">Please enter a valid URL (e.g., https://x.com/...)</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

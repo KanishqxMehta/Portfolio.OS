@@ -90,14 +90,14 @@ export default async function AnalyticsPage() {
           <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800/80 hidden sm:block" />
 
           {/* Navigation Switch */}
-          <div className="hidden sm:flex bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-lg">
+          <div className="flex bg-zinc-100 dark:bg-zinc-900/50 p-0.5 sm:p-1 rounded-lg">
             <Link
               href="/dashboard/edit"
-              className="px-3 py-1.5 text-xs font-medium rounded-md text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
+              className="px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-md text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
             >
               Editor
             </Link>
-            <div className="px-3 py-1.5 text-xs font-medium rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm border border-zinc-200 dark:border-zinc-700/50">
+            <div className="px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm border border-zinc-200 dark:border-zinc-700/50">
               Analytics
             </div>
           </div>
@@ -108,10 +108,10 @@ export default async function AnalyticsPage() {
           <Link
             href={`/p/${publicSlug}`}
             target="_blank"
-            className="flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 px-3 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 px-2 sm:px-3 py-1.5 rounded-lg transition-colors"
           >
             <Globe className="w-3.5 h-3.5" />
-            View Live
+            <span className="hidden sm:inline">View Live</span>
           </Link>
           <ThemeToggle />
         </div>
