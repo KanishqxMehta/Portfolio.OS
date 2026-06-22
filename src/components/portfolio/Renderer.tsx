@@ -521,9 +521,10 @@ export const PortfolioRenderer = ({ sections, theme = "classic" }: { sections: S
       <div className="relative z-10">
         {orderedSections.map((section) => {
           const Component = BlockMap[section.type];
-          return Component ? (
-            <Component key={section.id} data={section.content} />
-          ) : null;
+          if (!Component) return null;
+          const items = (section.content as any)?.items;
+          const contentKey = Array.isArray(items) ? items.length : 0;
+          return <Component key={`${section.id}-v${contentKey}`} data={section.content} />;
         })}
       </div>
     </div>
