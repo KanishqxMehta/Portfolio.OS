@@ -7,18 +7,19 @@ datasource db {
 }
 
 model User {
-  id            String      @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String      @unique
+  email         String         @unique
   emailVerified DateTime?
   image         String?
-  username      String      @unique
+  username      String         @unique
   passwordHash  String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   portfolios    Portfolio[]
   accounts      Account[]
   sessions      Session[]
+  visitsMade    ProfileVisit[] @relation("VisitorUser")
 }
 
 model Account {
@@ -49,6 +50,7 @@ model Session {
 }
 
 model VerificationToken {
+  id          String   @id @default(cuid())
   identifier String
   token      String   @unique
   expires    DateTime
@@ -57,24 +59,45 @@ model VerificationToken {
 }
 
 model Portfolio {
-  id         String   @id @default(cuid())
-  content    Json
-  publicSlug String   @unique
-  userId     String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pageViews  PageView[]
+  id            String         @id @default(cuid())
+  content       Json
+  publicSlug    String         @unique
+  userId        String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pageViews     PageView[]
+  profileVisits ProfileVisit[]
 
   @@index([userId])
 }
 
 model PageView {
-  id          String   @id @default(cuid())
-  portfolioId String
-  createdAt   DateTime @default(now())
+  id               String   @id @default(cuid())
+  portfolioId      String
+  visitorSessionId String?
+  createdAt        DateTime @default(now())
 
-  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolio Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
 
   @@index([portfolioId])
+  @@index([visitorSessionId])
+}
+
+model ProfileVisit {
+  id               String   @id @default(cuid())
+  portfolioId      String
+  visitorId        String?
+  visitorSessionId String
+  count            Int      @default(1)
+  lastSeen         DateTime @default(now()) @updatedAt
+  createdAt        DateTime @default(now())
+  visitorCountry   String?
+
+  portfolio Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  visitor   User?     @relation("VisitorUser", fields: [visitorId], references: [id], onDelete: Cascade)
+
+  @@unique([portfolioId, visitorSessionId])
+  @@index([portfolioId])
+  @@index([visitorId])
 }
