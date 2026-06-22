@@ -24,16 +24,8 @@ function LoginForm() {
     const result = await signIn("credentials", {
       email,
       password,
-      redirect: false,
+      callbackUrl,
     });
-
-    if (result?.error) {
-      setError("Invalid email or password");
-      setLoading(false);
-    } else {
-      router.push(callbackUrl);
-      router.refresh();
-    }
   };
 
   const handleOAuth = async (provider: string) => {
