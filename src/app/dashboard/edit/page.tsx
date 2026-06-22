@@ -373,7 +373,7 @@ export default function EditPortfolioPage() {
 
       {/* Success dialog */}
       <Dialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-2xl px-6 pb-6 pt-10">
+        <DialogContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-2xl pt-10">
           <DialogHeader className="flex flex-col items-center space-y-3 pt-2">
             <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
               <CheckCircle2 className="w-7 h-7 text-emerald-500 dark:text-emerald-400" />
@@ -386,12 +386,12 @@ export default function EditPortfolioPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 p-3 rounded-xl mt-2">
-            <div className="flex-1 overflow-hidden">
+          <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 p-3 rounded-xl mt-2 min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">
                 Public URL
               </p>
-              <p className="text-sm font-mono text-zinc-600 dark:text-zinc-300 truncate">
+              <p className="text-sm font-mono text-zinc-600 dark:text-zinc-300 truncate break-all">
                 {publicUrl}
               </p>
             </div>
