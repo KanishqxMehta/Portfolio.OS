@@ -48,7 +48,7 @@ const BLOCK_TYPES = [
   { type: "EXPERIENCE", label: "Experience", description: "Work history" },
   { type: "PROJECTS", label: "Projects", description: "Your portfolio" },
   { type: "EDUCATION", label: "Education", description: "Degrees & certs" },
-  { type: "TESTIMONIALS", label: "Testimonials", description: "Quotes from peers" },
+  // { type: "TESTIMONIALS", label: "Testimonials", description: "Quotes from peers" },
   { type: "CONTACT_FORM", label: "Contact Form", description: "Email you directly" },
 ] as const;
 

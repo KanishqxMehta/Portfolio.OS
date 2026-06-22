@@ -286,33 +286,33 @@ const Experience = ({ data }: { data: ExperienceContent }) => (
         <div className="h-px flex-1 bg-[var(--p-border)] transition-colors duration-500" />
       </motion.div>
 
-      <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 pl-8 sm:pl-12 transition-colors duration-500">
+      <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 transition-colors duration-500">
         {data.items?.map((item: any, i: number) => (
           <motion.div
             key={i}
             variants={fadeInUp}
-            className="relative pb-16 last:pb-0 group"
+            className="relative pb-16 last:pb-0 group pl-8 sm:pl-12"
           >
             {/* Timeline dot */}
-            <div className="theme-dot absolute -left-[40px] sm:-left-[56px] top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
+            <div className="theme-dot absolute left-0 -translate-x-1/2 top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
 
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
               <h3 className="text-xl font-bold text-[var(--p-fg)] transition-colors duration-500">
-                {item.company}
+                {item.company || "Company Name"}
               </h3>
               <span className="text-xs font-mono text-[var(--p-fg-muted)] bg-[var(--p-bg-secondary)] border border-[var(--p-border)] px-3 py-1 rounded-full w-fit transition-colors duration-500">
-                {item.years}
+                {item.years || "2023 - Present"}
               </span>
             </div>
             
             <p className="text-base text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors">
-              {item.role}
+              {item.role || "Role / Position"}
             </p>
           </motion.div>
         ))}
 
         {(!data.items || data.items.length === 0) && (
-          <p className="text-sm text-[var(--p-fg-muted)] transition-colors duration-500">No experience entries yet.</p>
+          <p className="text-sm text-[var(--p-fg-muted)] transition-colors duration-500 pl-8 sm:pl-12">No experience entries yet.</p>
         )}
       </div>
     </motion.div>
@@ -336,19 +336,19 @@ const Education = ({ data }: { data: EducationContent }) => (
         <div className="h-px flex-1 bg-[var(--p-border)] transition-colors duration-500" />
       </motion.div>
 
-      <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 pl-8 sm:pl-12 transition-colors duration-500">
+      <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 transition-colors duration-500">
         {data.items?.map((item: any, i: number) => (
-          <motion.div key={i} variants={fadeInUp} className="relative pb-12 last:pb-0 group">
-            <div className="theme-dot absolute -left-[40px] sm:-left-[56px] top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
+          <motion.div key={i} variants={fadeInUp} className="relative pb-12 last:pb-0 group pl-8 sm:pl-12">
+            <div className="theme-dot absolute left-0 -translate-x-1/2 top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
-              <h3 className="text-xl font-bold text-[var(--p-fg)] transition-colors duration-500">{item.degree}</h3>
-              <span className="text-xs font-mono text-[var(--p-fg-muted)] bg-[var(--p-bg-secondary)] border border-[var(--p-border)] px-3 py-1 rounded-full w-fit transition-colors duration-500">{item.year}</span>
+              <h3 className="text-xl font-bold text-[var(--p-fg)] transition-colors duration-500">{item.degree || "Degree / Program"}</h3>
+              <span className="text-xs font-mono text-[var(--p-fg-muted)] bg-[var(--p-bg-secondary)] border border-[var(--p-border)] px-3 py-1 rounded-full w-fit transition-colors duration-500">{item.year || "Year"}</span>
             </div>
-            <p className="text-base text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors">{item.school}</p>
+            <p className="text-base text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors">{item.school || "School / University"}</p>
           </motion.div>
         ))}
         {(!data.items || data.items.length === 0) && (
-          <p className="text-sm text-[var(--p-fg-muted)] transition-colors duration-500">No education entries yet.</p>
+          <p className="text-sm text-[var(--p-fg-muted)] transition-colors duration-500 pl-8 sm:pl-12">No education entries yet.</p>
         )}
       </div>
     </motion.div>
@@ -425,7 +425,7 @@ const BlockMap: Record<string, React.FC<{ data: any }>> = {
   SKILLS: Skills,
   EXPERIENCE: Experience,
   EDUCATION: Education,
-  TESTIMONIALS: Testimonials,
+  // TESTIMONIALS: Testimonials,
   CONTACT_FORM: ContactForm,
 };
 
