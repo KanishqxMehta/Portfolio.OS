@@ -89,12 +89,16 @@ export default function Home() {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center gap-4">
-            <Link
+            <a
               href="#features"
-              className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all cursor-pointer"
             >
               Features
-            </Link>
+            </a>
             <Link
               href="/dashboard/edit"
               className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all"
@@ -216,13 +220,17 @@ export default function Home() {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden absolute top-full left-0 right-0 border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-2xl p-6 flex flex-col gap-2 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/80"
           >
-            <Link
+            <a
               href="#features"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-base font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50"
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="text-base font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50 cursor-pointer"
             >
               Features
-            </Link>
+            </a>
             <Link
               href="/dashboard/edit"
               onClick={() => setMobileMenuOpen(false)}

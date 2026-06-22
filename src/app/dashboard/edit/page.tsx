@@ -373,7 +373,7 @@ export default function EditPortfolioPage() {
 
       {/* Success dialog */}
       <Dialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-2xl">
+        <DialogContent className="sm:max-w-md bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-2xl pt-10">
           <DialogHeader className="flex flex-col items-center space-y-3 pt-2">
             <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
               <CheckCircle2 className="w-7 h-7 text-emerald-500 dark:text-emerald-400" />
