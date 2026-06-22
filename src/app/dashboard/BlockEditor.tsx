@@ -211,8 +211,9 @@ export const BlockEditor = ({ block }: { block: Section }) => {
               placeholder="Company name"
               value={item.company}
               onChange={(e) => {
-                const newItems = [...items];
-                newItems[idx].company = e.target.value;
+                const newItems = items.map((it: any, i: number) => 
+                  i === idx ? { ...it, company: e.target.value } : { ...it }
+                );
                 handleUpdate({ items: newItems });
               }}
               className={cn(fieldClass, !item.company && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
@@ -226,8 +227,9 @@ export const BlockEditor = ({ block }: { block: Section }) => {
                   placeholder="Role"
                   value={item.role}
                   onChange={(e) => {
-                    const newItems = [...items];
-                    newItems[idx].role = e.target.value;
+                    const newItems = items.map((it: any, i: number) => 
+                      i === idx ? { ...it, role: e.target.value } : { ...it }
+                    );
                     handleUpdate({ items: newItems });
                   }}
                   className={cn(fieldClass, !item.role && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
@@ -241,8 +243,9 @@ export const BlockEditor = ({ block }: { block: Section }) => {
                   placeholder="2022–Present"
                   value={item.years}
                   onChange={(e) => {
-                    const newItems = [...items];
-                    newItems[idx].years = e.target.value;
+                    const newItems = items.map((it: any, i: number) => 
+                      i === idx ? { ...it, years: e.target.value } : { ...it }
+                    );
                     handleUpdate({ items: newItems });
                   }}
                   className={cn(fieldClass, !item.years && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
@@ -270,21 +273,21 @@ export const BlockEditor = ({ block }: { block: Section }) => {
   }
 
   if (block.type === "PROJECTS") {
-    // Look closely here: we added 'link: ""' to the default fallback array item
     const items = block.content?.items || [{ title: "", description: "", link: "" }];
 
     const updateProject = (index: number, fields: any) => {
-      const newItems = [...items];
-      newItems[index] = { ...newItems[index], ...fields };
+      const newItems = items.map((it: any, i: number) => 
+        i === index ? { ...it, ...fields } : { ...it }
+      );
       handleUpdate({ items: newItems });
     };
 
     const addProject = () => {
-      handleUpdate({ items: [...items, { title: "", description: "", link: "" }] });
+      handleUpdate({ items: [...items.map((it: any) => ({ ...it })), { title: "", description: "", link: "" }] });
     };
 
     const removeProject = (index: number) => {
-      handleUpdate({ items: items.filter((_: any, i: number) => i !== index) });
+      handleUpdate({ items: items.filter((_: any, i: number) => i !== index).map((it: any) => ({ ...it })) });
     };
 
     return (
@@ -355,13 +358,14 @@ export const BlockEditor = ({ block }: { block: Section }) => {
     const items = block.content?.items || [{ school: "", degree: "", year: "" }];
 
     const updateEducation = (index: number, fields: any) => {
-      const newItems = [...items];
-      newItems[index] = { ...newItems[index], ...fields };
+      const newItems = items.map((it: any, i: number) => 
+        i === index ? { ...it, ...fields } : { ...it }
+      );
       handleUpdate({ items: newItems });
     };
 
     const removeEducation = (index: number) => {
-      handleUpdate({ items: items.filter((_: any, i: number) => i !== index) });
+      handleUpdate({ items: items.filter((_: any, i: number) => i !== index).map((it: any) => ({ ...it })) });
     };
 
     return (
@@ -412,7 +416,7 @@ export const BlockEditor = ({ block }: { block: Section }) => {
             </div>
           </div>
         ))}
-        <button onClick={() => handleUpdate({ items: [...items, { school: "", degree: "", year: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
+        <button onClick={() => handleUpdate({ items: [...items.map((it: any) => ({ ...it })), { school: "", degree: "", year: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
           <Plus className="w-3 h-3" /> Add Degree
         </button>
       </div>
@@ -423,13 +427,14 @@ export const BlockEditor = ({ block }: { block: Section }) => {
     const items = block.content?.items || [{ quote: "", author: "", role: "" }];
 
     const updateTestimonial = (index: number, fields: any) => {
-      const newItems = [...items];
-      newItems[index] = { ...newItems[index], ...fields };
+      const newItems = items.map((it: any, i: number) => 
+        i === index ? { ...it, ...fields } : { ...it }
+      );
       handleUpdate({ items: newItems });
     };
 
     const removeTestimonial = (index: number) => {
-      handleUpdate({ items: items.filter((_: any, i: number) => i !== index) });
+      handleUpdate({ items: items.filter((_: any, i: number) => i !== index).map((it: any) => ({ ...it })) });
     };
 
     return (
@@ -470,7 +475,7 @@ export const BlockEditor = ({ block }: { block: Section }) => {
             </div>
           </div>
         ))}
-        <button onClick={() => handleUpdate({ items: [...items, { quote: "", author: "", role: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
+        <button onClick={() => handleUpdate({ items: [...items.map((it: any) => ({ ...it })), { quote: "", author: "", role: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
           <Plus className="w-3 h-3" /> Add Testimonial
         </button>
       </div>

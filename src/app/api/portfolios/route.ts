@@ -39,8 +39,8 @@ export async function POST(req: Request) {
     } else {
       const id = crypto.randomUUID();
       result = await pool.query(
-        `INSERT INTO "Portfolio" (id, content, "publicSlug", "userId")
-         VALUES ($1, $2::jsonb, $3, $4)
+        `INSERT INTO "Portfolio" (id, content, "publicSlug", "userId", "createdAt", "updatedAt")
+         VALUES ($1, $2::jsonb, $3, $4, NOW(), NOW())
          RETURNING id, content, "publicSlug", "userId"`,
         [id, contentJSON, body.username, session.user.id]
       );

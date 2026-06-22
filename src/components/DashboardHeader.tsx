@@ -27,6 +27,7 @@ interface DashboardHeaderProps {
   currentPage: "editor" | "analytics" | "profile";
   publicSlug?: string;
   isSaving?: boolean;
+  isDirty?: boolean;
   onSave?: () => void;
   initialUser?: {
     name?: string | null;
@@ -38,6 +39,7 @@ export function DashboardHeader({
   currentPage,
   publicSlug,
   isSaving,
+  isDirty,
   onSave,
   initialUser
 }: DashboardHeaderProps) {
@@ -165,8 +167,8 @@ export function DashboardHeader({
           <>
             <Button
               onClick={onSave}
-              disabled={isSaving}
-              className="h-8 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-full bg-violet-600 hover:bg-violet-500 text-white border-0 transition-all shadow-md shadow-violet-500/20 hover:shadow-violet-500/40 disabled:opacity-50 cursor-pointer"
+              disabled={isSaving || !isDirty}
+              className="h-8 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-full bg-violet-600 hover:bg-violet-500 text-white border-0 transition-all shadow-md shadow-violet-500/20 hover:shadow-violet-500/40 disabled:opacity-50 disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:shadow-none cursor-pointer"
             >
               {isSaving ? (
                 <span className="flex items-center gap-1.5">
@@ -181,14 +183,19 @@ export function DashboardHeader({
               )}
             </Button>
 
-            <div className="hidden md:flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 mr-1">
+            <div className="hidden md:flex items-center gap-1.5 text-xs font-medium mr-1">
               {isSaving ? (
                 <span className="flex items-center gap-1.5 text-zinc-400">
                   <span className="w-2.5 h-2.5 rounded-full border-2 border-zinc-600 border-t-zinc-300 animate-spin" />
                   Saving...
                 </span>
+              ) : isDirty ? (
+                <span className="flex items-center gap-1 text-zinc-400 dark:text-zinc-500">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-700" />
+                  Unsaved Changes
+                </span>
               ) : (
-                <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-500">
+                <span className="flex items-center gap-1 text-zinc-600 dark:text-zinc-300">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                   Saved
                 </span>

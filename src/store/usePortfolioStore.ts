@@ -180,7 +180,9 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
   updateBlockData: (id, newData) => set((state) => ({
     sections: state.sections.map((block) =>
-      block.id === id ? { ...block, content: { ...block.content, ...newData } } : block
+      block.id === id 
+        ? { ...block, content: { ...block.content, ...newData } } 
+        : { ...block }
     ),
   })),
 

@@ -144,6 +144,7 @@ export default function EditPortfolioPage() {
         currentPage="editor"
         publicSlug={username}
         isSaving={isSaving}
+        isDirty={isDirty}
         onSave={handleSave}
       />
 

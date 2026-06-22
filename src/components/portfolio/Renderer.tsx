@@ -88,7 +88,13 @@ const Hero = ({ data }: { data: HeroContent }) => {
 
       <motion.p
         variants={fadeInUp}
-        className="text-xl sm:text-2xl text-[var(--p-fg-muted)] max-w-2xl leading-relaxed font-light transition-colors duration-500"
+        className={`text-[var(--p-fg-muted)] max-w-none leading-relaxed font-light transition-all duration-500 ${
+          (data.bio || "").length > 180
+            ? "text-base sm:text-lg"
+            : (data.bio || "").length > 120
+            ? "text-lg sm:text-xl"
+            : "text-xl sm:text-2xl"
+        }`}
       >
         {data.bio || "Crafting digital experiences with code and design."}
       </motion.p>
