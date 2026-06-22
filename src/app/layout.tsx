@@ -20,8 +20,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Portfolio.os — Build your developer portfolio",
-  description: "Transform your experience into a stunning single-page portfolio. Block by block.",
+  title: {
+    default: "Portfolio.os — Build your developer portfolio",
+    template: "%s | Portfolio.os",
+  },
+  description: "Transform your experience into a stunning single-page developer portfolio. Block by block, instantly.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
+  keywords: ["portfolio", "developer portfolio", "resume builder", "portfolio builder", "resume-to-portfolio"],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    title: "Portfolio.os — Build your developer portfolio",
+    description: "Transform your experience into a stunning single-page developer portfolio. Block by block, instantly.",
+    type: "website",
+    siteName: "Portfolio.os",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Portfolio.os — Build your developer portfolio",
+    description: "Transform your experience into a stunning single-page developer portfolio. Block by block, instantly.",
+  },
 };
 
 export default function RootLayout({

@@ -8,9 +8,67 @@ import { ViewTracker } from "@/components/portfolio/ViewTracker";
 import { Suspense } from "react";
 import Loading from "./loading";
 
+import type { Metadata } from "next";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const canonicalUrl = `${baseUrl.replace(/\/$/, "")}/p/${slug}`;
+
+  try {
+    const result = await pool.query(
+      'SELECT content FROM "Portfolio" WHERE "publicSlug" = $1',
+      [slug]
+    );
+
+    if (result.rows.length > 0) {
+      const content = result.rows[0].content || {};
+      const sections = content.sections || [];
+      const hero = sections.find((s: any) => s.type === "HERO");
+      const name = hero?.content?.fullName || slug;
+      const bio = hero?.content?.bio || "View my professional developer portfolio.";
+
+      return {
+        title: `${name} — Portfolio.os`,
+        description: bio.substring(0, 160),
+        alternates: {
+          canonical: canonicalUrl,
+        },
+        robots: {
+          index: true,
+          follow: true,
+        },
+        openGraph: {
+          title: `${name} — Portfolio.os`,
+          description: bio.substring(0, 160),
+          url: canonicalUrl,
+          type: "profile",
+          username: slug,
+        },
+        twitter: {
+          card: "summary",
+          title: `${name} — Portfolio.os`,
+          description: bio.substring(0, 160),
+        },
+      };
+    }
+  } catch (e) {
+    // Fallback on database error
+  }
+
+  return {
+    title: `${slug} — Portfolio.os`,
+    description: "View this developer portfolio on Portfolio.os.",
+    alternates: {
+      canonical: canonicalUrl,
+    },
+  };
+}
+
 
 export default async function PublicPortfolioPage({ params }: PageProps) {
   const { slug } = await params;
