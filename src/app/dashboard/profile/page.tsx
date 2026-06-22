@@ -16,11 +16,7 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
-  }, [status, router]);
+  // Auth redirection is handled by middleware.ts, client side only loads when authenticated.
 
   useEffect(() => {
     if (session?.user) {

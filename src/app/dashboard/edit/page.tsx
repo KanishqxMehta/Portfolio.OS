@@ -84,11 +84,7 @@ export default function EditPortfolioPage() {
   const [isDirty, setIsDirty] = useState(false);
   const initialLoadRef = useRef(true);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
-  }, [status, router]);
+  // Auth redirection is handled by middleware.ts, client side only loads when authenticated.
 
   useEffect(() => {
     if (status === "authenticated") {

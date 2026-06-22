@@ -5,7 +5,9 @@ export default function proxy(req: NextRequest) {
   const isOnDashboard = pathname.startsWith("/dashboard");
   const isOnAuth = pathname.startsWith("/login") || pathname.startsWith("/signup");
 
-  const token = req.cookies.get("authjs.session-token")?.value;
+  const token = 
+    req.cookies.get("__Secure-authjs.session-token")?.value || 
+    req.cookies.get("authjs.session-token")?.value;
   const isLoggedIn = !!token;
 
   if (!isLoggedIn && isOnDashboard) {
