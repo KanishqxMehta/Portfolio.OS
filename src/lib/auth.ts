@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
-import GitHub from "next-auth/providers/github";
+// import Google from "next-auth/providers/google";
+// import GitHub from "next-auth/providers/github";
 import { verify } from "argon2";
 import { pool } from "./db";
 
@@ -45,8 +45,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
-    Google({ allowDangerousEmailAccountLinking: true }),
-    GitHub({ allowDangerousEmailAccountLinking: true }),
+    // Google({ allowDangerousEmailAccountLinking: true }),
+    // GitHub({ allowDangerousEmailAccountLinking: true }),
   ],
   pages: {
     signIn: "/login",
@@ -109,17 +109,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.username = (user as any).username;
+        token.name = user.name;
       }
       if (trigger === "update" && session) {
-        token.username = session.username;
+        if (session.username !== undefined) token.username = session.username;
+        if (session.name !== undefined) token.name = session.name;
       }
-      if (!token.username) {
+      if (!token.username || !token.name) {
         const result = await pool.query(
-          'SELECT username FROM "User" WHERE id = $1',
+          'SELECT username, name FROM "User" WHERE id = $1',
           [token.id]
         );
         if (result.rows.length > 0) {
-          token.username = result.rows[0].username;
+          if (!token.username) token.username = result.rows[0].username;
+          if (!token.name && result.rows[0].name) token.name = result.rows[0].name;
         }
       }
       return token;
@@ -128,6 +131,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         (session.user as any).username = token.username as string;
+        if (token.name) {
+          session.user.name = token.name as string;
+        }
       }
       return session;
     },

@@ -54,12 +54,12 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
             <Check className="w-8 h-8 text-emerald-400" />
           </div>
-          <h1 className="text-xl font-semibold text-zinc-100">Account created</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Account created</h1>
           <p className="text-sm text-zinc-500">Redirecting to login...</p>
         </div>
       </div>
@@ -67,15 +67,15 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 flex">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 flex transition-colors">
       {/* Left — Brand panel */}
-      <div className="hidden lg:flex w-1/2 flex-col justify-between p-12 border-r border-zinc-800/50 bg-zinc-900/30">
+      <div className="hidden lg:flex w-1/2 flex-col justify-between p-12 border-r border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-900/30 transition-colors">
         <div>
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
               <Layers className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-zinc-100 tracking-tight">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
               Portfolio<span className="text-zinc-500">.os</span>
             </span>
           </Link>
@@ -83,7 +83,7 @@ export default function SignupPage() {
         <div className="space-y-4">
           <div className="flex -space-x-2">
             {["Violet", "Emerald", "Amber"].map((color, i) => (
-              <div key={color} className={`w-10 h-10 rounded-full border-2 border-zinc-950 flex items-center justify-center text-xs font-bold text-zinc-950 ${
+              <div key={color} className={`w-10 h-10 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-xs font-bold text-zinc-950 ${
                 i === 0 ? "bg-violet-400" : i === 1 ? "bg-emerald-400" : "bg-amber-400"
               }`}>
                 {color[0]}
@@ -94,7 +94,7 @@ export default function SignupPage() {
             Join thousands of developers showcasing their work with Portfolio.os.
           </p>
         </div>
-        <div className="text-xs text-zinc-700">
+        <div className="text-xs text-zinc-500 dark:text-zinc-700 transition-colors">
           &copy; {new Date().getFullYear()} Portfolio.os
         </div>
       </div>
@@ -106,13 +106,13 @@ export default function SignupPage() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
               <Layers className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-zinc-100 tracking-tight">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
               Portfolio<span className="text-zinc-500">.os</span>
             </span>
           </Link>
 
           <div className="text-center">
-            <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight">
+            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
               Create your account
             </h1>
             <p className="text-sm text-zinc-500 mt-2">
@@ -136,13 +136,13 @@ export default function SignupPage() {
                   required
                   minLength={3}
                   maxLength={20}
-                  className="w-full h-10 pl-10 pr-12 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors"
+                  className="w-full h-10 pl-10 pr-12 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors shadow-sm dark:shadow-none"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-zinc-700 font-mono">
                   p/
                 </span>
               </div>
-              <p className="text-[10px] text-zinc-600 px-1">
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-600 px-1">
                 Your public URL: p/{username || "your-name"}
               </p>
             </div>
@@ -160,7 +160,7 @@ export default function SignupPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors"
+                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors shadow-sm dark:shadow-none"
                 />
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function SignupPage() {
                   placeholder="Create a strong password"
                   required
                   minLength={8}
-                  className="w-full h-10 pl-10 pr-10 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors"
+                  className="w-full h-10 pl-10 pr-10 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors shadow-sm dark:shadow-none"
                 />
                 <button
                   type="button"
@@ -197,9 +197,9 @@ export default function SignupPage() {
                     {password && check(password) ? (
                       <Check className="w-3 h-3 text-emerald-400" />
                     ) : (
-                      <div className="w-3 h-3 rounded-full border border-zinc-700" />
+                      <div className="w-3 h-3 rounded-full border border-zinc-300 dark:border-zinc-700" />
                     )}
-                    <span className={`text-[10px] ${password && check(password) ? "text-zinc-400" : "text-zinc-600"}`}>
+                    <span className={`text-[10px] ${password && check(password) ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-400 dark:text-zinc-600"}`}>
                       {label}
                     </span>
                   </div>
@@ -227,9 +227,9 @@ export default function SignupPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-zinc-600">
+          <p className="text-center text-sm text-zinc-600 dark:text-zinc-400 transition-colors">
             Already have an account?{" "}
-            <Link href="/login" className="text-violet-400 hover:text-violet-300 transition-colors font-medium">
+            <Link href="/login" className="text-violet-600 dark:text-violet-400 hover:text-violet-500 dark:hover:text-violet-300 transition-colors font-medium">
               Sign in
             </Link>
           </p>

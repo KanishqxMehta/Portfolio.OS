@@ -37,7 +37,24 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     set({ username: slugified });
   },
 
-  setSections: (sections) => set({ sections }),
+  setSections: (sections) => set((state) => {
+    let newSections = [...sections];
+    const heroIdx = newSections.findIndex((s) => s.type === "HERO");
+    if (heroIdx === -1) {
+      const defaultHero = {
+        id: crypto.randomUUID(),
+        type: "HERO",
+        title: "About Me",
+        content: { fullName: "", bio: "", github: "", linkedin: "", instagram: "", twitter: "" },
+        isVisible: true,
+      } as Section;
+      newSections = [defaultHero, ...newSections];
+    } else if (heroIdx > 0) {
+      const [heroBlock] = newSections.splice(heroIdx, 1);
+      newSections = [heroBlock, ...newSections];
+    }
+    return { sections: newSections };
+  }),
 
   addBlock: (type, title) => set((state) => {
     if (state.sections.some((s) => s.type === type)) {
@@ -65,7 +82,13 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     if (type === "HERO") {
       newSections = [newBlock, ...state.sections];
     } else {
-      newSections = [...state.sections, newBlock];
+      const contactIdx = state.sections.findIndex((s) => s.type === "CONTACT_FORM");
+      if (contactIdx !== -1) {
+        newSections = [...state.sections];
+        newSections.splice(contactIdx, 0, newBlock);
+      } else {
+        newSections = [...state.sections, newBlock];
+      }
     }
 
     return { sections: newSections };
@@ -80,8 +103,24 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       if (!data) return;
 
       const content = data.content || {};
+      let loadedSections = content.sections || [];
+      const heroIdx = loadedSections.findIndex((s: any) => s.type === "HERO");
+      if (heroIdx === -1) {
+        const defaultHero = {
+          id: crypto.randomUUID(),
+          type: "HERO",
+          title: "About Me",
+          content: { fullName: "", bio: "", github: "", linkedin: "", instagram: "", twitter: "" },
+          isVisible: true,
+        } as Section;
+        loadedSections = [defaultHero, ...loadedSections];
+      } else if (heroIdx > 0) {
+        const [heroBlock] = loadedSections.splice(heroIdx, 1);
+        loadedSections = [heroBlock, ...loadedSections];
+      }
+
       set({
-        sections: content.sections || [],
+        sections: loadedSections,
         theme: content.theme || "classic",
         username: data.publicSlug || '',
       });
@@ -145,16 +184,22 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     ),
   })),
 
-  removeBlock: (id) => set((state) => ({
-    sections: state.sections.filter((s) => s.id !== id),
-  })),
+  removeBlock: (id) => set((state) => {
+    const blockToRemove = state.sections.find((s) => s.id === id);
+    if (blockToRemove?.type === "HERO") {
+      return {};
+    }
+    return {
+      sections: state.sections.filter((s) => s.id !== id),
+    };
+  }),
 
   moveBlock: (id, direction) => set((state) => {
     const index = state.sections.findIndex((s) => s.id === id);
     if (index === -1) return {};
 
     const block = state.sections[index];
-    if (block.type === "HERO") return {};
+    if (block.type === "HERO" || block.type === "CONTACT_FORM") return {};
 
     const newSections = [...state.sections];
     if (direction === 'up') {
@@ -164,6 +209,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       [newSections[index], newSections[index - 1]] = [newSections[index - 1], newSections[index]];
     } else if (direction === 'down') {
       if (index >= newSections.length - 1) return {};
+      if (newSections[index + 1].type === "CONTACT_FORM") return {};
 
       [newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]];
     }

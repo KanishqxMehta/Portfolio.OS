@@ -50,3 +50,11 @@ CREATE TABLE IF NOT EXISTS "Portfolio" (
 );
 
 CREATE INDEX IF NOT EXISTS idx_portfolio_userId ON "Portfolio"("userId");
+
+CREATE TABLE IF NOT EXISTS "PageView" (
+  id TEXT PRIMARY KEY,
+  "portfolioId" TEXT NOT NULL REFERENCES "Portfolio"(id) ON DELETE CASCADE,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_pageview_portfolioId ON "PageView"("portfolioId");

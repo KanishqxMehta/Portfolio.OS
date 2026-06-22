@@ -9,6 +9,8 @@ import { PortfolioRenderer } from "@/components/portfolio/Renderer";
 import { BlockEditor } from "../BlockEditor";
 import { ThemePicker } from "./ThemePicker";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -79,7 +81,8 @@ export default function EditPortfolioPage() {
 
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const initialLoadRef = useRef(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -97,189 +100,56 @@ export default function EditPortfolioPage() {
     }
   }, [status]);
 
+  // Monitor changes to sections or theme to mark form as dirty
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('[data-user-menu]')) setMenuOpen(false);
+    if (isLoading) {
+      initialLoadRef.current = true;
+      setIsDirty(false);
+      return;
+    }
+
+    // If we finished loading, ignore the first state sync
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+
+    setIsDirty(true);
+  }, [sections, theme, isLoading]);
+
+  // Prevent browser closing / reloading when page is dirty
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+        return e.returnValue;
+      }
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
 
   const handleSave = async () => {
     const success = await savePortfolio();
     if (success) {
       setIsSuccessOpen(true);
+      setIsDirty(false);
     }
   };
 
   const publicUrl = `${process.env.NEXT_PUBLIC_BASE_URL}p/${username}`;
-  const userInitial = session?.user?.name?.charAt(0)?.toUpperCase() || session?.user?.email?.charAt(0)?.toUpperCase() || "U";
 
   return (
     <div className="h-[100dvh] bg-white dark:bg-zinc-950 flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 transition-colors duration-500 overflow-hidden">
-      {/* Top Header */}
-      <header className="h-16 border-b border-zinc-200 dark:border-zinc-900/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500">
-        <div className="flex items-center gap-6">
-          {/* Wordmark */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center group-hover:scale-105 shadow-md shadow-violet-500/20 transition-all">
-              <Layers className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors hidden sm:block">
-              Portfolio<span className="text-zinc-500 dark:text-zinc-400">.os</span>
-            </span>
-          </Link>
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800/80 hidden sm:block" />
-
-          {/* Navigation Switch */}
-          <div className="hidden sm:flex bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-lg">
-            <div className="px-3 py-1.5 text-xs font-medium rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm border border-zinc-200 dark:border-zinc-700/50">
-              Editor
-            </div>
-            <Link
-              href="/dashboard/analytics"
-              className="px-3 py-1.5 text-xs font-medium rounded-md text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
-            >
-              Analytics
-            </Link>
-          </div>
-
-          {/* Username field */}
-          <div className="hidden md:flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900/50 hover:bg-zinc-200 dark:hover:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-1.5 transition-colors cursor-default">
-            <Globe className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-            <span className="text-zinc-500 text-sm font-medium">p/</span>
-            <Input
-              placeholder="username"
-              value={username}
-              readOnly
-              className="h-auto w-auto min-w-[80px] max-w-[150px] border-none bg-transparent p-0 text-sm shadow-none placeholder:text-zinc-400 font-medium text-zinc-900 dark:text-zinc-200 cursor-default focus-visible:ring-0"
-            />
-          </div>
-        </div>
-
-        {/* Group Actions on the Right */}
-        <div className="flex items-center gap-2 sm:gap-4 md:gap-5">
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="h-8 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-full bg-violet-600 hover:bg-violet-500 text-white border-0 transition-all shadow-md shadow-violet-500/20 hover:shadow-violet-500/40 disabled:opacity-50 cursor-pointer"
-          >
-            {isSaving ? (
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                <span className="hidden xs:inline">Saving</span>
-              </span>
-            ) : (
-              <>
-                <span className="sm:hidden">Publish</span>
-                <span className="hidden sm:inline">Publish Changes</span>
-              </>
-            )}
-          </Button>
-
-          <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 mr-1">
-            {isSaving ? (
-              <span className="flex items-center gap-1.5 text-zinc-400">
-                <span className="w-2.5 h-2.5 rounded-full border-2 border-zinc-600 border-t-zinc-300 animate-spin" />
-                Saving...
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-500">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Saved
-              </span>
-            )}
-          </div>
-
-          <div className="hidden sm:block">
-            <ThemeToggle />
-          </div>
-
-          {/* User menu */}
-          {status === "loading" ? (
-            <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
-          ) : (
-            <div data-user-menu className="relative">
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900/50 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800/80 transition-all cursor-pointer ring-2 ring-transparent hover:ring-violet-500/20"
-              >
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-inner shadow-violet-400/20">
-                  {userInitial}
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
-              </button>
-              {menuOpen && (
-                <div
-                  className="absolute right-0 top-11 w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 shadow-2xl shadow-black/10 dark:shadow-black/80 overflow-hidden z-50 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200"
-                >
-                  <div className="px-4 py-3.5 border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/50">
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-200 truncate">{session?.user?.name || session?.user?.email}</p>
-                    <p className="text-[11px] text-zinc-500 truncate mt-0.5">{session?.user?.email}</p>
-                  </div>
-                  <div className="p-1.5">
-                    {/* Mobile-only Analytics Link */}
-                    <Link
-                      href="/dashboard/analytics"
-                      onClick={() => setMenuOpen(false)}
-                      className="sm:hidden flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                    >
-                      <TrendingUp className="w-4 h-4" />
-                      View Analytics
-                    </Link>
-                    {/* Mobile-only Theme Toggle */}
-                    <button
-                      onClick={() => {
-                        setActiveMode(activeMode === "dark" ? "light" : "dark");
-                        setMenuOpen(false);
-                      }}
-                      className="sm:hidden w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-left"
-                    >
-                      {activeMode === "dark" ? (
-                        <span className="flex items-center gap-2.5">
-                          <Sun className="w-4 h-4" />
-                          Light Mode
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-2.5">
-                          <Moon className="w-4 h-4" />
-                          Dark Mode
-                        </span>
-                      )}
-                    </button>
-                    <Link
-                      href="/dashboard/profile"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                    >
-                      <UserCircle className="w-4 h-4" />
-                      Edit Profile
-                    </Link>
-                    <Link
-                      href="/"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      Home
-                    </Link>
-                    <button
-                      onClick={() => signOut({ callbackUrl: "/" })}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer text-left mt-1"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Log out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </header>
+      {/* Shared Responsive Header */}
+      <DashboardHeader
+        currentPage="editor"
+        publicSlug={username}
+        isSaving={isSaving}
+        onSave={handleSave}
+      />
 
       {/* Main Workspace */}
       <div className="flex flex-1 overflow-hidden relative">
@@ -372,7 +242,7 @@ export default function EditPortfolioPage() {
                       hoveredId === section.id ? "opacity-100" : "opacity-0"
                     )}
                   >
-                    {section.type !== "HERO" && (
+                    {section.type !== "HERO" && section.type !== "CONTACT_FORM" && (
                       <>
                         <button
                           onClick={() => {
@@ -391,13 +261,13 @@ export default function EditPortfolioPage() {
                         </button>
                         <button
                           onClick={() => {
-                            const isLast = index === sections.length - 1;
+                            const isLast = index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM");
                             if (!isLast) moveBlock!(section.id, "down");
                           }}
-                          disabled={index === sections.length - 1}
+                          disabled={index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM")}
                           className={cn(
                             "w-6 h-6 rounded flex items-center justify-center transition-colors",
-                            (index === sections.length - 1)
+                            (index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM"))
                               ? "text-zinc-300 dark:text-zinc-800 cursor-not-allowed opacity-30"
                               : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
                           )}
@@ -406,12 +276,14 @@ export default function EditPortfolioPage() {
                         </button>
                       </>
                     )}
-                    <button
-                      onClick={() => removeBlock!(section.id)}
-                      className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors ml-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {section.type !== "HERO" && (
+                      <button
+                        onClick={() => removeBlock!(section.id)}
+                        className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors ml-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
 

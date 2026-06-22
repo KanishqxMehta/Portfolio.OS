@@ -33,29 +33,29 @@ export default function SetupUsernamePage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <p className="text-zinc-500">Redirecting...</p>
+      <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center transition-colors">
+        <p className="text-zinc-500 dark:text-zinc-400">Redirecting...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 flex items-center justify-center p-8 transition-colors">
       <div className="w-full max-w-sm space-y-8">
         <Link href="/" className="flex items-center gap-2 justify-center">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
             <Layers className="w-4 h-4 text-white" />
           </div>
-          <span className="font-semibold text-zinc-100 tracking-tight">
-            Portfolio<span className="text-zinc-500">.os</span>
+          <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
+            Portfolio<span className="text-zinc-500 dark:text-zinc-400">.os</span>
           </span>
         </Link>
 
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight">
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
             Choose your username
           </h1>
-          <p className="text-sm text-zinc-500 mt-2">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 transition-colors">
             This will be your public portfolio URL
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function SetupUsernamePage() {
               Username
             </label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-600" />
               <input
                 type="text"
                 value={username}
@@ -75,13 +75,13 @@ export default function SetupUsernamePage() {
                 required
                 minLength={3}
                 maxLength={20}
-                className="w-full h-10 pl-10 pr-12 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30"
+                className="w-full h-10 pl-10 pr-12 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-colors shadow-sm dark:shadow-none"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-zinc-700 font-mono">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-zinc-500 dark:text-zinc-700 font-mono">
                 p/
               </span>
             </div>
-            <p className="text-[10px] text-zinc-600 px-1">
+            <p className="text-[10px] text-zinc-500 dark:text-zinc-600 px-1">
               Your public URL: p/{username || "your-name"}
             </p>
           </div>

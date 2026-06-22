@@ -398,21 +398,21 @@ export default function Home() {
             {[
               {
                 icon: Layout,
-                title: "Block-based Editor",
+                title: "Flexible Block Editor",
                 description:
-                  "Construct your portfolio with intuitive, pre-designed blocks that look perfect out of the box.",
+                  "Decompose and arrange your layout block-by-block with project showcases, experience timelines, social profiles, and fixed contact widgets.",
               },
               {
                 icon: Palette,
-                title: "Premium Aesthetics",
+                title: "Modern Design Themes",
                 description:
-                  "Typography and spacing curated for a high-end feel. Stand out with minimal effort.",
+                  "Choose from six premium custom style templates: Neo-Brutalism, hacker Terminal, Modern Ink splashes, Glassmorphism, and classic presets.",
               },
               {
                 icon: Sparkles,
-                title: "Instant Publishing",
+                title: "Traffic Analytics Dashboard",
                 description:
-                  "One click to publish. Get a beautiful, unique URL to share with recruiters and clients.",
+                  "Publish instantly to a unique public URL. Monitor real-time page views and visitor engagement stats via your personal dashboard.",
               },
             ].map((feature, i) => (
               <div
@@ -450,16 +450,16 @@ export default function Home() {
 
         {/* Right Side: Navigation Columns */}
         <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-xs font-medium">
-          <Link href="#features" className="hover:text-zinc-200 transition-colors">
+          <Link href="/about" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             About
           </Link>
-          <a href="mailto:support@portfolio.os" className="hover:text-zinc-200 transition-colors">
+          <a href="mailto:codeswagger06@gmail.com" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             Contact Us
           </a>
-          <Link href="/privacy" className="hover:text-zinc-200 transition-colors">
+          <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             Privacy Policy
           </Link>
-          <Link href="/terms" className="hover:text-zinc-200 transition-colors">
+          <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             Terms of Service
           </Link>
         </div>

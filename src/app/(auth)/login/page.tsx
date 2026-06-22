@@ -153,7 +153,7 @@ function LoginForm() {
             </button>
           </form>
 
-          {/* Divider */}
+          {/* Commented out Google & GitHub OAuth buttons for now
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-zinc-200 dark:border-zinc-800 transition-colors" />
@@ -163,7 +163,6 @@ function LoginForm() {
             </div>
           </div>
 
-          {/* OAuth buttons */}
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -191,10 +190,11 @@ function LoginForm() {
               GitHub
             </button>
           </div>
+          */}
 
-          <p className="text-center text-sm text-zinc-600">
+          <p className="text-center text-sm text-zinc-600 dark:text-zinc-400 transition-colors">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-violet-400 hover:text-violet-300 transition-colors font-medium">
+            <Link href="/signup" className="text-violet-600 dark:text-violet-400 hover:text-violet-500 dark:hover:text-violet-300 transition-colors font-medium">
               Sign up
             </Link>
           </p>
@@ -207,8 +207,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <span className="w-8 h-8 rounded-full border-2 border-zinc-800 border-t-violet-500 animate-spin" />
+      <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center transition-colors">
+        <span className="w-8 h-8 rounded-full border-2 border-zinc-200 dark:border-zinc-800 border-t-violet-500 animate-spin" />
       </div>
     }>
       <LoginForm />

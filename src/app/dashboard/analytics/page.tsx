@@ -5,7 +5,7 @@ import { AnalyticsChart } from "./ChartWrapper";
 import { format, subDays } from "date-fns";
 import { Eye, TrendingUp, Calendar, Globe, Layers } from "lucide-react";
 import Link from "next/link";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 export default async function AnalyticsPage() {
   const session = await auth();
@@ -73,49 +73,12 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100">
-      {/* Topbar */}
-      <header className="h-16 border-b border-zinc-200 dark:border-zinc-900/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500">
-        <div className="flex items-center gap-6">
-          {/* Wordmark */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center group-hover:scale-105 shadow-md shadow-violet-500/20 transition-all">
-              <Layers className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors hidden sm:block">
-              Portfolio<span className="text-zinc-500 dark:text-zinc-400">.os</span>
-            </span>
-          </Link>
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800/80 hidden sm:block" />
-
-          {/* Navigation Switch */}
-          <div className="flex bg-zinc-100 dark:bg-zinc-900/50 p-0.5 sm:p-1 rounded-lg">
-            <Link
-              href="/dashboard/edit"
-              className="px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-md text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
-            >
-              Editor
-            </Link>
-            <div className="px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm border border-zinc-200 dark:border-zinc-700/50">
-              Analytics
-            </div>
-          </div>
-        </div>
-
-        {/* Group Actions on the Right */}
-        <div className="flex items-center gap-4">
-          <Link
-            href={`/p/${publicSlug}`}
-            target="_blank"
-            className="flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 px-2 sm:px-3 py-1.5 rounded-lg transition-colors"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">View Live</span>
-          </Link>
-          <ThemeToggle />
-        </div>
-      </header>
+      {/* Shared Responsive Header */}
+      <DashboardHeader
+        currentPage="analytics"
+        publicSlug={publicSlug}
+        initialUser={session.user ? { name: session.user.name, email: session.user.email } : undefined}
+      />
 
       <main className="flex-1 max-w-6xl mx-auto w-full p-6 py-10 space-y-8">
         <div>
@@ -177,7 +140,27 @@ export default async function AnalyticsPage() {
             </div>
           </div>
           
-          <AnalyticsChart data={chartData} />
+          {totalViews === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-12 h-12 rounded-full bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 mb-4 animate-pulse">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1">No traffic recorded yet</h4>
+              <p className="text-xs text-zinc-500 max-w-sm leading-relaxed mb-6">
+                Your portfolio is live! Share your unique URL with recruiters, clients, or on social profiles to start tracking visits.
+              </p>
+              <Link
+                href={`/p/${publicSlug}`}
+                target="_blank"
+                className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-violet-500/10 hover:shadow-violet-500/20 flex items-center gap-1.5 cursor-pointer"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>View Live Portfolio</span>
+              </Link>
+            </div>
+          ) : (
+            <AnalyticsChart data={chartData} />
+          )}
         </div>
       </main>
     </div>

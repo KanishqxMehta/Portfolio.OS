@@ -33,7 +33,21 @@ async function PortfolioContent({ slug }: { slug: string }) {
   }
 
   const content = result.rows[0].content || {};
-  const sections = content.sections || [];
+  let sections = content.sections || [];
+  const heroIdx = sections.findIndex((s: any) => s.type === "HERO");
+  if (heroIdx === -1) {
+    const defaultHero = {
+      id: crypto.randomUUID(),
+      type: "HERO",
+      title: "About Me",
+      content: { fullName: "", bio: "", github: "", linkedin: "", instagram: "", twitter: "" },
+      isVisible: true,
+    };
+    sections = [defaultHero, ...sections];
+  } else if (heroIdx > 0) {
+    const [heroBlock] = sections.splice(heroIdx, 1);
+    sections = [heroBlock, ...sections];
+  }
   const theme = content.theme || "classic";
   const activeTheme = THEMES[theme] || THEMES["classic"];
 
