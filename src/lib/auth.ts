@@ -74,8 +74,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             : baseUsername;
 
           const created = await pool.query(
-            `INSERT INTO "User" (id, name, email, image, username)
-             VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+            `INSERT INTO "User" (id, name, email, image, username, "createdAt", "updatedAt")
+             VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING id`,
             [crypto.randomUUID(), user.name, email, user.image, username]
           );
           userId = created.rows[0].id;
