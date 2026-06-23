@@ -26,23 +26,30 @@ export function Logo({
   size = "md",
 }: LogoProps) {
   const isPreset = typeof size === "string";
-  
+
   return (
     <div className={`flex items-center gap-2.5 group/logo select-none ${className || ""}`}>
       <style>{`
-        @keyframes middle-lift {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-1px); }
+        @keyframes logo-float-middle {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-1.5px) scale(1.01); }
         }
-        @keyframes top-lift {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-2.5px); }
+        @keyframes logo-float-top {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-3px) scale(1.02); }
         }
-        .animate-middle-lift {
-          animation: middle-lift 1.2s ease-in-out infinite;
+        @keyframes logo-pulse-dot {
+          0%, 100% { r: 1.2; opacity: 0.6; }
+          50% { r: 1.6; opacity: 1; }
         }
-        .animate-top-lift {
-          animation: top-lift 1.2s ease-in-out infinite;
+        .logo-middle-float {
+          animation: logo-float-middle 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+        }
+        .logo-top-float {
+          animation: logo-float-top 1.3s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+        }
+        .logo-dot-pulse {
+          animation: logo-pulse-dot 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
         }
       `}</style>
 
@@ -69,7 +76,7 @@ export function Logo({
         {/* Middle Layer - Solid semi-transparent prism */}
         <g className={cn(
           "transition-transform duration-300 ease-out will-change-transform",
-          animating ? "animate-middle-lift" : "group-hover/logo:-translate-y-[1px]"
+          animating ? "logo-middle-float" : "group-hover/logo:-translate-y-[1.5px]"
         )}>
           <path
             d="M 16,12 L 24,16 L 16,20 L 8,16 Z"
@@ -81,19 +88,34 @@ export function Logo({
         {/* Top Layer - Clean high-contrast shape with glow and focal dot */}
         <g className={cn(
           "transition-transform duration-300 ease-out will-change-transform",
-          animating ? "animate-top-lift" : "group-hover/logo:-translate-y-[2.5px]"
+          animating ? "logo-top-float" : "group-hover/logo:-translate-y-[3px]"
         )}>
           <path
             d="M 16,6 L 24,10 L 16,14 L 8,10 Z"
-            className="stroke-zinc-700 dark:stroke-zinc-200 fill-violet-500/5 dark:fill-violet-500/10"
+            className={cn(
+              "transition-colors duration-500",
+              animating
+                ? "stroke-violet-400 dark:stroke-violet-300 fill-violet-500/10 dark:fill-violet-500/20"
+                : "stroke-zinc-700 dark:stroke-zinc-200 fill-violet-500/5 dark:fill-violet-500/10"
+            )}
             strokeWidth="1"
           />
-          <circle
-            cx="16"
-            cy="10"
-            r="1.2"
-            className="fill-violet-500 dark:fill-violet-400"
-          />
+          {animating ? (
+            <circle
+              cx="16"
+              cy="10"
+              r="1.2"
+              className="fill-violet-500 dark:fill-violet-400 logo-dot-pulse"
+              style={{ animationDelay: "0.2s" }}
+            />
+          ) : (
+            <circle
+              cx="16"
+              cy="10"
+              r="1.2"
+              className="fill-violet-500 dark:fill-violet-400"
+            />
+          )}
         </g>
       </svg>
 
