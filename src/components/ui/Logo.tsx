@@ -68,9 +68,9 @@ export function Logo({
         {/* Base Layer - Dashed bounding polygon */}
         <path
           d="M 16,18 L 24,22 L 16,26 L 8,22 Z"
-          className="stroke-zinc-300 dark:stroke-zinc-800/60 fill-none"
+          className="stroke-zinc-400/60 dark:stroke-zinc-700/80 fill-none"
           strokeWidth="1"
-          strokeDasharray="2 2"
+          strokeDasharray="3 3"
         />
 
         {/* Middle Layer - Solid semi-transparent prism */}
