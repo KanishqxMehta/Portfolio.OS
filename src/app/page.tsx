@@ -8,6 +8,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";
 
+import { Logo } from "@/components/ui/Logo";
+
 export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const { data: session, status } = useSession();
@@ -78,13 +80,8 @@ export default function Home() {
         )}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20 group-hover:scale-105 group-hover:shadow-violet-500/40 transition-all duration-300">
-              <Layers className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight text-lg transition-colors">
-              Portfolio<span className="text-zinc-500 dark:text-zinc-400 transition-colors">.os</span>
-            </span>
+          <Link href="/">
+            <Logo />
           </Link>
 
           {/* Desktop Navigation Links */}

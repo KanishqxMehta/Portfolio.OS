@@ -22,6 +22,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/Logo";
 
 interface DashboardHeaderProps {
   currentPage: "editor" | "analytics" | "profile";
@@ -106,14 +107,8 @@ export function DashboardHeader({
             <span className="text-sm font-medium">{backLabel}</span>
           </Link>
         ) : (
-          /* Wordmark */
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center group-hover:scale-105 shadow-md shadow-violet-500/20 transition-all">
-              <Layers className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors hidden md:block">
-              Portfolio<span className="text-zinc-500 dark:text-zinc-400">.os</span>
-            </span>
+          <Link href="/">
+            <Logo textClassName="hidden md:flex" />
           </Link>
         )}
 

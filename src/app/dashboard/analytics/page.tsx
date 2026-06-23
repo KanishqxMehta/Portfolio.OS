@@ -8,6 +8,9 @@ import Link from "next/link";
 import { DashboardHeader } from "@/components/DashboardHeader";
 
 export default async function AnalyticsPage() {
+  // Enforce a minimum load duration of 1 second for a smooth transition
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");

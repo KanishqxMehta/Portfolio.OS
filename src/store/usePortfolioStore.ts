@@ -96,6 +96,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
   loadPortfolio: async () => {
     set({ isLoading: true });
+    const startTime = Date.now();
     try {
       const res = await fetch('/api/portfolios');
       if (!res.ok) return;
@@ -127,6 +128,11 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     } catch (error) {
       console.error('Failed to load portfolio:', error);
     } finally {
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, 1000 - elapsedTime);
+      if (remainingTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingTime));
+      }
       set({ isLoading: false });
     }
   },

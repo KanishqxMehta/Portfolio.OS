@@ -10,6 +10,7 @@ import { BlockEditor } from "../BlockEditor";
 import { ThemePicker } from "./ThemePicker";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DashboardHeader } from "@/components/DashboardHeader";
+import { Loader } from "@/components/ui/Loader";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -151,9 +152,8 @@ export default function EditPortfolioPage() {
       {/* Main Workspace */}
       <div className="flex flex-1 overflow-hidden relative">
         {isLoading && (
-          <div className="absolute inset-0 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-sm z-[100] flex flex-col items-center justify-center gap-3 transition-opacity">
-            <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 animate-pulse">Loading portfolio...</p>
+          <div className="absolute inset-0 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-sm z-[100] flex items-center justify-center transition-opacity">
+            <Loader text="Loading portfolio..." />
           </div>
         )}
         {/* Left Sidebar */}
