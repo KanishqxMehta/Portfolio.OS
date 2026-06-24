@@ -453,7 +453,7 @@ export default function Home() {
           <Link href="/about" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             About
           </Link>
-          <a href="mailto:codeswagger06@gmail.com" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+          <a href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`} className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             Contact Us
           </a>
           <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">

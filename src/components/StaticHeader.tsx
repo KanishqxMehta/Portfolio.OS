@@ -1,11 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
 
+const navLinks = [
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+];
+
 export function StaticHeader() {
+  const pathname = usePathname();
   const { data: session, status } = useSession();
 
   return (
@@ -15,20 +22,24 @@ export function StaticHeader() {
           <Logo />
         </Link>
 
-        {/* Navigation links for consistency */}
+        {/* Navigation links with active state */}
         <div className="hidden md:flex items-center gap-2">
-          <Link
-            href="/#features"
-            className="px-4 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 rounded-full transition-all"
-          >
-            Features
-          </Link>
-          <Link
-            href="/about"
-            className="px-4 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 rounded-full transition-all"
-          >
-            About
-          </Link>
+          {navLinks.map(({ href, label }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`px-4 py-2 text-xs font-semibold rounded-full transition-all ${
+                  isActive
+                    ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50"
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
         </div>
 
         <div className="flex items-center gap-4">

@@ -70,8 +70,8 @@ export default function PrivacyPage() {
               <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">5. Contact</h2>
               <p>
                 If you have any questions regarding your data storage, account deletion, or analytics metrics, please reach out to us at{" "}
-                <a href="mailto:codeswagger06@gmail.com" className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">
-                  codeswagger06@gmail.com
+                <a href={`mailto:${process.env.CONTACT_EMAIL}`} className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">
+                  {process.env.CONTACT_EMAIL}
                 </a>.
               </p>
             </section>
@@ -88,6 +88,7 @@ export default function PrivacyPage() {
             <div className="flex gap-6 font-medium text-zinc-400 dark:text-zinc-500">
               <Link href="/" className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">Home</Link>
               <Link href="/about" className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">About</Link>
+              <Link href="/contact" className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">Contact</Link>
               <Link href="/terms" className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">Terms</Link>
             </div>
           </div>
