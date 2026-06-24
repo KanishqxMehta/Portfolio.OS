@@ -121,6 +121,20 @@ async function PortfolioContent({ slug }: { slug: string }) {
       } as React.CSSProperties}
     >
       <ViewTracker slug={slug} />
+
+      {/* Hero watermark — "Made with Portfolio.os" top-right */}
+      <div className="absolute top-4 right-4 z-20">
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[var(--p-bg)]/60 backdrop-blur-sm border border-[var(--p-border)]/50 shadow-sm opacity-70 hover:opacity-100 transition-opacity"
+        >
+          <Logo showText={false} size={14} />
+          <span className="text-[9px] font-medium text-[var(--p-fg-muted)] tracking-tight">
+            Made with <span className="text-[var(--p-fg)] font-semibold">Portfolio<span className="opacity-60">.os</span></span>
+          </span>
+        </Link>
+      </div>
+
       {/* Publicly visible main content */}
       <main className="flex-1 w-full">
         <PortfolioRenderer sections={sections} theme={theme} />
@@ -128,13 +142,13 @@ async function PortfolioContent({ slug }: { slug: string }) {
 
       {/* Upgraded Footer CTA */}
       <footer className="py-16 text-center border-t border-[var(--p-border)] theme-bg-secondary flex flex-col items-center justify-center gap-4 relative z-10 transition-colors duration-500">
-        <p className="text-sm text-[var(--p-fg-muted)] font-medium flex items-center gap-1.5 justify-center transition-colors">
+        <div className="text-sm text-[var(--p-fg-muted)] font-medium flex items-center gap-1.5 justify-center transition-colors">
           Created with 
           <span className="text-[var(--p-fg)] font-semibold tracking-tight inline-flex items-center gap-1 transition-colors">
             <Logo showText={false} size={16} />
             Portfolio<span className="text-[var(--p-fg-muted)] font-normal">.os</span>
           </span>
-        </p>
+        </div>
         <Link
           href="/"
           className="theme-pill inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-[var(--p-fg)] rounded-full transition-all shadow-xl shadow-black/10 hover:opacity-90 group/btn"
@@ -147,17 +161,26 @@ async function PortfolioContent({ slug }: { slug: string }) {
         </p>
       </footer>
 
-      {/* Floating Brand Badge with transition-expansion */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Floating Brand Badge — pulse radiates outward from the button */}
+      <style>{`
+        @keyframes fab-pulse {
+          0%, 20% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.25), 0 0 0 0 rgba(139, 92, 246, 0.08); }
+          100% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0), 0 0 0 20px rgba(139, 92, 246, 0); }
+        }
+        .fab-pulse {
+          animation: fab-pulse 3s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+        }
+      `}</style>
+      <div className="fixed bottom-5 right-5 z-50">
         <Link
           href="/"
-          className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-[var(--p-border)] theme-bg-secondary backdrop-blur-md shadow-xl hover:theme-bg hover:border-[var(--p-primary)] transition-all group"
+          className="fab-pulse flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-full border border-violet-500/30 theme-bg-secondary backdrop-blur-md shadow-xl hover:border-violet-500/60 hover:shadow-violet-500/10 transition-all group"
         >
-          <Logo showText={false} size={20} className="group-hover:scale-105 transition-transform" />
-          <span className="text-[11px] font-medium text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors">
-            Built with <span className="text-[var(--p-fg)] font-semibold tracking-tight">Portfolio<span className="opacity-70">.os</span></span>
+          <Logo showText={false} size={18} className="group-hover:scale-105 transition-transform" />
+          <span className="text-[10px] font-medium text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors whitespace-nowrap">
+            Built with <span className="text-[var(--p-fg)] font-semibold">Portfolio<span className="opacity-60">.os</span></span>
           </span>
-          <span className="text-[9px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider hidden sm:inline-block max-w-0 group-hover:max-w-[120px] overflow-hidden group-hover:ml-1 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out">
+          <span className="text-[9px] font-bold text-violet-400 bg-violet-500/15 border border-violet-500/25 px-2 py-0.5 rounded-full uppercase tracking-wider ml-1 whitespace-nowrap">
             Create Yours
           </span>
         </Link>
