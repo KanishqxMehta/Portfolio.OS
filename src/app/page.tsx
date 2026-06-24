@@ -453,9 +453,9 @@ export default function Home() {
           <Link href="/about" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             About
           </Link>
-          <a href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`} className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+          <Link href="/contact" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             Contact Us
-          </a>
+          </Link>
           <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             Privacy Policy
           </Link>
