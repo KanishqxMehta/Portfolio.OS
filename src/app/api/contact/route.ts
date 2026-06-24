@@ -27,10 +27,14 @@ export async function POST(req: Request) {
     // Send email only if SMTP is configured
     if (process.env.SMTP_PASS) {
       const nodemailer = await import("nodemailer");
+      const port = Number(process.env.SMTP_PORT) || 587;
       const transporter = nodemailer.default.createTransport({
         host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: false,
+        port: port,
+        secure: port === 465, // SSL/TLS port 465 requires secure: true, STARTTLS port 587 requires secure: false
+        connectionTimeout: 10000, // 10 seconds timeout for handshakes in serverless env
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,

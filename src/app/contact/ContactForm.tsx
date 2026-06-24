@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const fieldClass =
   "w-full h-11 px-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-200 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20 transition-all";
@@ -10,9 +12,21 @@ const labelClass =
   "text-[11px] font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-500";
 
 export function ContactForm() {
+  const { data: session } = useSession();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    const user = session?.user;
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [session]);
 
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -35,7 +49,12 @@ export function ContactForm() {
       }
 
       setStatus("success");
-      setForm({ name: "", email: "", subject: "", message: "" });
+      setForm({
+        name: session?.user?.name || "",
+        email: session?.user?.email || "",
+        subject: "",
+        message: "",
+      });
     } catch (err: any) {
       setStatus("error");
       setErrorMsg(err.message);
@@ -84,7 +103,11 @@ export function ContactForm() {
             placeholder="john@example.com"
             value={form.email}
             onChange={(e) => update("email", e.target.value)}
-            className={fieldClass}
+            className={cn(
+              fieldClass,
+              session?.user && "bg-zinc-100/50 dark:bg-zinc-900/50 cursor-not-allowed opacity-80"
+            )}
+            readOnly={!!session?.user}
           />
         </div>
       </div>
