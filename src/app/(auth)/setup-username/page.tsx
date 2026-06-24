@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Layers, User, Check } from "lucide-react";
+import { User, Check } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export default function SetupUsernamePage() {
   const { data: session, update } = useSession();
@@ -42,13 +43,8 @@ export default function SetupUsernamePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 flex items-center justify-center p-8 transition-colors">
       <div className="w-full max-w-sm space-y-8">
-        <Link href="/" className="flex items-center gap-2 justify-center">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-            <Layers className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
-            Portfolio<span className="text-zinc-500 dark:text-zinc-400">.os</span>
-          </span>
+        <Link href="/" className="flex justify-center">
+          <Logo />
         </Link>
 
         <div className="text-center">

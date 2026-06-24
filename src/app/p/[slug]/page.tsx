@@ -2,7 +2,8 @@ import { pool } from "@/lib/db";
 import { PortfolioRenderer } from "@/components/portfolio/Renderer";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Layers, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 import { THEMES } from "@/lib/themes";
 import { ViewTracker } from "@/components/portfolio/ViewTracker";
 import { Suspense } from "react";
@@ -130,9 +131,7 @@ async function PortfolioContent({ slug }: { slug: string }) {
         <p className="text-sm text-[var(--p-fg-muted)] font-medium flex items-center gap-1.5 justify-center transition-colors">
           Created with 
           <span className="text-[var(--p-fg)] font-semibold tracking-tight inline-flex items-center gap-1 transition-colors">
-            <span className="w-4 h-4 rounded bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-md shadow-violet-500/10">
-              <Layers className="w-2.5 h-2.5 text-white" />
-            </span>
+            <Logo showText={false} size={16} />
             Portfolio<span className="text-[var(--p-fg-muted)] font-normal">.os</span>
           </span>
         </p>
@@ -154,9 +153,7 @@ async function PortfolioContent({ slug }: { slug: string }) {
           href="/"
           className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-[var(--p-border)] theme-bg-secondary backdrop-blur-md shadow-xl hover:theme-bg hover:border-[var(--p-primary)] transition-all group"
         >
-          <div className="w-5 h-5 rounded-md bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-            <Layers className="w-2.5 h-2.5 text-white" />
-          </div>
+          <Logo showText={false} size={20} className="group-hover:scale-105 transition-transform" />
           <span className="text-[11px] font-medium text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors">
             Built with <span className="text-[var(--p-fg)] font-semibold tracking-tight">Portfolio<span className="opacity-70">.os</span></span>
           </span>

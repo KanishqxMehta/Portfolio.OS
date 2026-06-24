@@ -4,7 +4,8 @@ import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Layers, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 function LoginForm() {
   const router = useRouter();
@@ -38,13 +39,8 @@ function LoginForm() {
       {/* Left — Brand panel */}
       <div className="hidden lg:flex w-1/2 flex-col justify-between p-12 border-r border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-900/30 transition-colors">
         <div>
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-              <Layers className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
-              Portfolio<span className="text-zinc-500">.os</span>
-            </span>
+          <Link href="/">
+            <Logo />
           </Link>
         </div>
         <div className="space-y-4">
@@ -66,13 +62,8 @@ function LoginForm() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile brand */}
-          <Link href="/" className="lg:hidden flex items-center gap-2 justify-center mb-8">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-              <Layers className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors">
-              Portfolio<span className="text-zinc-500">.os</span>
-            </span>
+          <Link href="/" className="lg:hidden flex justify-center mb-8">
+            <Logo />
           </Link>
 
           <div className="text-center">

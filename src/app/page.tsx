@@ -444,12 +444,7 @@ export default function Home() {
         
         {/* Left Side: Brand Indicator */}
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center transition-colors">
-            <Layers className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
-          </div>
-          <span className="text-sm font-medium tracking-tight text-zinc-900 dark:text-zinc-200 transition-colors">
-            Portfolio<span className="text-zinc-500">.os</span>
-          </span>
+          <Logo size="sm" />
           <span className="text-xs text-zinc-500 dark:text-zinc-600 transition-colors">© {new Date().getFullYear()}</span>
         </div>
 

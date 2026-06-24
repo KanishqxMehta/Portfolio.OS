@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { StaticHeader } from "@/components/StaticHeader";
-import { Layers, ChevronRight, PenTool, Layout, TrendingUp } from "lucide-react";
+import { ChevronRight, PenTool, Layout, TrendingUp } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export default function AboutPage() {
   return (
@@ -93,10 +94,7 @@ export default function AboutPage() {
         <footer className="border-t border-zinc-200 dark:border-zinc-800/60 bg-zinc-50 dark:bg-zinc-950 py-12 text-zinc-500 dark:text-zinc-500 transition-colors duration-500 mt-auto">
           <div className="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
-                <Layers className="w-3 h-3 text-zinc-400" />
-              </div>
-              <span className="font-semibold text-zinc-800 dark:text-zinc-300">Portfolio.os</span>
+              <Logo size="sm" />
               <span>© {new Date().getFullYear()}</span>
             </div>
             <div className="flex gap-6 font-medium text-zinc-400 dark:text-zinc-500">
