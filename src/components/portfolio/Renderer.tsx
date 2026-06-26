@@ -509,10 +509,30 @@ export const PortfolioRenderer = ({ sections, theme = "classic" }: { sections: S
           border-left-width: var(--p-border-width);
           border-left-style: var(--p-border-style);
         }
-        [data-theme="neobrutalism"] .theme-card:nth-child(4n+1) { background-color: #ffeaa7; }
-        [data-theme="neobrutalism"] .theme-card:nth-child(4n+2) { background-color: #fab1a0; }
-        [data-theme="neobrutalism"] .theme-card:nth-child(4n+3) { background-color: #81ecec; }
-        [data-theme="neobrutalism"] .theme-card:nth-child(4n+4) { background-color: #a29bfe; }
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1) { background-color: #ffeaa7; }
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2) { background-color: #fab1a0; }
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3) { background-color: #81ecec; }
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4) { background-color: #a29bfe; }
+
+        /* Ensure card hover states preserve their specific background colors */
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1):hover { background-color: #ffeaa7 !important; }
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2):hover { background-color: #fab1a0 !important; }
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3):hover { background-color: #81ecec !important; }
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4):hover { background-color: #a29bfe !important; }
+
+        /* Match open/link button background colors using darker shades of the card background */
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1) .theme-card { background-color: #fdcb6e; } /* Yellow card gets Darker Gold/Yellow */
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2) .theme-card { background-color: #e17055; } /* Peach card gets Darker Coral/Peach */
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3) .theme-card { background-color: #00cec9; } /* Cyan card gets Darker Cyan/Turquoise */
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4) .theme-card { background-color: #6c5ce7; } /* Purple card gets Darker Purple */
+
+        /* Highlight buttons cleanly on hover in brutalist style */
+        [data-theme="neobrutalism"] div.grid > div.theme-card .theme-card:hover {
+          background-color: #ffffff !important;
+          color: #000000 !important;
+          border-color: var(--p-fg) !important;
+        }
+
         [data-theme="neobrutalism"] .theme-pill:nth-child(4n+1) { background-color: #ff4757; color: #fff; }
         [data-theme="neobrutalism"] .theme-pill:nth-child(4n+2) { background-color: #2ed573; color: #111; }
         [data-theme="neobrutalism"] .theme-pill:nth-child(4n+3) { background-color: #1e90ff; color: #fff; }
