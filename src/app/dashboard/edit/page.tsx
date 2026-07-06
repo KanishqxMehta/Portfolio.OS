@@ -1,9 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { PortfolioRenderer } from "@/components/portfolio/Renderer";
 import { BlockEditor } from "../BlockEditor";
@@ -11,7 +15,6 @@ import { ThemePicker } from "./ThemePicker";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { Loader } from "@/components/ui/Loader";
-import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,10 +32,12 @@ import {
   Check,
   UserCircle,
   Eye,
+  EyeOff,
   Edit3,
   Sun,
   Moon,
   TrendingUp,
+  GripVertical,
 } from "lucide-react";
 import {
   Dialog,
@@ -60,6 +65,174 @@ const TYPE_COLORS: Record<string, string> = {
   EXPERIENCE: "bg-amber-50 text-amber-600 border-amber-100",
 };
 
+function BlockUI({
+  section,
+  index,
+  hoveredId,
+  setHoveredId,
+  sections,
+  dragHandleProps,
+  setNodeRef,
+  style,
+}: any) {
+  const { removeBlock, moveBlock, toggleBlockVisibility } = usePortfolioStore();
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      onMouseEnter={() => setHoveredId(section.id)}
+      onMouseLeave={() => setHoveredId(null)}
+      className={cn(
+        "rounded-xl border transition-colors duration-200",
+        hoveredId === section.id
+          ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/60"
+          : "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30"
+      )}
+    >
+      {/* Block header */}
+      <div className="flex items-center justify-between px-4 pt-3 pb-2">
+        <div className="flex items-center gap-2">
+          {/* Drag handle */}
+          {dragHandleProps && (
+            <button
+              {...dragHandleProps.attributes}
+              {...dragHandleProps.listeners}
+              className="cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-500 transition-colors -ml-1.5"
+              tabIndex={-1}
+            >
+              <GripVertical className="w-4 h-4" />
+            </button>
+          )}
+          <span
+            className={cn(
+              "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
+              TYPE_COLORS[section.type] ??
+                "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600"
+            )}
+          >
+            {section.type}
+          </span>
+          <span className="text-[10px] text-zinc-400">
+            #{index + 1}
+          </span>
+        </div>
+
+        <div
+          className={cn(
+            "flex items-center gap-0.5 transition-opacity",
+            hoveredId === section.id ? "opacity-100" : "opacity-0"
+          )}
+        >
+          {/* Visibility toggle */}
+          {section.type !== "HERO" && (
+            <button
+              onClick={() => toggleBlockVisibility(section.id)}
+              className={cn(
+                "w-6 h-6 rounded flex items-center justify-center transition-colors",
+                section.isVisible
+                  ? "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  : "text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-500"
+              )}
+              title={section.isVisible ? "Hide from preview" : "Show in preview"}
+            >
+              {section.isVisible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </button>
+          )}
+          {section.type !== "HERO" && section.type !== "CONTACT_FORM" && (
+            <>
+              <button
+                onClick={() => {
+                  const isFirst = index === 0 || (index === 1 && sections[0].type === "HERO");
+                  if (!isFirst) moveBlock(section.id, "up");
+                }}
+                disabled={index === 0 || (index === 1 && sections[0].type === "HERO")}
+                className={cn(
+                  "w-6 h-6 rounded flex items-center justify-center transition-colors",
+                  (index === 0 || (index === 1 && sections[0].type === "HERO"))
+                    ? "text-zinc-300 dark:text-zinc-800 cursor-not-allowed opacity-30"
+                    : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+                )}
+              >
+                <ChevronUp className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => {
+                  const isLast = index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM");
+                  if (!isLast) moveBlock(section.id, "down");
+                }}
+                disabled={index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM")}
+                className={cn(
+                  "w-6 h-6 rounded flex items-center justify-center transition-colors",
+                  (index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM"))
+                    ? "text-zinc-300 dark:text-zinc-800 cursor-not-allowed opacity-30"
+                    : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+                )}
+              >
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
+          {section.type !== "HERO" && (
+            <button
+              onClick={() => removeBlock(section.id)}
+              className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors ml-1"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Block content — dim if hidden */}
+      <div className={cn("px-4 pb-4", !section.isVisible && "opacity-40")}>
+        {section.isVisible ? (
+          <BlockEditor block={section} />
+        ) : (
+          <p className="text-[11px] text-zinc-500 italic">Block is hidden from preview. Toggle the eye icon to show it.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SortableBlock({ section, index, hoveredId, setHoveredId, sections }: any) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
+
+  const style = {
+    transform: transform ? `${CSS.Translate.toString(transform)} scale(${isDragging ? 1.02 : 1}) rotate(${isDragging ? 1.5 : 0}deg)` : undefined,
+    transition: transition || undefined,
+    opacity: isDragging ? 0.8 : 1,
+    zIndex: isDragging ? 50 : 1,
+    boxShadow: isDragging ? '0 15px 30px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -5px rgba(0, 0, 0, 0.1)' : undefined,
+  };
+
+  return (
+    <BlockUI
+      section={section}
+      index={index}
+      hoveredId={hoveredId}
+      setHoveredId={setHoveredId}
+      sections={sections}
+      dragHandleProps={{ attributes, listeners }}
+      setNodeRef={setNodeRef}
+      style={style}
+    />
+  );
+}
+
+function FixedBlock({ section, index, hoveredId, setHoveredId, sections }: any) {
+  return (
+    <BlockUI
+      section={section}
+      index={index}
+      hoveredId={hoveredId}
+      setHoveredId={setHoveredId}
+      sections={sections}
+    />
+  );
+}
+
 export default function EditPortfolioPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -78,12 +251,28 @@ export default function EditPortfolioPage() {
     loadPortfolio,
     moveBlock,
     removeBlock,
+    reorderBlocks,
+    toggleBlockVisibility,
   } = usePortfolioStore();
 
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const initialLoadRef = useRef(true);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const sortableIds = sections
+    .filter((s) => s.type !== "HERO" && s.type !== "CONTACT_FORM")
+    .map((s) => s.id);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    reorderBlocks(active.id as string, over.id as string);
+  };
 
   // Auth redirection is handled by middleware.ts, client side only loads when authenticated.
 
@@ -204,92 +393,52 @@ export default function EditPortfolioPage() {
               </div>
             ) : null}
 
-            {sections.map((section, index) => (
-              <div
-                key={section.id}
-                onMouseEnter={() => setHoveredId(section.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                className={cn(
-                  "rounded-xl border transition-all duration-200",
-                  hoveredId === section.id
-                    ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/60"
-                    : "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30"
-                )}
+            {sections.length > 0 && (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                onDragEnd={handleDragEnd}
               >
-                {/* Block header */}
-                <div className="flex items-center justify-between px-4 pt-3 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
-                        TYPE_COLORS[section.type] ??
-                          "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600"
-                      )}
-                    >
-                      {section.type}
-                    </span>
-                    <span className="text-[10px] text-zinc-400">
-                      #{index + 1}
-                    </span>
-                  </div>
+                <div className="flex flex-col gap-2">
+                  {/* Fixed HERO block at the top */}
+                  {sections.find(s => s.type === "HERO") && (
+                    <FixedBlock
+                      section={sections.find(s => s.type === "HERO")!}
+                      index={sections.findIndex(s => s.type === "HERO")}
+                      hoveredId={hoveredId}
+                      setHoveredId={setHoveredId}
+                      sections={sections}
+                    />
+                  )}
 
-                  <div
-                    className={cn(
-                      "flex items-center gap-0.5 transition-opacity",
-                      hoveredId === section.id ? "opacity-100" : "opacity-0"
-                    )}
-                  >
-                    {section.type !== "HERO" && section.type !== "CONTACT_FORM" && (
-                      <>
-                        <button
-                          onClick={() => {
-                            const isFirst = index === 0 || (index === 1 && sections[0].type === "HERO");
-                            if (!isFirst) moveBlock!(section.id, "up");
-                          }}
-                          disabled={index === 0 || (index === 1 && sections[0].type === "HERO")}
-                          className={cn(
-                            "w-6 h-6 rounded flex items-center justify-center transition-colors",
-                            (index === 0 || (index === 1 && sections[0].type === "HERO"))
-                              ? "text-zinc-300 dark:text-zinc-800 cursor-not-allowed opacity-30"
-                              : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
-                          )}
-                        >
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            const isLast = index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM");
-                            if (!isLast) moveBlock!(section.id, "down");
-                          }}
-                          disabled={index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM")}
-                          className={cn(
-                            "w-6 h-6 rounded flex items-center justify-center transition-colors",
-                            (index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM"))
-                              ? "text-zinc-300 dark:text-zinc-800 cursor-not-allowed opacity-30"
-                              : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
-                          )}
-                        >
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        </button>
-                      </>
-                    )}
-                    {section.type !== "HERO" && (
-                      <button
-                        onClick={() => removeBlock!(section.id)}
-                        className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors ml-1"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                  {/* Sortable blocks in the middle */}
+                  <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+                    {sections.filter(s => s.type !== "HERO" && s.type !== "CONTACT_FORM").map((section) => (
+                      <SortableBlock
+                        key={section.id}
+                        section={section}
+                        index={sections.findIndex(s => s.id === section.id)}
+                        hoveredId={hoveredId}
+                        setHoveredId={setHoveredId}
+                        sections={sections}
+                      />
+                    ))}
+                  </SortableContext>
 
-                {/* Block content */}
-                <div className="px-4 pb-4">
-                  <BlockEditor block={section} />
+                  {/* Fixed CONTACT_FORM block at the bottom */}
+                  {sections.find(s => s.type === "CONTACT_FORM") && (
+                    <FixedBlock
+                      section={sections.find(s => s.type === "CONTACT_FORM")!}
+                      index={sections.findIndex(s => s.type === "CONTACT_FORM")}
+                      hoveredId={hoveredId}
+                      setHoveredId={setHoveredId}
+                      sections={sections}
+                    />
+                  )}
                 </div>
-              </div>
-            ))}
+              </DndContext>
+            )}
           </div>
 
           {/* Add block panel */}

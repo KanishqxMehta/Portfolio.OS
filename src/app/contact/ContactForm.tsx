@@ -13,7 +13,7 @@ const labelClass =
 
 export function ContactForm() {
   const { data: session } = useSession();
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", website: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -36,11 +36,18 @@ export function ContactForm() {
     setStatus("sending");
     setErrorMsg("");
 
+    // Honeypot check — if filled, silently pretend success (bot detection)
+    if (form.website) {
+      setStatus("success");
+      setForm({ name: "", email: "", subject: "", message: "", website: "" });
+      return;
+    }
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ name: form.name, email: form.email, subject: form.subject, message: form.message }),
       });
 
       if (!res.ok) {
@@ -54,6 +61,7 @@ export function ContactForm() {
         email: session?.user?.email || "",
         subject: "",
         message: "",
+        website: "",
       });
     } catch (err: any) {
       setStatus("error");
@@ -121,6 +129,20 @@ export function ContactForm() {
           value={form.subject}
           onChange={(e) => update("subject", e.target.value)}
           className={fieldClass}
+        />
+      </div>
+
+      {/* Honeypot — hidden from users, catches bots */}
+      <div className="absolute opacity-0 pointer-events-none" aria-hidden="true">
+        <label htmlFor="website">Website</label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          value={form.website}
+          onChange={(e) => update("website", e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
         />
       </div>
 

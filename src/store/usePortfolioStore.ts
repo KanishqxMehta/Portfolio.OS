@@ -15,6 +15,8 @@ interface PortfolioState {
   removeBlock: (id: string) => void;
   updateBlockData: (id: string, newData: any) => void;
   moveBlock: (id: string, direction: 'up' | 'down') => void;
+  reorderBlocks: (activeId: string, overId: string) => void;
+  toggleBlockVisibility: (id: string) => void;
   theme: string;
   setTheme: (theme: string) => void;
 }
@@ -223,4 +225,26 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     }
     return { sections: newSections };
   }),
+
+  reorderBlocks: (activeId, overId) => set((state) => {
+    if (activeId === overId) return {};
+
+    const oldIndex = state.sections.findIndex((s) => s.id === activeId);
+    const newIndex = state.sections.findIndex((s) => s.id === overId);
+    if (oldIndex === -1 || newIndex === -1) return {};
+
+    const block = state.sections[oldIndex];
+    if (block.type === "HERO" || block.type === "CONTACT_FORM") return {};
+
+    const newSections = [...state.sections];
+    newSections.splice(oldIndex, 1);
+    newSections.splice(newIndex, 0, block);
+    return { sections: newSections };
+  }),
+
+  toggleBlockVisibility: (id) => set((state) => ({
+    sections: state.sections.map((block) =>
+      block.id === id ? { ...block, isVisible: !block.isVisible } : block
+    ),
+  })),
 }));
