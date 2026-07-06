@@ -1,0 +1,17 @@
+# Global directives for all search engine crawlers
+User-agent: *
+
+# Block indexing of private application pages
+Disallow: /dashboard/
+Disallow: /api/
+
+# Allow public content
+Allow: /
+Allow: /p/
+Allow: /about
+Allow: /contact
+Allow: /privacy
+Allow: /terms
+
+# Sitemap location (relative to site root)
+Sitemap: /sitemap.xml

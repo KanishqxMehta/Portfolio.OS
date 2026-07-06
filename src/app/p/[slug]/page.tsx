@@ -93,6 +93,31 @@ async function PortfolioContent({ slug }: { slug: string }) {
 
   const content = result.rows[0].content || {};
   let sections = content.sections || [];
+  
+  // Extract details for JSON-LD Structured Data
+  const hero = sections.find((s: any) => s.type === "HERO");
+  const name = hero?.content?.fullName || slug;
+  const bio = hero?.content?.bio || "Professional Developer Portfolio";
+
+  const sameAs = [
+    hero?.content?.github,
+    hero?.content?.linkedin,
+    hero?.content?.instagram,
+    hero?.content?.twitter,
+  ].filter(Boolean);
+
+  const jsonLd: Record<string, any> = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name,
+    description: bio,
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/p/${slug}`,
+  };
+
+  if (sameAs.length > 0) {
+    jsonLd.sameAs = sameAs;
+  }
+
   const heroIdx = sections.findIndex((s: any) => s.type === "HERO");
   if (heroIdx === -1) {
     const defaultHero = {
@@ -120,6 +145,11 @@ async function PortfolioContent({ slug }: { slug: string }) {
         color: "var(--p-fg)",
       } as React.CSSProperties}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <ViewTracker slug={slug} />
 
       {/* Hero watermark — "Made with Portfolio.os" top-right */}
