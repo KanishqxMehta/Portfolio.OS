@@ -351,7 +351,7 @@ export default function Home() {
                   <Cpu className="w-5 h-5" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-400 mb-2 transition-colors">Convert via AI Engine</h3>
+              <p className="text-xl font-bold text-zinc-900 dark:text-zinc-400 mb-2 transition-colors">Convert via AI Engine</p>
               <p className="text-sm text-zinc-600 dark:text-zinc-500 leading-relaxed mb-6 transition-colors">
                 Upload your PDF, DOCX, or JSON resume. We'll decompose your entries and structure your layouts natively.
               </p>
@@ -380,7 +380,7 @@ export default function Home() {
                   Active Path
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 transition-colors">Build Block-by-Block</h3>
+              <p className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 transition-colors">Build Block-by-Block</p>
               <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed transition-colors">
                 Step inside our blank canvas workspace. Compose, arrange, and design your hero, project metrics, and timeline modules by hand.
               </p>
@@ -398,6 +398,7 @@ export default function Home() {
 
       {/* Features */}
       <section id="features" className="relative z-10 py-24 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-transparent transition-colors duration-500">
+        <h2 className="sr-only">Features</h2>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -427,9 +428,9 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <feature.icon className="w-6 h-6 text-violet-600 dark:text-violet-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-3 transition-colors">
+                <p className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-3 transition-colors">
                   {feature.title}
-                </h3>
+                </p>
                 <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed transition-colors">
                   {feature.description}
                 </p>

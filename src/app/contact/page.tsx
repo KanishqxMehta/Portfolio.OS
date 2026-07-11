@@ -46,7 +46,7 @@ export default function ContactPage() {
                     <Mail className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">Email us directly</h3>
+                    <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">Email us directly</p>
                     <a
                       href={`mailto:${process.env.CONTACT_EMAIL}`}
                       className="text-sm text-violet-600 dark:text-violet-400 hover:text-violet-500 dark:hover:text-violet-300 transition-colors"
@@ -64,7 +64,7 @@ export default function ContactPage() {
                     <MessageSquare className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">Join our community</h3>
+                    <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">Join our community</p>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Get help, share your portfolio, and connect with other developers building with Portfolio.os.
                     </p>
@@ -78,7 +78,7 @@ export default function ContactPage() {
                     <Clock className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">Response time</h3>
+                    <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">Response time</p>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       We aim to respond to all inquiries within 24 hours on business days.
                     </p>
