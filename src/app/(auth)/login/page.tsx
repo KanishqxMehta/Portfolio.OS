@@ -102,9 +102,14 @@ function LoginForm() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+                  Password
+                </label>
+                <Link href="/forgot-password" className="text-xs font-medium text-violet-600 hover:text-violet-500 dark:text-violet-400 dark:hover:text-violet-300 transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
                 <input

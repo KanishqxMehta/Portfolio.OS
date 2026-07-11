@@ -15,27 +15,33 @@ export const SkillsContentSchema = z.object({
 });
 
 export const ExperienceItemSchema = z.object({
+  id: z.string().optional(),
   company: z.string().min(1, "Company name is required"),
   role: z.string().min(1, "Role is required"),
   years: z.string().min(1, "Duration/Years is required"),
+  isVisible: z.boolean().default(true).optional(),
 });
 export const ExperienceContentSchema = z.object({
   items: z.array(ExperienceItemSchema).min(1, "At least one experience entry is required"),
 });
 
 export const ProjectItemSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(1, "Project title is required"),
   description: z.string().min(1, "Project description is required"),
   link: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
+  isVisible: z.boolean().default(true).optional(),
 });
 export const ProjectsContentSchema = z.object({
   items: z.array(ProjectItemSchema).min(1, "At least one project is required"),
 });
 
 export const EducationItemSchema = z.object({
+  id: z.string().optional(),
   school: z.string().min(1, "School name is required"),
   degree: z.string().min(1, "Degree is required"),
   year: z.string().min(1, "Graduation year is required"),
+  isVisible: z.boolean().default(true).optional(),
 });
 export const EducationContentSchema = z.object({
   items: z.array(EducationItemSchema).min(1, "At least one education entry is required"),
