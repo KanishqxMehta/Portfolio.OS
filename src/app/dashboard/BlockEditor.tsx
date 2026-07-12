@@ -1,10 +1,60 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus, X } from "lucide-react";
+import { Trash2, Plus, X, GripVertical, Eye, EyeOff } from "lucide-react";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { Section } from "@/lib/validations/portfolio";
 import { cn } from "@/lib/utils";
+
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
+
+function SortableItem({ id, children }: { id: string; children: React.ReactNode }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 0,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative group">
+      <div 
+        {...attributes} 
+        {...listeners} 
+        className="absolute -left-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity z-10"
+      >
+        <GripVertical className="w-4 h-4" />
+      </div>
+      {children}
+    </div>
+  );
+}
 
 const isValidUrl = (url: string) => {
   if (!url) return true;
@@ -35,6 +85,26 @@ export const BlockEditor = ({ block }: { block: Section }) => {
 
   const handleUpdate = (newData: any) => {
     updateBlockData!(block.id, newData);
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent, items: any[]) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = items.findIndex((it: any) => it.id === active.id);
+      const newIndex = items.findIndex((it: any) => it.id === over.id);
+      handleUpdate({ items: arrayMove(items, oldIndex, newIndex) });
+    }
   };
 
   if (block.type === "HERO") {
@@ -178,90 +248,110 @@ export const BlockEditor = ({ block }: { block: Section }) => {
   }
 
   if (block.type === "EXPERIENCE") {
-    const items = block.content?.items || [
+    const items = (block.content?.items || [
       { company: "", role: "", years: "" },
-    ];
+    ]).map((it: any) => ({
+      ...it,
+      id: it.id || crypto.randomUUID(),
+      isVisible: it.isVisible ?? true,
+    }));
 
     return (
       <div className="space-y-2">
         {items.length === 0 && (
           <p className="text-[11px] text-red-500 italic px-1">At least one experience entry is required.</p>
         )}
-        {items.map((item: any, idx: number) => (
-          <div
-            key={idx}
-            className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/exp transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">
-                Entry {idx + 1}
-              </span>
-              <button
-                onClick={() =>
-                  handleUpdate({
-                    items: items.filter((_: any, i: number) => i !== idx),
-                  })
-                }
-                className="opacity-0 group-hover/exp:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </div>
-            <Input
-              placeholder="Company name"
-              value={item.company}
-              onChange={(e) => {
-                const newItems = items.map((it: any, i: number) => 
-                  i === idx ? { ...it, company: e.target.value } : { ...it }
-                );
-                handleUpdate({ items: newItems });
-              }}
-              className={cn(fieldClass, !item.company && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
-            />
-            {!item.company && (
-              <p className="text-[10px] text-red-500 mt-0.5">Company name is required.</p>
-            )}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Input
-                  placeholder="Role"
-                  value={item.role}
-                  onChange={(e) => {
-                    const newItems = items.map((it: any, i: number) => 
-                      i === idx ? { ...it, role: e.target.value } : { ...it }
-                    );
-                    handleUpdate({ items: newItems });
-                  }}
-                  className={cn(fieldClass, !item.role && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
-                />
-                {!item.role && (
-                  <p className="text-[10px] text-red-500 mt-0.5">Role is required.</p>
-                )}
-              </div>
-              <div className="space-y-1">
-                <Input
-                  placeholder="2022–Present"
-                  value={item.years}
-                  onChange={(e) => {
-                    const newItems = items.map((it: any, i: number) => 
-                      i === idx ? { ...it, years: e.target.value } : { ...it }
-                    );
-                    handleUpdate({ items: newItems });
-                  }}
-                  className={cn(fieldClass, !item.years && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
-                />
-                {!item.years && (
-                  <p className="text-[10px] text-red-500 mt-0.5">Duration is required.</p>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, items)} modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
+          <SortableContext items={items.map((it: any) => it.id)} strategy={verticalListSortingStrategy}>
+            {items.map((item: any, idx: number) => (
+              <SortableItem key={item.id} id={item.id}>
+                <div
+                  className={cn("p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/exp transition-colors relative", !item.isVisible && "opacity-50 grayscale")}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">
+                      Entry {idx + 1}
+                    </span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover/exp:opacity-100 transition-all">
+                      <button
+                        onClick={() => {
+                          const newItems = items.map((it: any, i: number) => i === idx ? { ...it, isVisible: !it.isVisible } : { ...it });
+                          handleUpdate({ items: newItems });
+                        }}
+                        className="w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-zinc-700 dark:hover:text-zinc-300 transition-all"
+                      >
+                        {item.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleUpdate({
+                            items: items.filter((_: any, i: number) => i !== idx),
+                          })
+                        }
+                        className="w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  <Input
+                    placeholder="Company name"
+                    value={item.company}
+                    onChange={(e) => {
+                      const newItems = items.map((it: any, i: number) => 
+                        i === idx ? { ...it, company: e.target.value } : { ...it }
+                      );
+                      handleUpdate({ items: newItems });
+                    }}
+                    className={cn(fieldClass, !item.company && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+                  />
+                  {!item.company && (
+                    <p className="text-[10px] text-red-500 mt-0.5">Company name is required.</p>
+                  )}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Input
+                        placeholder="Role"
+                        value={item.role}
+                        onChange={(e) => {
+                          const newItems = items.map((it: any, i: number) => 
+                            i === idx ? { ...it, role: e.target.value } : { ...it }
+                          );
+                          handleUpdate({ items: newItems });
+                        }}
+                        className={cn(fieldClass, !item.role && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+                      />
+                      {!item.role && (
+                        <p className="text-[10px] text-red-500 mt-0.5">Role is required.</p>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <Input
+                        placeholder="2022–Present"
+                        value={item.years}
+                        onChange={(e) => {
+                          const newItems = items.map((it: any, i: number) => 
+                            i === idx ? { ...it, years: e.target.value } : { ...it }
+                          );
+                          handleUpdate({ items: newItems });
+                        }}
+                        className={cn(fieldClass, !item.years && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+                      />
+                      {!item.years && (
+                        <p className="text-[10px] text-red-500 mt-0.5">Duration is required.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </SortableItem>
+            ))}
+          </SortableContext>
+        </DndContext>
 
         <button
           onClick={() =>
             handleUpdate({
-              items: [...items, { company: "", role: "", years: "" }],
+              items: [...items, { id: crypto.randomUUID(), isVisible: true, company: "", role: "", years: "" }],
             })
           }
           className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all"
@@ -273,7 +363,11 @@ export const BlockEditor = ({ block }: { block: Section }) => {
   }
 
   if (block.type === "PROJECTS") {
-    const items = block.content?.items || [{ title: "", description: "", link: "" }];
+    const items = (block.content?.items || [{ title: "", description: "", link: "" }]).map((it: any) => ({
+      ...it,
+      id: it.id || crypto.randomUUID(),
+      isVisible: it.isVisible ?? true,
+    }));
 
     const updateProject = (index: number, fields: any) => {
       const newItems = items.map((it: any, i: number) => 
@@ -283,7 +377,7 @@ export const BlockEditor = ({ block }: { block: Section }) => {
     };
 
     const addProject = () => {
-      handleUpdate({ items: [...items.map((it: any) => ({ ...it })), { title: "", description: "", link: "" }] });
+      handleUpdate({ items: [...items.map((it: any) => ({ ...it })), { id: crypto.randomUUID(), isVisible: true, title: "", description: "", link: "" }] });
     };
 
     const removeProject = (index: number) => {
@@ -295,55 +389,68 @@ export const BlockEditor = ({ block }: { block: Section }) => {
         {items.length === 0 && (
           <p className="text-[11px] text-red-500 italic px-1">At least one project is required.</p>
         )}
-        {items.map((item: any, idx: number) => (
-          <div
-            key={idx}
-            className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/proj transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">
-                Project {idx + 1}
-              </span>
-              <button
-                onClick={() => removeProject(idx)}
-                className="opacity-0 group-hover/proj:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </div>
-            <Input
-              placeholder="Project title"
-              value={item.title || ""}
-              onChange={(e) => updateProject(idx, { title: e.target.value })}
-              className={cn(fieldClass, !item.title && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
-            />
-            {!item.title && (
-              <p className="text-[10px] text-red-500 mt-0.5">Project title is required.</p>
-            )}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, items)} modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
+          <SortableContext items={items.map((it: any) => it.id)} strategy={verticalListSortingStrategy}>
+            {items.map((item: any, idx: number) => (
+              <SortableItem key={item.id} id={item.id}>
+                <div
+                  className={cn("p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/proj transition-colors relative", !item.isVisible && "opacity-50 grayscale")}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">
+                      Project {idx + 1}
+                    </span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover/proj:opacity-100 transition-all">
+                      <button
+                        onClick={() => updateProject(idx, { isVisible: !item.isVisible })}
+                        className="w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-zinc-700 dark:hover:text-zinc-300 transition-all"
+                      >
+                        {item.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                      </button>
+                      <button
+                        onClick={() => removeProject(idx)}
+                        className="w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  <Input
+                    placeholder="Project title"
+                    value={item.title || ""}
+                    onChange={(e) => updateProject(idx, { title: e.target.value })}
+                    className={cn(fieldClass, !item.title && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+                  />
+                  {!item.title && (
+                    <p className="text-[10px] text-red-500 mt-0.5">Project title is required.</p>
+                  )}
 
-            <Input
-              placeholder="Project URL (optional, e.g., https://...)"
-              value={item.link || ""}
-              onChange={(e) => updateProject(idx, { link: e.target.value })}
-              className={cn(fieldClass, item.link && !isValidUrl(item.link) && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
-            />
-            {item.link && !isValidUrl(item.link) && (
-              <p className="text-[10px] text-red-500 mt-0.5">Please enter a valid URL (e.g., https://example.com)</p>
-            )}
+                  <Input
+                    placeholder="Project URL (optional, e.g., https://...)"
+                    value={item.link || ""}
+                    onChange={(e) => updateProject(idx, { link: e.target.value })}
+                    className={cn(fieldClass, item.link && !isValidUrl(item.link) && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+                  />
+                  {item.link && !isValidUrl(item.link) && (
+                    <p className="text-[10px] text-red-500 mt-0.5">Please enter a valid URL (e.g., https://example.com)</p>
+                  )}
 
-            <Textarea
-              placeholder="What did you build?"
-              value={item.description || ""}
-              onChange={(e) =>
-                updateProject(idx, { description: e.target.value })
-              }
-              className={cn(fieldClass, "min-h-[80px] h-auto resize-none", !item.description && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
-            />
-            {!item.description && (
-              <p className="text-[10px] text-red-500 mt-0.5">Project description is required.</p>
-            )}
-          </div>
-        ))}
+                  <Textarea
+                    placeholder="What did you build?"
+                    value={item.description || ""}
+                    onChange={(e) =>
+                      updateProject(idx, { description: e.target.value })
+                    }
+                    className={cn(fieldClass, "min-h-[80px] h-auto resize-none", !item.description && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+                  />
+                  {!item.description && (
+                    <p className="text-[10px] text-red-500 mt-0.5">Project description is required.</p>
+                  )}
+                </div>
+              </SortableItem>
+            ))}
+          </SortableContext>
+        </DndContext>
 
         <button
           onClick={addProject}
@@ -355,7 +462,11 @@ export const BlockEditor = ({ block }: { block: Section }) => {
     );
   }
   if (block.type === "EDUCATION") {
-    const items = block.content?.items || [{ school: "", degree: "", year: "" }];
+    const items = (block.content?.items || [{ school: "", degree: "", year: "" }]).map((it: any) => ({
+      ...it,
+      id: it.id || crypto.randomUUID(),
+      isVisible: it.isVisible ?? true,
+    }));
 
     const updateEducation = (index: number, fields: any) => {
       const newItems = items.map((it: any, i: number) => 
@@ -373,50 +484,64 @@ export const BlockEditor = ({ block }: { block: Section }) => {
         {items.length === 0 && (
           <p className="text-[11px] text-red-500 italic px-1">At least one education entry is required.</p>
         )}
-        {items.map((item: any, idx: number) => (
-          <div key={idx} className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/edu transition-colors">
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">Degree {idx + 1}</span>
-              <button onClick={() => removeEducation(idx)} className="opacity-0 group-hover/edu:opacity-100 w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all">
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </div>
-            <Input 
-              placeholder="University or School" 
-              value={item.school || ""} 
-              onChange={(e) => updateEducation(idx, { school: e.target.value })} 
-              className={cn(fieldClass, !item.school && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")} 
-            />
-            {!item.school && (
-              <p className="text-[10px] text-red-500 mt-0.5">School name is required.</p>
-            )}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Input 
-                  placeholder="B.S. Computer Science" 
-                  value={item.degree || ""} 
-                  onChange={(e) => updateEducation(idx, { degree: e.target.value })} 
-                  className={cn(fieldClass, !item.degree && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")} 
-                />
-                {!item.degree && (
-                  <p className="text-[10px] text-red-500 mt-0.5">Degree is required.</p>
-                )}
-              </div>
-              <div className="space-y-1">
-                <Input 
-                  placeholder="2018 - 2022" 
-                  value={item.year || ""} 
-                  onChange={(e) => updateEducation(idx, { year: e.target.value })} 
-                  className={cn(fieldClass, !item.year && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")} 
-                />
-                {!item.year && (
-                  <p className="text-[10px] text-red-500 mt-0.5">Year/years is required.</p>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-        <button onClick={() => handleUpdate({ items: [...items.map((it: any) => ({ ...it })), { school: "", degree: "", year: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, items)} modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
+          <SortableContext items={items.map((it: any) => it.id)} strategy={verticalListSortingStrategy}>
+            {items.map((item: any, idx: number) => (
+              <SortableItem key={item.id} id={item.id}>
+                <div className={cn("p-3 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-900/40 space-y-2 group/edu transition-colors relative", !item.isVisible && "opacity-50 grayscale")}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">Degree {idx + 1}</span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover/edu:opacity-100 transition-all">
+                      <button
+                        onClick={() => updateEducation(idx, { isVisible: !item.isVisible })}
+                        className="w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-zinc-700 dark:hover:text-zinc-300 transition-all"
+                      >
+                        {item.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                      </button>
+                      <button onClick={() => removeEducation(idx)} className="w-5 h-5 flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-all">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  <Input 
+                    placeholder="University or School" 
+                    value={item.school || ""} 
+                    onChange={(e) => updateEducation(idx, { school: e.target.value })} 
+                    className={cn(fieldClass, !item.school && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")} 
+                  />
+                  {!item.school && (
+                    <p className="text-[10px] text-red-500 mt-0.5">School name is required.</p>
+                  )}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Input 
+                        placeholder="B.S. Computer Science" 
+                        value={item.degree || ""} 
+                        onChange={(e) => updateEducation(idx, { degree: e.target.value })} 
+                        className={cn(fieldClass, !item.degree && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")} 
+                      />
+                      {!item.degree && (
+                        <p className="text-[10px] text-red-500 mt-0.5">Degree is required.</p>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <Input 
+                        placeholder="2018 - 2022" 
+                        value={item.year || ""} 
+                        onChange={(e) => updateEducation(idx, { year: e.target.value })} 
+                        className={cn(fieldClass, !item.year && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")} 
+                      />
+                      {!item.year && (
+                        <p className="text-[10px] text-red-500 mt-0.5">Year/years is required.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </SortableItem>
+            ))}
+          </SortableContext>
+        </DndContext>
+        <button onClick={() => handleUpdate({ items: [...items.map((it: any) => ({ ...it })), { id: crypto.randomUUID(), isVisible: true, school: "", degree: "", year: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
           <Plus className="w-3 h-3" /> Add Degree
         </button>
       </div>

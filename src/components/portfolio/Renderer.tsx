@@ -162,7 +162,7 @@ const Hero = ({ data }: { data: HeroContent }) => {
 };
 
 const Projects = ({ data }: { data: ProjectsContent }) => {
-  const items = data.items || [];
+  const items = (data.items || []).filter((item: any) => item.isVisible !== false);
   return (
     <section className="theme-bg py-24 px-8 sm:px-12 border-t border-[var(--p-border)] transition-colors duration-500">
       <motion.div
@@ -287,7 +287,7 @@ const Experience = ({ data }: { data: ExperienceContent }) => (
       </motion.div>
 
       <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 transition-colors duration-500">
-        {data.items?.map((item: any, i: number) => (
+        {(data.items || []).filter((item: any) => item.isVisible !== false).map((item: any, i: number) => (
           <motion.div
             key={i}
             variants={fadeInUp}
@@ -311,7 +311,7 @@ const Experience = ({ data }: { data: ExperienceContent }) => (
           </motion.div>
         ))}
 
-        {(!data.items || data.items.length === 0) && (
+        {(!(data.items || []).filter((item: any) => item.isVisible !== false).length) && (
           <p className="text-sm text-[var(--p-fg-muted)] transition-colors duration-500 pl-8 sm:pl-12">No experience entries yet.</p>
         )}
       </div>
@@ -337,7 +337,7 @@ const Education = ({ data }: { data: EducationContent }) => (
       </motion.div>
 
       <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 transition-colors duration-500">
-        {data.items?.map((item: any, i: number) => (
+        {(data.items || []).filter((item: any) => item.isVisible !== false).map((item: any, i: number) => (
           <motion.div key={i} variants={fadeInUp} className="relative pb-12 last:pb-0 group pl-8 sm:pl-12">
             <div className="theme-dot absolute left-0 -translate-x-1/2 top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
@@ -347,7 +347,7 @@ const Education = ({ data }: { data: EducationContent }) => (
             <p className="text-base text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors">{item.school || "School / University"}</p>
           </motion.div>
         ))}
-        {(!data.items || data.items.length === 0) && (
+        {(!(data.items || []).filter((item: any) => item.isVisible !== false).length) && (
           <p className="text-sm text-[var(--p-fg-muted)] transition-colors duration-500 pl-8 sm:pl-12">No education entries yet.</p>
         )}
       </div>
