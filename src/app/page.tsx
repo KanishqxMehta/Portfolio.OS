@@ -3,10 +3,38 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { ArrowRight, Layers, Layout, Palette, Sparkles, UploadCloud, Cpu, PenTool, LogOut, LayoutDashboard, Menu, X, ChevronDown, UserCircle } from "lucide-react";
+import { ArrowRight, Layers, Layout, Palette, Sparkles, UploadCloud, Cpu, PenTool, LogOut, LayoutDashboard, Menu, X, ChevronDown, UserCircle, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";
+import { OrganizationJsonLd, FAQJsonLd } from "@/components/JsonLd";
+
+const faqs = [
+  {
+    question: "What is Portfolio.OS?",
+    answer: "Portfolio.OS is a free portfolio making website designed specifically for developers. It lets you create a stunning, professional developer portfolio in minutes using a simple block-based editor — no coding or design skills needed.",
+  },
+  {
+    question: "Is Portfolio.OS free to use?",
+    answer: "Yes! Portfolio.OS is completely free. You can create your developer portfolio, customize it with premium themes, publish it to a unique public URL, and share it with potential employers — all at no cost.",
+  },
+  {
+    question: "How do I create a developer portfolio?",
+    answer: "Simply sign up, open the workspace editor, and start adding blocks for your Hero section, Projects, Experience, Education, and Skills. Choose a theme, customize your content, and hit publish. Your portfolio will be live instantly at a unique URL.",
+  },
+  {
+    question: "Can I use my own custom domain?",
+    answer: "Portfolio.OS gives you a unique public URL for your portfolio (e.g., portfolioos.dev/p/yourname). Custom domain support for individual portfolios is on our roadmap for future releases.",
+  },
+  {
+    question: "What themes are available?",
+    answer: "Portfolio.OS offers six premium design themes: Neo-Brutalism, Hacker Terminal, Modern Ink Splashes, Glassmorphism, and classic presets. You can switch between themes instantly with a single click.",
+  },
+  {
+    question: "Can I track who views my portfolio?",
+    answer: "Yes! Portfolio.OS includes a built-in analytics dashboard where you can monitor real-time page views and visitor engagement stats for your published portfolio.",
+  },
+];
 
 import { Logo } from "@/components/ui/Logo";
 
@@ -398,7 +426,7 @@ export default function Home() {
 
       {/* Features */}
       <section id="features" className="relative z-10 py-24 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-transparent transition-colors duration-500">
-        <h2 className="sr-only">Features</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 text-center mb-16 transition-colors duration-500">Everything You Need to Build Your Portfolio</h2>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -439,6 +467,34 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="relative z-10 py-24 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-transparent transition-colors duration-500">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 text-center mb-4 transition-colors duration-500">Frequently Asked Questions</h2>
+          <p className="text-center text-zinc-500 dark:text-zinc-400 mb-12 text-sm sm:text-base">Everything you need to know about creating your developer portfolio.</p>
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <details
+                key={i}
+                className="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 transition-colors hover:border-zinc-300 dark:hover:border-zinc-700"
+              >
+                <summary className="flex items-center justify-between cursor-pointer px-6 py-5 text-sm sm:text-base font-semibold text-zinc-900 dark:text-zinc-100 transition-colors [&::-webkit-details-marker]:hidden list-none">
+                  {faq.question}
+                  <ChevronRightIcon className="w-4 h-4 text-zinc-400 dark:text-zinc-600 group-open:rotate-90 transition-transform duration-200 flex-shrink-0 ml-4" />
+                </summary>
+                <div className="px-6 pb-5 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  {faq.answer}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* JSON-LD Structured Data */}
+      <OrganizationJsonLd baseUrl={process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"} />
+      <FAQJsonLd faqs={faqs} />
 
       <footer className="relative z-10 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-950 py-12 text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">

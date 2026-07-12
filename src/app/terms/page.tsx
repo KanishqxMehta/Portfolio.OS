@@ -1,6 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { StaticHeader } from "@/components/StaticHeader";
 import { Logo } from "@/components/ui/Logo";
+
+export const metadata: Metadata = {
+  title: "Terms of Service — Portfolio.OS",
+  description: "Read the Portfolio.OS terms of service. Understand the terms governing your use of our free portfolio builder platform.",
+  alternates: {
+    canonical: "/terms",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function TermsPage() {
   return (

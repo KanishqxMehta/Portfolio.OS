@@ -2,6 +2,20 @@ import Link from "next/link";
 import { StaticHeader } from "@/components/StaticHeader";
 import { ChevronRight, PenTool, Layout, TrendingUp } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Portfolio.OS — The Free Portfolio Making Website for Developers",
+  description: "Learn about Portfolio.OS, the free portfolio builder designed for developers. Create stunning, responsive developer portfolios with beautiful themes and block-based editing.",
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    title: "About Portfolio.OS — The Free Portfolio Making Website for Developers",
+    description: "Learn about Portfolio.OS, the free portfolio builder designed for developers.",
+    url: "/about",
+  },
+};
 
 export default function AboutPage() {
   return (

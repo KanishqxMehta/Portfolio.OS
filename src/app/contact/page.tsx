@@ -1,8 +1,22 @@
+import type { Metadata } from "next";
 import { StaticHeader } from "@/components/StaticHeader";
 import { ContactForm } from "./ContactForm";
 import { Logo } from "@/components/ui/Logo";
 import Link from "next/link";
 import { Mail, MessageSquare, Clock, ChevronRight } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Contact Us — Portfolio.OS",
+  description: "Have questions about Portfolio.OS? Get in touch with our team. We'd love to hear from you about our free portfolio builder for developers.",
+  alternates: {
+    canonical: "/contact",
+  },
+  openGraph: {
+    title: "Contact Us — Portfolio.OS",
+    description: "Have questions about Portfolio.OS? Get in touch with our team.",
+    url: "/contact",
+  },
+};
 
 export default function ContactPage() {
   return (

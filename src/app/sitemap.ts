@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { pool } from "@/lib/db";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") || "https://portfolio-os-umber-ten.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") || "https://portfolioos.dev";
 
   const staticRoutes = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 1 },

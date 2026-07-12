@@ -21,12 +21,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Portfolio.os — Build your developer portfolio",
-    template: "%s | Portfolio.os",
+    default: "Portfolio.OS — Free Portfolio Builder for Developers | Create Your Portfolio",
+    template: "%s | Portfolio.OS",
   },
-  description: "Transform your experience into a stunning single-page developer portfolio. Block by block, instantly.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
-  keywords: ["portfolio", "developer portfolio", "resume builder", "portfolio builder", "resume-to-portfolio"],
+  description: "Build a stunning developer portfolio in minutes — no code needed. Portfolio.OS is a free portfolio making website with beautiful themes, drag-and-drop editing, and instant publishing.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"),
+  alternates: {
+    canonical: "/",
+  },
   robots: {
     index: true,
     follow: true,
@@ -39,16 +41,17 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Portfolio.os — Build your developer portfolio",
-    description: "Transform your experience into a stunning single-page developer portfolio. Block by block, instantly.",
+    title: "Portfolio.OS — Free Portfolio Builder for Developers",
+    description: "Build a stunning developer portfolio in minutes — no code needed. Beautiful themes, drag-and-drop editing, and instant publishing.",
     type: "website",
-    siteName: "Portfolio.os",
+    siteName: "Portfolio.OS",
     locale: "en_US",
+    url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Portfolio.os — Build your developer portfolio",
-    description: "Transform your experience into a stunning single-page developer portfolio. Block by block, instantly.",
+    title: "Portfolio.OS — Free Portfolio Builder for Developers",
+    description: "Build a stunning developer portfolio in minutes — no code needed. Beautiful themes, drag-and-drop editing, and instant publishing.",
   },
 };
 

@@ -101,6 +101,10 @@ async function PortfolioContent({ slug }: { slug: string }) {
   const name = hero?.content?.fullName || slug;
   const bio = hero?.content?.bio || "Professional Developer Portfolio";
 
+  // Extract skills for structured data
+  const skillsSection = sections.find((s: any) => s.type === "SKILLS");
+  const skills = skillsSection?.content?.items || [];
+
   const sameAs = [
     hero?.content?.github,
     hero?.content?.linkedin,
@@ -113,11 +117,15 @@ async function PortfolioContent({ slug }: { slug: string }) {
     "@type": "Person",
     name,
     description: bio,
-    url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/p/${slug}`,
+    url: `${(process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev").replace(/\/$/, "")}/p/${slug}`,
   };
 
   if (sameAs.length > 0) {
     jsonLd.sameAs = sameAs;
+  }
+
+  if (skills.length > 0) {
+    jsonLd.knowsAbout = skills;
   }
 
   const heroIdx = sections.findIndex((s: any) => s.type === "HERO");

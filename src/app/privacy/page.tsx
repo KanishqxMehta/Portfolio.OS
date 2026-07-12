@@ -1,6 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { StaticHeader } from "@/components/StaticHeader";
 import { Logo } from "@/components/ui/Logo";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy — Portfolio.OS",
+  description: "Read the Portfolio.OS privacy policy. Learn how we handle your data when you use our free portfolio builder for developers.",
+  alternates: {
+    canonical: "/privacy",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function PrivacyPage() {
   return (
