@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
-import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
+import { DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay, type DragEndEvent } from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
@@ -59,10 +60,12 @@ const BLOCK_TYPES = [
 ] as const;
 
 const TYPE_COLORS: Record<string, string> = {
-  HERO: "bg-violet-50 text-violet-600 border-violet-100",
-  PROJECTS: "bg-sky-50 text-sky-600 border-sky-100",
-  SKILLS: "bg-emerald-50 text-emerald-600 border-emerald-100",
-  EXPERIENCE: "bg-amber-50 text-amber-600 border-amber-100",
+  HERO: "bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-400 border-violet-100 dark:border-violet-900/40",
+  PROJECTS: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border-sky-100 dark:border-sky-900/40",
+  SKILLS: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40",
+  EXPERIENCE: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/40",
+  EDUCATION: "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/40",
+  CONTACT_FORM: "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/40",
 };
 
 function BlockUI({
@@ -74,6 +77,7 @@ function BlockUI({
   dragHandleProps,
   setNodeRef,
   style,
+  isDraggingOverlay = false,
 }: any) {
   const { removeBlock, moveBlock, toggleBlockVisibility } = usePortfolioStore();
 
@@ -87,7 +91,8 @@ function BlockUI({
         "rounded-xl border transition-colors duration-200",
         hoveredId === section.id
           ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/60"
-          : "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30"
+          : "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30",
+        isDraggingOverlay && "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-xl"
       )}
     >
       {/* Block header */}
@@ -98,7 +103,7 @@ function BlockUI({
             <button
               {...dragHandleProps.attributes}
               {...dragHandleProps.listeners}
-              className="cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-500 transition-colors -ml-1.5"
+              className="cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-500 transition-colors -ml-1.5 touch-none"
               tabIndex={-1}
             >
               <GripVertical className="w-4 h-4" />
@@ -185,13 +190,15 @@ function BlockUI({
       </div>
 
       {/* Block content — dim if hidden */}
-      <div className={cn("px-4 pb-4", !section.isVisible && "opacity-40")}>
-        {section.isVisible ? (
-          <BlockEditor block={section} />
-        ) : (
-          <p className="text-[11px] text-zinc-500 italic">Block is hidden from preview. Toggle the eye icon to show it.</p>
-        )}
-      </div>
+      {!isDraggingOverlay && (
+        <div className={cn("px-4 pb-4", !section.isVisible && "opacity-40")}>
+          {section.isVisible ? (
+            <BlockEditor block={section} />
+          ) : (
+            <p className="text-[11px] text-zinc-500 italic">Block is hidden from preview. Toggle the eye icon to show it.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -200,11 +207,9 @@ function SortableBlock({ section, index, hoveredId, setHoveredId, sections }: an
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
 
   const style = {
-    transform: transform ? `${CSS.Translate.toString(transform)} scale(${isDragging ? 1.02 : 1}) rotate(${isDragging ? 1.5 : 0}deg)` : undefined,
+    transform: CSS.Translate.toString(transform),
     transition: transition || undefined,
-    opacity: isDragging ? 0.8 : 1,
-    zIndex: isDragging ? 50 : 1,
-    boxShadow: isDragging ? '0 15px 30px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -5px rgba(0, 0, 0, 0.1)' : undefined,
+    opacity: isDragging ? 0.35 : 1,
   };
 
   return (
@@ -261,17 +266,29 @@ export default function EditPortfolioPage() {
   const initialLoadRef = useRef(true);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } })
   );
 
   const sortableIds = sections
     .filter((s) => s.type !== "HERO" && s.type !== "CONTACT_FORM")
     .map((s) => s.id);
 
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const handleDragStart = (event: any) => {
+    setActiveId(event.active.id);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     reorderBlocks(active.id as string, over.id as string);
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
   };
 
   // Auth redirection is handled by middleware.ts, client side only loads when authenticated.
@@ -397,8 +414,10 @@ export default function EditPortfolioPage() {
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
-                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                modifiers={[restrictToVerticalAxis]}
+                onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
               >
                 <div className="flex flex-col gap-2">
                   {/* Fixed HERO block at the top */}
@@ -437,47 +456,72 @@ export default function EditPortfolioPage() {
                     />
                   )}
                 </div>
+
+                {typeof window !== "undefined" && createPortal(
+                  <DragOverlay adjustScale={false}>
+                    {activeId ? (
+                      <div className="w-[calc(100vw-32px)] md:w-[328px] pointer-events-none select-none">
+                        <BlockUI
+                          section={sections.find((s: any) => s.id === activeId)!}
+                          index={sections.findIndex((s: any) => s.id === activeId)}
+                          hoveredId={null}
+                          setHoveredId={() => {}}
+                          sections={sections}
+                          dragHandleProps={{ attributes: {}, listeners: {} }}
+                          isDraggingOverlay={true}
+                          style={{
+                            transform: "rotate(1.5deg) scale(1.02)",
+                            boxShadow: '0 15px 30px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -5px rgba(0, 0, 0, 0.1)',
+                          }}
+                        />
+                      </div>
+                    ) : null}
+                  </DragOverlay>,
+                  document.body
+                )}
               </DndContext>
             )}
           </div>
 
           {/* Add block panel */}
-          <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shrink-0 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-none">
-            <div className="flex items-center justify-between mb-3 px-1">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                Add Block
-              </p>
-              <p className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                {sections.length}/{BLOCK_TYPES.length} Active
-              </p>
+          {!activeId && (
+            <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shrink-0 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-none animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="flex items-center justify-between mb-3 px-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                  Add Block
+                </p>
+                <p className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+                  {sections.length}/{BLOCK_TYPES.length} Active
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                {BLOCK_TYPES.map(({ type, label }) => {
+                  const isAdded = sections.some((s) => s.type === type);
+                  return (
+                    <button
+                      key={type}
+                      onClick={() => !isAdded && addBlock(type, label)}
+                      disabled={isAdded}
+                      className={cn(
+                        "group flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all whitespace-nowrap",
+                        isAdded
+                          ? "border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
+                          : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-700 dark:hover:text-violet-300 cursor-pointer shadow-sm hover:shadow"
+                      )}
+                    >
+                      {isAdded ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-500/50" />
+                      ) : (
+                        <Plus className="w-3.5 h-3.5 text-violet-500 group-hover:scale-110 transition-transform" />
+                      )}
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            
-            <div className="flex flex-wrap gap-2">
-              {BLOCK_TYPES.map(({ type, label }) => {
-                const isAdded = sections.some((s) => s.type === type);
-                return (
-                  <button
-                    key={type}
-                    onClick={() => !isAdded && addBlock(type, label)}
-                    disabled={isAdded}
-                    className={cn(
-                      "group flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all whitespace-nowrap",
-                      isAdded
-                        ? "border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
-                        : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-700 dark:hover:text-violet-300 cursor-pointer shadow-sm hover:shadow"
-                    )}
-                  >
-                    {isAdded ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-500/50" />
-                    ) : (
-                      <Plus className="w-3.5 h-3.5 text-violet-500 group-hover:scale-110 transition-transform" />
-                    )}
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          )}
             </>
           )}
         </aside>

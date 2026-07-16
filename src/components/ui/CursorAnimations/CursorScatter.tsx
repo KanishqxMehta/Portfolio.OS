@@ -4,7 +4,9 @@ import "./CursorScatter.css";
 
 export default function CursorScatter() {
   useEffect(() => {
-    const style = document.createElement("style");
+    const touchDevice = window.matchMedia("(pointer: coarse)").matches || 'ontouchstart' in window;
+    if (touchDevice) return;
+
     const handleClick = (e: MouseEvent) => {
       for (let i = 0; i < 6; i++) {
         const angle = (360 / 6) * i;

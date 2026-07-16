@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import './SmoothCursor.css';
 
 export default function SmoothCursor() {
@@ -7,8 +7,15 @@ export default function SmoothCursor() {
   const pos = useRef({ x: -100, y: -100 });
   const current = useRef({ x: -100, y: -100 });
   const raf = useRef<number>(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const touchDevice = window.matchMedia("(pointer: coarse)").matches || 'ontouchstart' in window;
+    if (touchDevice) {
+      setIsMobile(true);
+      return;
+    }
+
     const cursor = cursorRef.current;
     if (!cursor) return;
 
@@ -42,6 +49,8 @@ export default function SmoothCursor() {
       if (raf.current) cancelAnimationFrame(raf.current);
     };
   }, []);
+
+  if (isMobile) return null;
 
   return (
     <div ref={cursorRef} className="smooth-cursor" aria-hidden="true">
