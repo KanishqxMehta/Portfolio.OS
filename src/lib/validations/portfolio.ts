@@ -3,7 +3,7 @@ import { z } from "zod";
 // Per-block schema validations
 export const HeroContentSchema = z.object({
   fullName: z.string().min(1, "Full Name is required"),
-  bio: z.string().min(1, "Bio is required"),
+  bio: z.string().optional().or(z.literal("")),
   github: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
   linkedin: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
   instagram: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
@@ -19,6 +19,7 @@ export const ExperienceItemSchema = z.object({
   company: z.string().min(1, "Company name is required"),
   role: z.string().min(1, "Role is required"),
   years: z.string().min(1, "Duration/Years is required"),
+  description: z.string().min(1, "Job description is required"),
   isVisible: z.boolean().default(true).optional(),
 });
 export const ExperienceContentSchema = z.object({
@@ -41,6 +42,7 @@ export const EducationItemSchema = z.object({
   school: z.string().min(1, "School name is required"),
   degree: z.string().min(1, "Degree is required"),
   year: z.string().min(1, "Graduation year is required"),
+  grade: z.string().optional().or(z.literal("")),
   isVisible: z.boolean().default(true).optional(),
 });
 export const EducationContentSchema = z.object({
@@ -59,6 +61,8 @@ export const TestimonialsContentSchema = z.object({
 export const ContactFormContentSchema = z.object({
   emailTarget: z.string().email("Please enter a valid email address").min(1, "Target email is required"),
   buttonText: z.string().min(1, "Button text is required"),
+  title: z.string().optional().or(z.literal("")),
+  description: z.string().optional().or(z.literal("")),
 });
 
 // Discriminated union for Section validation

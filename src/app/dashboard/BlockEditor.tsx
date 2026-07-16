@@ -113,7 +113,7 @@ export const BlockEditor = ({ block }: { block: Section }) => {
         <div className="space-y-1.5">
           <label className={labelClass}>Full Name</label>
           <Input
-            placeholder="Kanishq Mehta"
+            placeholder="Enter your full name"
             value={block.content?.fullName || ""}
             onChange={(e) => handleUpdate({ fullName: e.target.value })}
             className={cn(fieldClass, !block.content?.fullName && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
@@ -123,16 +123,16 @@ export const BlockEditor = ({ block }: { block: Section }) => {
           )}
         </div>
         <div className="space-y-1.5">
-          <label className={labelClass}>Bio</label>
+          <div className="flex items-center justify-between">
+            <label className={labelClass}>Bio</label>
+            <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-medium">Optional</span>
+          </div>
           <Textarea
             placeholder="A short, catchy bio..."
-            className={cn(fieldClass, "min-h-[90px] h-auto resize-none", !block.content?.bio && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+            className={cn(fieldClass, "min-h-[90px] h-auto resize-none")}
             value={block.content?.bio || ""}
             onChange={(e) => handleUpdate({ bio: e.target.value })}
           />
-          {!block.content?.bio && (
-            <p className="text-[10px] text-red-500 mt-0.5">Bio is required.</p>
-          )}
         </div>
 
         {/* Social Links Sub-section */}
@@ -204,8 +204,15 @@ export const BlockEditor = ({ block }: { block: Section }) => {
       if (e.key === "Enter") {
         e.preventDefault();
         const value = e.currentTarget.value.trim();
-        if (value && !skills.includes(value)) {
-          handleUpdate({ items: [...skills, value] });
+        if (value) {
+          const splitSkills = value
+            .split(",")
+            .map((s: string) => s.trim())
+            .filter((s: string) => s !== "" && !skills.includes(s));
+          
+          if (splitSkills.length > 0) {
+            handleUpdate({ items: [...skills, ...splitSkills] });
+          }
           e.currentTarget.value = "";
         }
       }
@@ -238,18 +245,23 @@ export const BlockEditor = ({ block }: { block: Section }) => {
             </span>
           ))}
         </div>
-        <Input
-          placeholder="Type a skill and press Enter"
-          onKeyDown={handleAddSkill}
-          className={fieldClass}
-        />
+        <div>
+          <Input
+            placeholder="Type skills (comma-separated or single) and press Enter"
+            onKeyDown={handleAddSkill}
+            className={fieldClass}
+          />
+          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 px-1">
+            Tip: You can add multiple skills at once by separating them with commas (e.g., React, Next.js, Node.js).
+          </p>
+        </div>
       </div>
     );
   }
 
   if (block.type === "EXPERIENCE") {
     const items = (block.content?.items || [
-      { company: "", role: "", years: "" },
+      { company: "", role: "", years: "", description: "" },
     ]).map((it: any) => ({
       ...it,
       id: it.id || crypto.randomUUID(),
@@ -342,6 +354,20 @@ export const BlockEditor = ({ block }: { block: Section }) => {
                       )}
                     </div>
                   </div>
+                  <Textarea
+                    placeholder="Describe your achievements and responsibilities..."
+                    value={item.description || ""}
+                    onChange={(e) => {
+                      const newItems = items.map((it: any, i: number) => 
+                        i === idx ? { ...it, description: e.target.value } : { ...it }
+                      );
+                      handleUpdate({ items: newItems });
+                    }}
+                    className={cn(fieldClass, "min-h-[70px] h-auto resize-none", !item.description && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")}
+                  />
+                  {!item.description && (
+                    <p className="text-[10px] text-red-500 mt-0.5">Job description is required.</p>
+                  )}
                 </div>
               </SortableItem>
             ))}
@@ -351,7 +377,7 @@ export const BlockEditor = ({ block }: { block: Section }) => {
         <button
           onClick={() =>
             handleUpdate({
-              items: [...items, { id: crypto.randomUUID(), isVisible: true, company: "", role: "", years: "" }],
+              items: [...items, { id: crypto.randomUUID(), isVisible: true, company: "", role: "", years: "", description: "" }],
             })
           }
           className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all"
@@ -462,7 +488,7 @@ export const BlockEditor = ({ block }: { block: Section }) => {
     );
   }
   if (block.type === "EDUCATION") {
-    const items = (block.content?.items || [{ school: "", degree: "", year: "" }]).map((it: any) => ({
+    const items = (block.content?.items || [{ school: "", degree: "", year: "", grade: "" }]).map((it: any) => ({
       ...it,
       id: it.id || crypto.randomUUID(),
       isVisible: it.isVisible ?? true,
@@ -536,12 +562,18 @@ export const BlockEditor = ({ block }: { block: Section }) => {
                       )}
                     </div>
                   </div>
+                  <Input 
+                    placeholder="Grade / GPA (optional, e.g., 9.2 CGPA or 3.8/4.0 GPA)" 
+                    value={item.grade || ""} 
+                    onChange={(e) => updateEducation(idx, { grade: e.target.value })} 
+                    className={fieldClass} 
+                  />
                 </div>
               </SortableItem>
             ))}
           </SortableContext>
         </DndContext>
-        <button onClick={() => handleUpdate({ items: [...items.map((it: any) => ({ ...it })), { id: crypto.randomUUID(), isVisible: true, school: "", degree: "", year: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
+        <button onClick={() => handleUpdate({ items: [...items.map((it: any) => ({ ...it })), { id: crypto.randomUUID(), isVisible: true, school: "", degree: "", year: "", grade: "" }] })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-zinc-500 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/30 transition-all">
           <Plus className="w-3 h-3" /> Add Degree
         </button>
       </div>
@@ -610,6 +642,24 @@ export const BlockEditor = ({ block }: { block: Section }) => {
   if (block.type === "CONTACT_FORM") {
     return (
       <div className="space-y-3">
+        <div className="space-y-1.5">
+          <label className={labelClass}>Section Title (Optional)</label>
+          <Input 
+            placeholder="Let's work together." 
+            value={block.content?.title || ""} 
+            onChange={(e) => handleUpdate({ title: e.target.value })} 
+            className={fieldClass} 
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className={labelClass}>Section Description (Optional)</label>
+          <Textarea 
+            placeholder="I'm currently open for new opportunities..." 
+            value={block.content?.description || ""} 
+            onChange={(e) => handleUpdate({ description: e.target.value })} 
+            className={cn(fieldClass, "min-h-[70px] h-auto resize-none")} 
+          />
+        </div>
         <div className="space-y-1.5">
           <label className={labelClass}>Target Email Address</label>
           <Input 

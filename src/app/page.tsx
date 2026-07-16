@@ -470,10 +470,10 @@ export default function Home() {
 
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 py-24 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-transparent transition-colors duration-500">
-        <div className="max-w-3xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 text-center mb-4 transition-colors duration-500">Frequently Asked Questions</h2>
           <p className="text-center text-zinc-500 dark:text-zinc-400 mb-12 text-sm sm:text-base">Everything you need to know about creating your developer portfolio.</p>
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-3xl mx-auto">
             {faqs.map((faq, i) => (
               <details
                 key={i}

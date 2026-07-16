@@ -386,9 +386,9 @@ export default function EditPortfolioPage() {
                 <div className="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center mb-3">
                   <Layers className="w-5 h-5 text-zinc-400 dark:text-zinc-600" />
                 </div>
-                <p className="text-sm text-zinc-600 dark:text-zinc-500">No blocks yet</p>
-                <p className="text-xs text-zinc-400 mt-1">
-                  Add one below to get started
+                <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Start with your first draft!</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 px-4 leading-relaxed">
+                  Add a Hero block below to begin customizing your professional story.
                 </p>
               </div>
             ) : null}

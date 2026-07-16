@@ -1,6 +1,7 @@
 import React from "react";
 import * as motion from "framer-motion/client";
 import { ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send } from "lucide-react";
+import { Timeline, TimelineItem } from "./Timeline";
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -10,10 +11,8 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect x="2" y="9" width="4" height="12" />
-    <circle cx="4" cy="4" r="2" />
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" {...props}>
+    <path d="M22.23 0H1.77C.8 0 0 .77 0 1.72v20.56C0 23.23.8 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.72V1.72C24 .77 23.2 0 22.23 0zM7.12 20.45H3.56V9h3.56v11.45zM5.34 7.43c-1.14 0-2.06-.92-2.06-2.06 0-1.14.92-2.06 2.06-2.06 1.14 0 2.06.92 2.06 2.06 0 1.14-.92 2.06-2.06 2.06zm15.11 13.02h-3.56v-5.6c0-1.34-.03-3.05-1.86-3.05-1.86 0-2.14 1.45-2.14 2.95v5.7H9.33V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29z"/>
   </svg>
 );
 
@@ -56,6 +55,8 @@ const staggerContainer = {
     },
   },
 };
+
+
 
 const Hero = ({ data }: { data: HeroContent }) => {
   return (
@@ -170,7 +171,7 @@ const Projects = ({ data }: { data: ProjectsContent }) => {
         whileInView="animate"
         viewport={{ once: true }}
         variants={staggerContainer}
-        className="max-w-5xl mx-auto w-full"
+        className="max-w-4xl mx-auto w-full"
       >
         <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-16">
           <Terminal className="w-5 h-5 text-[var(--p-primary)] transition-colors duration-500" />
@@ -183,7 +184,7 @@ const Projects = ({ data }: { data: ProjectsContent }) => {
           </span>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className={`grid grid-cols-1 gap-8 ${items.length === 1 ? "md:grid-cols-1 md:max-w-2xl md:mx-auto" : "md:grid-cols-2"}`}>
           {items.map((item: any, i: number) => (
             <motion.div
               key={i}
@@ -235,13 +236,13 @@ const Projects = ({ data }: { data: ProjectsContent }) => {
 const Skills = ({ data }: { data: SkillsContent }) => {
   const skills = data.items || [];
   return (
-    <section className="theme-bg-secondary py-20 px-8 sm:px-12 border-y border-[var(--p-border)] relative overflow-hidden transition-colors duration-500">
+    <section className="theme-bg-secondary py-24 px-8 sm:px-12 border-t border-[var(--p-border)] relative overflow-hidden transition-colors duration-500">
       <motion.div
         initial="initial"
         whileInView="animate"
         viewport={{ once: true }}
         variants={staggerContainer}
-        className="max-w-5xl mx-auto w-full relative z-10"
+        className="max-w-4xl mx-auto w-full relative z-10"
       >
         <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-12">
           <Zap className="w-5 h-5 text-[var(--p-primary)] transition-colors duration-500" />
@@ -270,13 +271,13 @@ const Skills = ({ data }: { data: SkillsContent }) => {
 };
 
 const Experience = ({ data }: { data: ExperienceContent }) => (
-  <section className="theme-bg py-24 px-8 sm:px-12 transition-colors duration-500">
+  <section className="theme-bg py-24 px-8 sm:px-12 border-t border-[var(--p-border)] transition-colors duration-500">
     <motion.div
       initial="initial"
       whileInView="animate"
       viewport={{ once: true }}
       variants={staggerContainer}
-      className="max-w-3xl mx-auto w-full"
+      className="max-w-4xl mx-auto w-full"
     >
       <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-16">
         <Briefcase className="w-5 h-5 text-[var(--p-primary)] transition-colors duration-500" />
@@ -286,47 +287,40 @@ const Experience = ({ data }: { data: ExperienceContent }) => (
         <div className="h-px flex-1 bg-[var(--p-border)] transition-colors duration-500" />
       </motion.div>
 
-      <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 transition-colors duration-500">
-        {(data.items || []).filter((item: any) => item.isVisible !== false).map((item: any, i: number) => (
-          <motion.div
+      <Timeline>
+        {(data.items || []).filter((item: any) => item.isVisible !== false).map((item: any, i: number, arr: any[]) => (
+          <TimelineItem
             key={i}
-            variants={fadeInUp}
-            className="relative pb-16 last:pb-0 group pl-8 sm:pl-12"
+            title={item.company || "Company Name"}
+            subtitle={item.role || "Role / Position"}
+            badgeText={item.years || "2023 - Present"}
+            subtitleClassName="font-semibold animate-[fadeIn_0.5s_ease-out]"
+            isLast={i === arr.length - 1}
           >
-            {/* Timeline dot */}
-            <div className="theme-dot absolute left-0 -translate-x-1/2 top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
-
-            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
-              <h3 className="text-xl font-bold text-[var(--p-fg)] transition-colors duration-500">
-                {item.company || "Company Name"}
-              </h3>
-              <span className="text-xs font-mono text-[var(--p-fg-muted)] bg-[var(--p-bg-secondary)] border border-[var(--p-border)] px-3 py-1 rounded-full w-fit transition-colors duration-500">
-                {item.years || "2023 - Present"}
-              </span>
-            </div>
-            
-            <p className="text-base text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors">
-              {item.role || "Role / Position"}
-            </p>
-          </motion.div>
+            {item.description && (
+              <p className="text-sm text-[var(--p-fg-muted)]/90 leading-relaxed whitespace-pre-wrap mt-2">
+                {item.description}
+              </p>
+            )}
+          </TimelineItem>
         ))}
 
         {(!(data.items || []).filter((item: any) => item.isVisible !== false).length) && (
           <p className="text-sm text-[var(--p-fg-muted)] transition-colors duration-500 pl-8 sm:pl-12">No experience entries yet.</p>
         )}
-      </div>
+      </Timeline>
     </motion.div>
   </section>
 );
 
 const Education = ({ data }: { data: EducationContent }) => (
-  <section className="theme-bg py-24 px-8 sm:px-12 transition-colors duration-500">
+  <section className="theme-bg py-24 px-8 sm:px-12 border-t border-[var(--p-border)] transition-colors duration-500">
     <motion.div
       initial="initial"
       whileInView="animate"
       viewport={{ once: true }}
       variants={staggerContainer}
-      className="max-w-3xl mx-auto w-full"
+      className="max-w-4xl mx-auto w-full"
     >
       <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-16">
         <GraduationCap className="w-5 h-5 text-[var(--p-primary)] transition-colors duration-500" />
@@ -336,27 +330,32 @@ const Education = ({ data }: { data: EducationContent }) => (
         <div className="h-px flex-1 bg-[var(--p-border)] transition-colors duration-500" />
       </motion.div>
 
-      <div className="theme-border-l space-y-0 relative border-[var(--p-border)] ml-3 transition-colors duration-500">
-        {(data.items || []).filter((item: any) => item.isVisible !== false).map((item: any, i: number) => (
-          <motion.div key={i} variants={fadeInUp} className="relative pb-12 last:pb-0 group pl-8 sm:pl-12">
-            <div className="theme-dot absolute left-0 -translate-x-1/2 top-1.5 w-4 h-4 bg-[var(--p-bg-secondary)] border-[var(--p-border)] group-hover:border-[var(--p-primary)] group-hover:bg-[var(--p-primary)] transition-colors shadow-[0_0_0_4px_var(--p-bg)]" style={{ borderRadius: 'var(--p-radius)' }} />
-            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
-              <h3 className="text-xl font-bold text-[var(--p-fg)] transition-colors duration-500">{item.degree || "Degree / Program"}</h3>
-              <span className="text-xs font-mono text-[var(--p-fg-muted)] bg-[var(--p-bg-secondary)] border border-[var(--p-border)] px-3 py-1 rounded-full w-fit transition-colors duration-500">{item.year || "Year"}</span>
-            </div>
-            <p className="text-base text-[var(--p-fg-muted)] group-hover:text-[var(--p-fg)] transition-colors">{item.school || "School / University"}</p>
-          </motion.div>
+      <Timeline>
+        {(data.items || []).filter((item: any) => item.isVisible !== false).map((item: any, i: number, arr: any[]) => (
+          <TimelineItem
+            key={i}
+            title={item.degree || "Degree / Program"}
+            subtitle={item.school || "School / University"}
+            badgeText={item.year || "Year"}
+            isLast={i === arr.length - 1}
+          >
+            {item.grade && (
+              <p className="text-sm font-mono text-[var(--p-primary)] mt-1 font-semibold">
+                Grade: {item.grade}
+              </p>
+            )}
+          </TimelineItem>
         ))}
         {(!(data.items || []).filter((item: any) => item.isVisible !== false).length) && (
           <p className="text-sm text-[var(--p-fg-muted)] transition-colors duration-500 pl-8 sm:pl-12">No education entries yet.</p>
         )}
-      </div>
+      </Timeline>
     </motion.div>
   </section>
 );
 
 const Testimonials = ({ data }: { data: TestimonialsContent }) => (
-  <section className="theme-bg py-24 px-8 sm:px-12 transition-colors duration-500">
+  <section className="theme-bg py-24 px-8 sm:px-12 border-t border-[var(--p-border)] transition-colors duration-500">
     <motion.div
       initial="initial"
       whileInView="animate"
@@ -392,19 +391,21 @@ const ContactForm = ({ data }: { data: ContactFormContent }) => {
   const email = data.emailTarget || "hello@example.com";
   const btnText = data.buttonText || "Get in Touch";
   return (
-    <section className="theme-bg py-32 px-8 sm:px-12 transition-colors duration-500 relative overflow-hidden">
+    <section className="theme-bg py-24 px-8 sm:px-12 border-t border-[var(--p-border)] transition-colors duration-500 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--p-bg-secondary)] opacity-50" />
       <motion.div
         initial="initial"
         whileInView="animate"
         viewport={{ once: true }}
         variants={staggerContainer}
-        className="max-w-2xl mx-auto w-full text-center relative z-10"
+        className="max-w-4xl mx-auto w-full text-center relative z-10"
       >
         <motion.div variants={fadeInUp}>
-          <h2 className="text-3xl sm:text-5xl font-black text-[var(--p-fg)] mb-6 tracking-tight">Let's work together.</h2>
-          <p className="text-lg text-[var(--p-fg-muted)] mb-10 max-w-lg mx-auto leading-relaxed">
-            I'm currently open for new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!
+          <h2 className="text-3xl sm:text-5xl font-black text-[var(--p-fg)] mb-6 tracking-tight">
+            {data.title || "Let's work together."}
+          </h2>
+          <p className="text-lg text-[var(--p-fg-muted)] mb-10 max-w-lg mx-auto leading-relaxed whitespace-pre-wrap">
+            {data.description || "I'm currently open for new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!"}
           </p>
           <a
             href={`mailto:${email}`}
