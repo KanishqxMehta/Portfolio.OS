@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio.OS
 
-## Getting Started
+Free portfolio builder for developers — block-based editor, theme system, instant publishing, and analytics.
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 20+
+- Docker (for local PostgreSQL)
+
+## Quick start
 
 ```bash
+# 1. Install dependencies
+npm install
+
+# 2. Copy environment variables
+cp .env.example .env
+
+# 3. Start PostgreSQL
+npm run db:up
+
+# 4. Run migrations (also runs on production build)
+npx prisma migrate deploy
+
+# 5. Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start Next.js dev server |
+| `npm run build` | Generate Prisma client, run migrations, production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run typecheck` | TypeScript check without emit |
+| `npm run test` | Run unit tests (Vitest) |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Run tests with coverage report |
+| `npm run db:up` | Start PostgreSQL via Docker Compose |
+| `npm run db:down` | Stop PostgreSQL |
+| `npm run db:studio` | Open Prisma Studio |
 
-## Learn More
+## Testing
 
-To learn more about Next.js, take a look at the following resources:
+Unit tests live next to source files as `*.test.ts` under `src/`. They cover:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Portfolio Zod validation schemas
+- User/email/password/username validation
+- Rate limiting utility
+- HTML sanitization for contact emails
+- Theme configuration integrity
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run test
+npm run test:coverage
+```
 
-## Deploy on Vercel
+## CI
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+GitHub Actions runs on every push and pull request to `main` / `master`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. ESLint
+2. TypeScript typecheck
+3. Vitest unit tests + coverage
+
+See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+## Project structure
+
+```
+src/
+  app/           # Next.js App Router pages & API routes
+  components/    # UI and portfolio renderer
+  lib/           # Shared utilities, validation, themes
+  store/         # Zustand client state
+  actions/       # Server actions (password reset)
+prisma/          # Schema and migrations
+```
+
+## Environment variables
+
+See [`.env.example`](.env.example) for all supported variables.
+
+## License
+
+Private — all rights reserved.

@@ -2,9 +2,23 @@ import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import crypto from "crypto";
+import {
+  buildRateLimitKey,
+  checkRateLimit,
+  getClientIp,
+} from "@/lib/rate-limit";
+import { rateLimitExceededResponse } from "@/lib/api/rate-limit-response";
+
+const VIEW_RATE_LIMIT = { limit: 60, windowMs: 60 * 1000 };
 
 export async function POST(req: Request) {
   try {
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(buildRateLimitKey("views", ip), VIEW_RATE_LIMIT);
+    if (!rateLimit.allowed) {
+      return rateLimitExceededResponse(rateLimit);
+    }
+
     const { slug, visitorSessionId } = await req.json();
 
     if (!slug) {

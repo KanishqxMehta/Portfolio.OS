@@ -4,10 +4,11 @@ import { z } from "zod";
 import * as argon2 from "argon2";
 import { pool } from "@/lib/db";
 import { getPasswordResetTokenByToken } from "@/lib/tokens";
+import { PASSWORD_MIN_LENGTH } from "@/lib/validations/user";
 
 const NewPasswordSchema = z.object({
-  password: z.string().min(6, {
-    message: "Minimum of 6 characters required",
+  password: z.string().min(PASSWORD_MIN_LENGTH, {
+    message: `Minimum of ${PASSWORD_MIN_LENGTH} characters required`,
   }),
 });
 

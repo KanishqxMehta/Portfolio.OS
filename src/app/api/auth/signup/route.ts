@@ -1,9 +1,30 @@
 import { NextResponse } from "next/server";
 import { hash } from "argon2";
 import { pool } from "@/lib/db";
+import {
+  buildRateLimitKey,
+  checkRateLimit,
+  getClientIp,
+} from "@/lib/rate-limit";
+import { rateLimitExceededResponse } from "@/lib/api/rate-limit-response";
+import {
+  isValidEmail,
+  normalizeEmail,
+  slugifyUsername,
+  validatePassword,
+  validateUsername,
+} from "@/lib/validations/user";
+
+const SIGNUP_RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 
 export async function POST(req: Request) {
   try {
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(buildRateLimitKey("signup", ip), SIGNUP_RATE_LIMIT);
+    if (!rateLimit.allowed) {
+      return rateLimitExceededResponse(rateLimit);
+    }
+
     const { email, password, username } = await req.json();
 
     if (!email || !password || !username) {
@@ -13,33 +34,24 @@ export async function POST(req: Request) {
       );
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = normalizeEmail(email);
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    if (!isValidEmail(normalizedEmail)) {
       return NextResponse.json(
         { error: "Invalid email address" },
         { status: 400 }
       );
     }
 
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: "Password must be at least 8 characters" },
-        { status: 400 }
-      );
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return NextResponse.json({ error: passwordValidation.error }, { status: 400 });
     }
 
-    const sanitizedUsername = username
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
-
-    if (sanitizedUsername.length < 3 || sanitizedUsername.length > 20) {
-      return NextResponse.json(
-        { error: "Username must be between 3 and 20 characters" },
-        { status: 400 }
-      );
+    const sanitizedUsername = slugifyUsername(username);
+    const usernameValidation = validateUsername(sanitizedUsername);
+    if (!usernameValidation.valid) {
+      return NextResponse.json({ error: usernameValidation.error }, { status: 400 });
     }
 
     const emailCheck = await pool.query(
@@ -76,7 +88,7 @@ export async function POST(req: Request) {
       { message: "Account created successfully" },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("SIGNUP_ERROR:", error);
     return NextResponse.json(
       { error: "Internal server error" },

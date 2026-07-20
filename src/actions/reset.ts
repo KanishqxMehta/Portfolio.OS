@@ -37,11 +37,14 @@ export const reset = async (values: z.infer<typeof ResetSchema>) => {
     // Generate token and save to DB
     const token = await generatePasswordResetToken(email);
 
-    // In development mode, bypass the email sending completely for seamless local testing
-    if (process.env.APP_ENV === "development") {
-      return { 
+    // Local-only bypass: never expose reset tokens unless both env flags are development
+    if (
+      process.env.NODE_ENV === "development" &&
+      process.env.APP_ENV === "development"
+    ) {
+      return {
         success: "Bypassing email in development...",
-        redirect: `/reset-password?token=${token}`
+        redirect: `/reset-password?token=${token}`,
       };
     }
 

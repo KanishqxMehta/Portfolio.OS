@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, Suspense } from "react";
+import { PASSWORD_MIN_LENGTH } from "@/lib/validations/user";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, KeyRound, AlertCircle, CheckCircle2 } from "lucide-react";

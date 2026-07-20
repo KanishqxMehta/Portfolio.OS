@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { useToastStore } from './useToastStore';
 import { Section, portfolioSchema } from '@/lib/validations/portfolio';
+import { slugifyUsername } from '@/lib/validations/user';
 
 interface PortfolioState {
   sections: Section[];
@@ -31,12 +32,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   setTheme: (theme) => set({ theme }),
 
   setUsername: (username) => {
-    const slugified = username
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-    set({ username: slugified });
+    set({ username: slugifyUsername(username) });
   },
 
   setSections: (sections) => set((state) => {
