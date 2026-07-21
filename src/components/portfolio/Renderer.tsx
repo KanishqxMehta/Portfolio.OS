@@ -356,7 +356,9 @@ const Education = ({ data }: { data: EducationContent }) => (
   </section>
 );
 
-const Testimonials = ({ data }: { data: TestimonialsContent }) => (
+const Testimonials = ({ data }: { data: TestimonialsContent }) => {
+  const items = (data.items || []).filter((item: any) => item.isVisible !== false);
+  return (
   <section className="theme-bg py-24 px-8 sm:px-12 border-t border-[var(--p-border)] transition-colors duration-500">
     <motion.div
       initial="initial"
@@ -373,8 +375,8 @@ const Testimonials = ({ data }: { data: TestimonialsContent }) => (
         <div className="h-px flex-1 bg-[var(--p-border)] transition-colors duration-500" />
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {data.items?.map((item: any, i: number) => (
+      <div className={`grid grid-cols-1 gap-6 ${items.length === 1 ? "md:grid-cols-1 md:max-w-xl md:mx-auto" : "md:grid-cols-2"}`}>
+        {items.map((item: any, i: number) => (
           <motion.div key={i} variants={fadeInUp} className="p-8 theme-bg-secondary border border-[var(--p-border)] relative group hover:border-[var(--p-primary)] transition-all duration-500 shadow-sm hover:shadow-xl" style={{ borderRadius: 'var(--p-radius)' }}>
             <Quote className="w-10 h-10 text-[var(--p-primary)] opacity-20 absolute top-6 right-6 group-hover:opacity-40 transition-opacity duration-500" />
             <p className="text-base leading-relaxed text-[var(--p-fg)] font-medium mb-8 relative z-10">"{item.quote}"</p>
@@ -387,7 +389,8 @@ const Testimonials = ({ data }: { data: TestimonialsContent }) => (
       </div>
     </motion.div>
   </section>
-);
+  );
+};
 
 const ContactForm = ({ data }: { data: ContactFormContent }) => {
   const email = data.emailTarget || "hello@example.com";
@@ -551,11 +554,14 @@ const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles }: { sections
               <div key={i} className="mb-4 text-[var(--p-fg-muted)] whitespace-pre-wrap leading-relaxed">{item.content}</div>
             );
             if (item.type === 'component' && item.content) {
-              const Component = BlockMap[item.content.type];
+              const latestSection = sections.find(s => s.id === item.content.id) || item.content;
+              const Component = BlockMap[latestSection.type];
               if (!Component) return null;
+              const items = (latestSection.content as any)?.items;
+              const contentKey = Array.isArray(items) ? items.length : 0;
               return (
-                <div key={i} className="mb-6 ml-1 sm:ml-4 pl-3 sm:pl-4 border-l-2 border-[var(--p-primary)]/50 py-2 relative overflow-hidden">
-                   <Component data={item.content.content} />
+                <div key={`${i}-v${contentKey}`} className="mb-6 ml-1 sm:ml-4 pl-3 sm:pl-4 border-l-2 border-[var(--p-primary)]/50 py-2 relative overflow-hidden">
+                   <Component data={latestSection.content} />
                 </div>
               );
             }
@@ -700,10 +706,12 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
           {orderedSections.map((section, i) => {
             const Component = BlockMap[section.type];
             if (!Component) return null;
+            const items = (section.content as any)?.items;
+            const contentKey = Array.isArray(items) ? items.length : 0;
             const isFullWidth = ["HERO", "PROJECTS", "EXPERIENCE", "CONTACT_FORM"].includes(section.type);
             const colSpan = isFullWidth ? "lg:col-span-2" : "lg:col-span-1";
             return (
-              <div key={`${section.id}-${i}`} className={`${colSpan} theme-card theme-bg-secondary flex flex-col justify-start overflow-hidden`}>
+              <div key={`${section.id}-v${contentKey}`} className={`${colSpan} theme-card theme-bg-secondary flex flex-col justify-start overflow-hidden`}>
                 <Component data={section.content} />
               </div>
             );
@@ -779,8 +787,10 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
                if (s.id !== activeTerminalTab) return null;
                const Component = SidebarBlockMap[s.type] || BlockMap[s.type];
                if (!Component) return null;
+               const items = (s.content as any)?.items;
+               const contentKey = Array.isArray(items) ? items.length : 0;
                return (
-                 <div key={s.id} className="w-full">
+                 <div key={`${s.id}-v${contentKey}`} className="w-full">
                     <Component data={s.content} />
                  </div>
                );

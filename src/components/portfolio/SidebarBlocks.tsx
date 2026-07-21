@@ -213,7 +213,9 @@ const SidebarEducation = ({ data }: { data: EducationContent }) => {
 };
 
 /* ─── TESTIMONIALS ─── */
-const SidebarTestimonials = ({ data }: { data: TestimonialsContent }) => (
+const SidebarTestimonials = ({ data }: { data: TestimonialsContent }) => {
+  const items = (data.items || []).filter((item: any) => item.isVisible !== false);
+  return (
   <motion.div
     initial="initial"
     whileInView="animate"
@@ -225,7 +227,7 @@ const SidebarTestimonials = ({ data }: { data: TestimonialsContent }) => (
       Recommendations
     </motion.h2>
     <div className="grid grid-cols-1 gap-6">
-      {(data.items || []).map((testimonial: any, i: number) => (
+      {items.map((testimonial: any, i: number) => (
         <motion.div
           key={i}
           variants={fadeInUp}
@@ -243,7 +245,8 @@ const SidebarTestimonials = ({ data }: { data: TestimonialsContent }) => (
       ))}
     </div>
   </motion.div>
-);
+  );
+};
 
 /* ─── CONTACT FORM ─── */
 const SidebarContactForm = ({ data }: { data: ContactFormContent }) => {
