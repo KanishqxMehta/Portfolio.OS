@@ -644,10 +644,10 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
         border-left-width: var(--p-border-width);
         border-left-style: var(--p-border-style);
       }
-      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1) { background-color: #ffeaa7; }
-      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2) { background-color: #fab1a0; }
-      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3) { background-color: #81ecec; }
-      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4) { background-color: #a29bfe; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1) { background-color: #ffeaa7 !important; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2) { background-color: #fab1a0 !important; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3) { background-color: #81ecec !important; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4) { background-color: #a29bfe !important; }
       [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1):hover { background-color: #ffeaa7 !important; }
       [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2):hover { background-color: #fab1a0 !important; }
       [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3):hover { background-color: #81ecec !important; }
