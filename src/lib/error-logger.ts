@@ -18,14 +18,12 @@ export function captureException(
   const normalizedError =
     error instanceof Error ? error : new Error(String(error));
 
-  if (process.env.NODE_ENV !== "test") {
-    console.error("[ERROR_LOGGER]", {
-      message: normalizedError.message,
-      stack: normalizedError.stack,
-      context,
-      timestamp: new Date().toISOString(),
-    });
-  }
+  console.error("[ERROR_LOGGER]", {
+    message: normalizedError.message,
+    stack: normalizedError.stack,
+    context,
+    timestamp: new Date().toISOString(),
+  });
 
   // If Sentry DSN is present, dynamically forward to Sentry if loaded
   const dsn =
@@ -51,11 +49,9 @@ export function captureMessage(
   level: ErrorSeverity = "info",
   context?: ErrorContext
 ): void {
-  if (process.env.NODE_ENV !== "test") {
-    console.log(`[LOG_${level.toUpperCase()}]`, {
-      message,
-      context,
-      timestamp: new Date().toISOString(),
-    });
-  }
+  console.log(`[LOG_${level.toUpperCase()}]`, {
+    message,
+    context,
+    timestamp: new Date().toISOString(),
+  });
 }

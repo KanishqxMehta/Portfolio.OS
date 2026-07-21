@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { pool } from "@/lib/db";
 import { AnalyticsChart } from "./ChartWrapper";
@@ -222,9 +223,11 @@ export default async function AnalyticsPage() {
                   <div key={visitor.id} className="py-4 flex items-center justify-between group first:pt-0 last:pb-0">
                     <div className="flex items-center gap-4">
                       {isLogged && visitor.visitorImage ? (
-                        <img 
+                        <Image 
                           src={visitor.visitorImage} 
                           alt={displayName} 
+                          width={40}
+                          height={40}
                           className="w-10 h-10 rounded-full object-cover border border-zinc-200 dark:border-zinc-800"
                         />
                       ) : (
