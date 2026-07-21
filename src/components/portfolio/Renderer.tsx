@@ -426,7 +426,7 @@ const BlockMap: Record<string, React.FC<{ data: any }>> = {
   SKILLS: Skills,
   EXPERIENCE: Experience,
   EDUCATION: Education,
-  // TESTIMONIALS: Testimonials,
+  TESTIMONIALS: Testimonials,
   CONTACT_FORM: ContactForm,
 };
 

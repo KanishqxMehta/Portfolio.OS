@@ -57,7 +57,7 @@ const BLOCK_TYPES = [
   { type: "EXPERIENCE", label: "Experience", description: "Work history" },
   { type: "PROJECTS", label: "Projects", description: "Your portfolio" },
   { type: "EDUCATION", label: "Education", description: "Degrees & certs" },
-  // { type: "TESTIMONIALS", label: "Testimonials", description: "Quotes from peers" },
+  { type: "TESTIMONIALS", label: "Testimonials", description: "Quotes from peers" },
   { type: "CONTACT_FORM", label: "Contact Form", description: "Email you directly" },
 ] as const;
 
@@ -67,6 +67,7 @@ const TYPE_COLORS: Record<string, string> = {
   SKILLS: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40",
   EXPERIENCE: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/40",
   EDUCATION: "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/40",
+  TESTIMONIALS: "bg-fuchsia-50 dark:bg-fuchsia-950/40 text-fuchsia-700 dark:text-fuchsia-400 border-fuchsia-100 dark:border-fuchsia-900/40",
   CONTACT_FORM: "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/40",
 };
 
