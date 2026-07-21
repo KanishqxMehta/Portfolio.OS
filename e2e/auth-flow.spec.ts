@@ -4,7 +4,7 @@ test.describe("Authentication E2E Suite", () => {
   test("should render login page with email and password inputs", async ({ page }) => {
     await page.goto("/login");
 
-    await expect(page.locator("h1, h2")).toContainText(/login|sign in|welcome/i);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     const emailInput = page.locator("input[type='email']");
     const passwordInput = page.locator("input[type='password']");
 
@@ -15,10 +15,12 @@ test.describe("Authentication E2E Suite", () => {
   test("should render signup page with registration fields", async ({ page }) => {
     await page.goto("/signup");
 
-    await expect(page.locator("h1, h2")).toContainText(/sign up|create account/i);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    const usernameInput = page.locator("input[placeholder='your-name']");
     const emailInput = page.locator("input[type='email']");
     const passwordInput = page.locator("input[type='password']");
 
+    await expect(usernameInput).toBeVisible();
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
   });
