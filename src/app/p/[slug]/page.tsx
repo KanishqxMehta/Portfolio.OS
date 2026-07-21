@@ -112,8 +112,7 @@ async function PortfolioContent({ slug }: { slug: string }) {
     hero?.content?.twitter,
   ].filter(Boolean);
 
-  const jsonLd: Record<string, any> = {
-    "@context": "https://schema.org",
+  const personJsonLd: Record<string, any> = {
     "@type": "Person",
     name,
     description: bio,
@@ -121,12 +120,18 @@ async function PortfolioContent({ slug }: { slug: string }) {
   };
 
   if (sameAs.length > 0) {
-    jsonLd.sameAs = sameAs;
+    personJsonLd.sameAs = sameAs;
   }
 
   if (skills.length > 0) {
-    jsonLd.knowsAbout = skills;
+    personJsonLd.knowsAbout = skills;
   }
+
+  const jsonLd: Record<string, any> = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    mainEntity: personJsonLd,
+  };
 
   const heroIdx = sections.findIndex((s: any) => s.type === "HERO");
   if (heroIdx === -1) {

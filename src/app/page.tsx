@@ -7,7 +7,7 @@ import { ArrowRight, Layers, Layout, Palette, Sparkles, UploadCloud, Cpu, PenToo
 import { ThemeToggle } from "@/components/ThemeToggle";
 import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";
-import { OrganizationJsonLd, FAQJsonLd } from "@/components/JsonLd";
+import { OrganizationJsonLd, FAQJsonLd, SiteNavigationJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
 
 const faqs = [
   {
@@ -97,6 +97,7 @@ export default function Home() {
 
       {/* Navbar */}
       <motion.nav
+        aria-label="Main navigation"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -113,34 +114,40 @@ export default function Home() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center gap-4">
-            <a
-              href="#features"
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all cursor-pointer"
-            >
-              Features
-            </a>
-            <Link
-              href="/dashboard/edit"
-              className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all"
-            >
-              Editor
-            </Link>
-            <div className="relative group/pricing px-4 py-2 cursor-pointer rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-all">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover/pricing:text-zinc-900 dark:group-hover/pricing:text-zinc-100 transition-colors">
-                  Pricing
-                </span>
-                <span className="text-[9px] font-bold bg-violet-500/10 text-violet-400 px-1.5 py-0.5 rounded-full border border-violet-500/20 uppercase tracking-wider scale-95 shadow-[0_0_10px_rgba(139,92,246,0.1)]">
-                  Free Beta
-                </span>
+          <ul className="hidden md:flex items-center gap-4">
+            <li>
+              <a
+                href="#features"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all cursor-pointer"
+              >
+                Features
+              </a>
+            </li>
+            <li>
+              <Link
+                href="/dashboard/edit"
+                className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all"
+              >
+                Editor
+              </Link>
+            </li>
+            <li>
+              <div className="relative group/pricing px-4 py-2 cursor-pointer rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-all">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover/pricing:text-zinc-900 dark:group-hover/pricing:text-zinc-100 transition-colors">
+                    Pricing
+                  </span>
+                  <span className="text-[9px] font-bold bg-violet-500/10 text-violet-400 px-1.5 py-0.5 rounded-full border border-violet-500/20 uppercase tracking-wider scale-95 shadow-[0_0_10px_rgba(139,92,246,0.1)]">
+                    Free Beta
+                  </span>
+                </div>
               </div>
-            </div>
-          </div>
+            </li>
+          </ul>
 
           {/* Desktop Auth/Actions */}
           <div className="hidden md:flex items-center gap-4">
@@ -493,6 +500,15 @@ export default function Home() {
       </section>
 
       {/* JSON-LD Structured Data */}
+      <SiteNavigationJsonLd links={[
+        { name: "Features", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/#features` },
+        { name: "Editor", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/dashboard/edit` },
+        { name: "About", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/about` },
+        { name: "Contact", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/contact` }
+      ]} />
+      <BreadcrumbJsonLd crumbs={[
+        { name: "Home", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/` }
+      ]} />
       <OrganizationJsonLd baseUrl={process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"} />
       <FAQJsonLd faqs={faqs} />
 
