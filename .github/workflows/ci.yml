@@ -39,3 +39,13 @@ jobs:
 
       - name: Unit test coverage
         run: npm run test:coverage
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        run: npx playwright test
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/portfolio_db"
+          NEXTAUTH_SECRET: "ci-test-secret"
+          NEXTAUTH_URL: "http://localhost:3000"
