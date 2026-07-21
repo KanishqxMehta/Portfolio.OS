@@ -8,5 +8,6 @@ interface PortfolioSection {
 
 export interface PortfolioContent {
   theme: string;
+  layout?: string;
   sections: PortfolioSection[]; // Array of blocks
 }

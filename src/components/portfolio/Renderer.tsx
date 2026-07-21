@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import * as motion from "framer-motion/client";
 import { ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send } from "lucide-react";
 import { Timeline, TimelineItem } from "./Timeline";
@@ -31,6 +32,7 @@ const TwitterIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 import { THEMES } from "@/lib/themes";
+import { SidebarBlockMap } from "./SidebarBlocks";
 import {
   Section,
   HeroContent,
@@ -455,7 +457,132 @@ const InkSplashes = () => (
   </div>
 );
 
-export const PortfolioRenderer = ({ sections, theme = "classic" }: { sections: Section[], theme?: string }) => {
+const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles }: { sections: Section[], theme: string, baseStyle: React.CSSProperties, sharedStyles: React.ReactNode }) => {
+  const [history, setHistory] = useState<{type: 'input' | 'output' | 'component', content: any}[]>([
+    { type: 'output', content: 'Welcome to Portfolio OS v1.0.0\nType "help" for a list of available commands.' }
+  ]);
+  const [input, setInput] = useState('');
+  const endRef = React.useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const container = document.getElementById('terminal-scroll-container');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [history]);
+
+  const handleCommand = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    const cmd = input.trim().toLowerCase();
+    const newHistory = [...history, { type: 'input' as const, content: input.trim() }];
+    
+    if (cmd === 'clear') {
+      setHistory([]);
+      setInput('');
+      return;
+    }
+    
+    if (cmd === 'help') {
+      newHistory.push({ type: 'output', content: 'Available commands:\n  help    Show this message\n  ls      List available sections\n  cat <section>  View a section (e.g. cat hero)\n  clear   Clear terminal\n  all     Show all sections' });
+    } else if (cmd === 'ls') {
+      const files = sections.map(s => s.type.toLowerCase()).join('   ');
+      newHistory.push({ type: 'output', content: files });
+    } else if (cmd === 'all') {
+      sections.forEach(s => {
+        newHistory.push({ type: 'input', content: `cat ${s.type.toLowerCase()}` });
+        newHistory.push({ type: 'component', content: s });
+      });
+    } else if (cmd.startsWith('cat ')) {
+      const target = cmd.split(' ')[1];
+      const section = sections.find(s => s.type.toLowerCase() === target || s.type.toLowerCase().replace('_', '') === target);
+      if (section) {
+        newHistory.push({ type: 'component', content: section });
+      } else {
+        newHistory.push({ type: 'output', content: `cat: ${target}: No such file or directory\nAvailable: ${sections.map(s => s.type.toLowerCase()).join(', ')}` });
+      }
+    } else {
+      newHistory.push({ type: 'output', content: `command not found: ${cmd}\nType "help" for available commands.` });
+    }
+    
+    setHistory(newHistory as any);
+    setInput('');
+  };
+  
+  return (
+    <div data-theme={theme} className="theme-bg min-h-[100dvh] font-sans transition-colors duration-500 relative flex items-center justify-center p-4 md:p-8" style={baseStyle}>
+      {sharedStyles}
+      <style>{`
+        .terminal-content section { padding: 0 !important; min-height: auto !important; border: none !important; background: transparent !important; }
+        .terminal-content section > div { max-width: 100% !important; margin: 0 !important; }
+        .terminal-content section .absolute { display: none !important; }
+        .terminal-content h1 { font-size: 2rem !important; }
+      `}</style>
+      <div className="w-full max-w-[1000px] border border-[var(--p-border)] rounded-xl flex flex-col overflow-hidden h-[85vh] bg-[var(--p-bg)] shadow-2xl">
+        {/* Title bar */}
+        <div className="h-11 border-b border-[var(--p-border)] bg-[var(--p-bg-secondary)] flex items-center px-4 gap-2 shrink-0">
+          <div className="flex gap-2 mr-4">
+             <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
+             <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
+             <div className="w-3 h-3 rounded-full bg-[#27C93F]" />
+          </div>
+          <div className="flex-1 text-center">
+            <span className="text-xs font-semibold text-[var(--p-fg-muted)] font-mono">
+              kanishq@portfolio ~ zsh
+            </span>
+          </div>
+          <div className="w-[56px]" />
+        </div>
+        {/* Terminal body */}
+        <div
+          id="terminal-scroll-container"
+          className="flex-1 overflow-y-auto min-h-0 p-6 md:p-8 font-mono text-sm bg-[var(--p-bg)] terminal-content"
+          onClick={() => document.getElementById('term-input')?.focus()}
+          data-lenis-prevent="true"
+        >
+          {history.map((item, i) => {
+            if (item.type === 'input') return (
+              <div key={i} className="mb-1">
+                <span className="text-[var(--p-primary)]">❯ </span>
+                <span className="text-[var(--p-fg)]">{item.content}</span>
+              </div>
+            );
+            if (item.type === 'output') return (
+              <div key={i} className="mb-4 text-[var(--p-fg-muted)] whitespace-pre-wrap leading-relaxed">{item.content}</div>
+            );
+            if (item.type === 'component' && item.content) {
+              const Component = BlockMap[item.content.type];
+              if (!Component) return null;
+              return (
+                <div key={i} className="mb-6 ml-1 sm:ml-4 pl-3 sm:pl-4 border-l-2 border-[var(--p-primary)]/50 py-2 relative overflow-hidden">
+                   <Component data={item.content.content} />
+                </div>
+              );
+            }
+            return null;
+          })}
+          <form onSubmit={handleCommand} className="flex items-center mt-2">
+             <span className="text-[var(--p-primary)] mr-1">❯ </span>
+             <input
+               id="term-input"
+               type="text"
+               value={input}
+               onChange={e => setInput(e.target.value)}
+               className="bg-transparent border-none outline-none flex-1 text-[var(--p-fg)] font-mono text-sm caret-[var(--p-primary)]"
+               autoFocus
+               autoComplete="off"
+               spellCheck="false"
+               style={{ caretColor: 'var(--p-primary)' }}
+             />
+          </form>
+          <div ref={endRef} className="h-4" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const PortfolioRenderer = ({ sections, theme = "classic", layout = "classic" }: { sections: Section[], theme?: string, layout?: string }) => {
   const activeTheme = THEMES[theme] || THEMES["classic"];
   
   // Reorder sections so that CONTACT_FORM is always rendered at the very bottom
@@ -464,21 +591,220 @@ export const PortfolioRenderer = ({ sections, theme = "classic" }: { sections: S
   const contactSections = visibleSections.filter((s) => s.type === "CONTACT_FORM");
   const orderedSections = [...nonContactSections, ...contactSections];
 
+  const [activeTerminalTab, setActiveTerminalTab] = useState(orderedSections[0]?.id || "");
+  useEffect(() => {
+    if (orderedSections.length > 0 && !orderedSections.find(s => s.id === activeTerminalTab)) {
+      setActiveTerminalTab(orderedSections[0].id);
+    }
+  }, [orderedSections, activeTerminalTab]);
+
+  const baseStyle = {
+    ...activeTheme.cssVars,
+    fontFamily: activeTheme.cssVars["--p-font"],
+    color: "var(--p-fg)",
+  } as React.CSSProperties;
+
+  const renderInkSplashes = () => theme === "paper" && <InkSplashes />;
+  const noiseOverlay = (
+    <div 
+      className="pointer-events-none absolute inset-0 z-0 opacity-[var(--p-noise-opacity,0)] transition-opacity duration-500"
+      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
+    />
+  );
+
+  const sharedStyles = (
+    <style>{`
+      .theme-bg { background: var(--p-bg); }
+      .theme-bg-secondary { background: var(--p-bg-secondary); }
+      .theme-card {
+        border-radius: var(--p-radius);
+        border-width: var(--p-border-width);
+        border-style: var(--p-border-style);
+        box-shadow: var(--p-shadow);
+        backdrop-filter: var(--p-blur);
+        -webkit-backdrop-filter: var(--p-blur);
+      }
+      .theme-card:hover {
+        box-shadow: var(--p-shadow-hover);
+        transform: var(--p-transform-hover);
+      }
+      .theme-pill {
+        background-color: var(--p-pill-bg);
+        border-radius: var(--p-radius);
+        border-width: var(--p-border-width);
+        border-style: var(--p-border-style);
+        backdrop-filter: var(--p-blur);
+        -webkit-backdrop-filter: var(--p-blur);
+      }
+      .theme-dot {
+        border-width: var(--p-border-width);
+        border-style: var(--p-border-style);
+      }
+      .theme-border-l {
+        border-left-width: var(--p-border-width);
+        border-left-style: var(--p-border-style);
+      }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1) { background-color: #ffeaa7; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2) { background-color: #fab1a0; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3) { background-color: #81ecec; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4) { background-color: #a29bfe; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1):hover { background-color: #ffeaa7 !important; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2):hover { background-color: #fab1a0 !important; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3):hover { background-color: #81ecec !important; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4):hover { background-color: #a29bfe !important; }
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1) .theme-card { background-color: #fdcb6e; } 
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2) .theme-card { background-color: #e17055; } 
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3) .theme-card { background-color: #00cec9; } 
+      [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4) .theme-card { background-color: #6c5ce7; } 
+      [data-theme="neobrutalism"] div.grid > div.theme-card .theme-card:hover {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border-color: var(--p-fg) !important;
+      }
+      [data-theme="neobrutalism"] .theme-pill:nth-child(4n+1) { background-color: #ff4757; color: #fff; }
+      [data-theme="neobrutalism"] .theme-pill:nth-child(4n+2) { background-color: #2ed573; color: #111; }
+      [data-theme="neobrutalism"] .theme-pill:nth-child(4n+3) { background-color: #1e90ff; color: #fff; }
+      [data-theme="neobrutalism"] .theme-pill:nth-child(4n+4) { background-color: #ffb703; color: #111; }
+      
+      /* Bento Layout Overrides */
+      .bento-wrapper section {
+        padding: 3rem !important;
+        min-height: auto !important;
+        border-top: none !important;
+        background: transparent !important;
+      }
+      .bento-wrapper section > div {
+        max-width: 100% !important;
+      }
+      .bento-wrapper h1 { font-size: 3rem !important; }
+      
+      /* Sidebar Layout Overrides */
+      .sidebar-wrapper section {
+        padding: 0 !important;
+        min-height: auto !important;
+        border-top: none !important;
+        background: transparent !important;
+      }
+      .sidebar-wrapper .theme-card {
+        border-radius: var(--p-radius) !important;
+        border: 1px solid var(--p-border) !important;
+      }
+    `}</style>
+  );
+
+  if (layout === "bento") {
+    return (
+      <div data-theme={theme} className="theme-bg min-h-full font-sans transition-colors duration-500 relative p-4 md:p-8 md:py-16 bento-wrapper" style={baseStyle}>
+        {noiseOverlay}{renderInkSplashes()}{sharedStyles}
+        <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
+          {orderedSections.map((section, i) => {
+            const Component = BlockMap[section.type];
+            if (!Component) return null;
+            const isFullWidth = ["HERO", "PROJECTS", "EXPERIENCE", "CONTACT_FORM"].includes(section.type);
+            const colSpan = isFullWidth ? "lg:col-span-2" : "lg:col-span-1";
+            return (
+              <div key={`${section.id}-${i}`} className={`${colSpan} theme-card theme-bg-secondary flex flex-col justify-start overflow-hidden`}>
+                <Component data={section.content} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  if (layout === "sidebar") {
+    const heroSection = orderedSections.find(s => s.type === "HERO");
+    const heroData = heroSection?.content as any;
+    const name = heroData?.fullName || "Your Name";
+    const bio = heroData?.bio || "Crafting digital experiences with code and design.";
+    
+    return (
+      <div data-theme={theme} className="theme-bg min-h-[100dvh] md:h-[100dvh] font-sans transition-colors duration-500 relative flex flex-col md:flex-row md:overflow-hidden" style={baseStyle}>
+        {sharedStyles}
+        {/* Sidebar Panel */}
+        <div className="w-full md:w-80 h-auto md:h-full border-b md:border-b-0 md:border-r border-[var(--p-border)] bg-[var(--p-bg)] p-6 md:p-10 shrink-0 flex flex-col md:overflow-y-auto" data-lenis-prevent="true">
+          <div className="mb-12">
+            <h1 className="text-xl font-black text-[var(--p-fg)] tracking-tight mb-3 leading-tight">{name}</h1>
+            <p className="text-sm text-[var(--p-fg-muted)] leading-relaxed line-clamp-3">{bio}</p>
+            
+            {/* Socials */}
+            {(heroData?.github || heroData?.linkedin || heroData?.twitter || heroData?.instagram) && (
+              <div className="mt-6 flex flex-wrap gap-4">
+                {heroData.github && (
+                  <a href={heroData.github} target="_blank" rel="noreferrer" className="text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] transition-colors">
+                    <GithubIcon className="w-4 h-4" />
+                  </a>
+                )}
+                {heroData.linkedin && (
+                  <a href={heroData.linkedin} target="_blank" rel="noreferrer" className="text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] transition-colors">
+                    <LinkedinIcon className="w-4 h-4" />
+                  </a>
+                )}
+                {heroData.twitter && (
+                  <a href={heroData.twitter} target="_blank" rel="noreferrer" className="text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] transition-colors">
+                    <TwitterIcon className="w-4 h-4" />
+                  </a>
+                )}
+                {heroData.instagram && (
+                  <a href={heroData.instagram} target="_blank" rel="noreferrer" className="text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] transition-colors">
+                    <InstagramIcon className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <nav className="flex-1 mt-8 md:mt-0">
+            <div className="text-[10px] font-bold text-[var(--p-fg-muted)] uppercase tracking-[0.2em] mb-3 opacity-50">Navigation</div>
+            <div className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible gap-4 md:gap-5 pb-4 md:pb-0 scrollbar-hide">
+              {orderedSections.map((s) => (
+                <button 
+                  key={s.id} 
+                  onClick={() => setActiveTerminalTab(s.id)}
+                  className={`group flex items-center gap-2 md:gap-3 shrink-0 text-left text-[10px] md:text-xs font-bold tracking-widest uppercase transition-all duration-200 ${activeTerminalTab === s.id ? 'text-[var(--p-fg)]' : 'text-[var(--p-fg-muted)] hover:text-[var(--p-fg)]'}`}
+                >
+                  <span className={`hidden md:block w-6 h-[2px] transition-all duration-300 ${activeTerminalTab === s.id ? 'bg-[var(--p-primary)] w-8' : 'bg-[var(--p-border)] group-hover:w-8 group-hover:bg-[var(--p-fg-muted)]'}`} />
+                  {s.type.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
+          </nav>
+        </div>
+        
+        {/* Content Pane */}
+        <div className="flex-1 h-auto md:h-full overflow-y-visible md:overflow-y-auto bg-[var(--p-bg)] p-6 sm:p-8 md:p-12 lg:p-16" data-lenis-prevent="true">
+           <div className="max-w-3xl mx-auto">
+             {orderedSections.map(s => {
+               if (s.id !== activeTerminalTab) return null;
+               const Component = SidebarBlockMap[s.type] || BlockMap[s.type];
+               if (!Component) return null;
+               return (
+                 <div key={s.id} className="w-full">
+                    <Component data={s.content} />
+                 </div>
+               );
+             })}
+           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (layout === "terminal") {
+    return <TerminalLayout sections={orderedSections} theme={theme} baseStyle={baseStyle} sharedStyles={sharedStyles} />;
+  }
+
+  // Classic Layout (Default)
   return (
     <div 
       data-theme={theme}
       className="theme-bg min-h-full font-sans transition-colors duration-500 relative"
-      style={{
-        ...activeTheme.cssVars,
-        fontFamily: activeTheme.cssVars["--p-font"],
-        color: "var(--p-fg)",
-      } as React.CSSProperties}
+      style={baseStyle}
     >
-      <div 
-        className="pointer-events-none absolute inset-0 z-0 opacity-[var(--p-noise-opacity,0)] transition-opacity duration-500"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
-      />
-      {theme === "paper" && <InkSplashes />}
+      {noiseOverlay}
+      {renderInkSplashes()}
+      {sharedStyles}
       <style>{`
         .theme-bg { background: var(--p-bg); }
         .theme-bg-secondary { background: var(--p-bg-secondary); }
@@ -514,26 +840,19 @@ export const PortfolioRenderer = ({ sections, theme = "classic" }: { sections: S
         [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2) { background-color: #fab1a0; }
         [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3) { background-color: #81ecec; }
         [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4) { background-color: #a29bfe; }
-
-        /* Ensure card hover states preserve their specific background colors */
         [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1):hover { background-color: #ffeaa7 !important; }
         [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2):hover { background-color: #fab1a0 !important; }
         [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3):hover { background-color: #81ecec !important; }
         [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4):hover { background-color: #a29bfe !important; }
-
-        /* Match open/link button background colors using darker shades of the card background */
-        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1) .theme-card { background-color: #fdcb6e; } /* Yellow card gets Darker Gold/Yellow */
-        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2) .theme-card { background-color: #e17055; } /* Peach card gets Darker Coral/Peach */
-        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3) .theme-card { background-color: #00cec9; } /* Cyan card gets Darker Cyan/Turquoise */
-        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4) .theme-card { background-color: #6c5ce7; } /* Purple card gets Darker Purple */
-
-        /* Highlight buttons cleanly on hover in brutalist style */
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+1) .theme-card { background-color: #fdcb6e; } 
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+2) .theme-card { background-color: #e17055; } 
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+3) .theme-card { background-color: #00cec9; } 
+        [data-theme="neobrutalism"] div.grid > div.theme-card:nth-child(4n+4) .theme-card { background-color: #6c5ce7; } 
         [data-theme="neobrutalism"] div.grid > div.theme-card .theme-card:hover {
           background-color: #ffffff !important;
           color: #000000 !important;
           border-color: var(--p-fg) !important;
         }
-
         [data-theme="neobrutalism"] .theme-pill:nth-child(4n+1) { background-color: #ff4757; color: #fff; }
         [data-theme="neobrutalism"] .theme-pill:nth-child(4n+2) { background-color: #2ed573; color: #111; }
         [data-theme="neobrutalism"] .theme-pill:nth-child(4n+3) { background-color: #1e90ff; color: #fff; }

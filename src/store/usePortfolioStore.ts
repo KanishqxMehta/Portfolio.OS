@@ -20,16 +20,20 @@ interface PortfolioState {
   toggleBlockVisibility: (id: string) => void;
   theme: string;
   setTheme: (theme: string) => void;
+  layout: string;
+  setLayout: (layout: string) => void;
 }
 
 export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   sections: [],
   username: "",
   theme: "classic",
+  layout: "classic",
   isSaving: false,
   isLoading: true,
 
   setTheme: (theme) => set({ theme }),
+  setLayout: (layout) => set({ layout }),
 
   setUsername: (username) => {
     set({ username: slugifyUsername(username) });
@@ -121,6 +125,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       set({
         sections: loadedSections,
         theme: content.theme || "classic",
+        layout: content.layout || "classic",
         username: data.publicSlug || '',
       });
     } catch (error) {
@@ -136,7 +141,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   },
 
   savePortfolio: async () => {
-    const { sections, username, theme } = get();
+    const { sections, username, theme, layout } = get();
     if (!username) {
       useToastStore.getState().toast("Please set a username first!", "error");
       return false;
@@ -144,7 +149,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
     const validation = portfolioSchema.safeParse({
       username,
-      content: { theme, sections }
+      content: { theme, layout, sections }
     });
 
     if (!validation.success) {
@@ -162,6 +167,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
           username,
           content: {
             theme,
+            layout,
             sections,
           },
         }),

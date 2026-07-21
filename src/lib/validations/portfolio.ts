@@ -128,6 +128,7 @@ export const portfolioSchema = z.object({
     }),
   content: z.object({
     theme: z.string(),
+    layout: z.string().optional(),
     sections: z.array(SectionSchema),
   }),
 });

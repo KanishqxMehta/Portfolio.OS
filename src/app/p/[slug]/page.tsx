@@ -148,6 +148,7 @@ async function PortfolioContent({ slug }: { slug: string }) {
     sections = [heroBlock, ...sections];
   }
   const theme = content.theme || "classic";
+  const layout = content.layout || "classic";
   const activeTheme = THEMES[theme] || THEMES["classic"];
 
   return (
@@ -182,7 +183,7 @@ async function PortfolioContent({ slug }: { slug: string }) {
 
       {/* Publicly visible main content */}
       <main className="flex-1 w-full">
-        <PortfolioRenderer sections={sections} theme={theme} />
+        <PortfolioRenderer sections={sections} theme={theme} layout={layout} />
       </main>
 
       {/* Upgraded Footer CTA */}

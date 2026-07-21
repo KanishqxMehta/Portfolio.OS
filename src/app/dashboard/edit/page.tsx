@@ -11,8 +11,8 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { PortfolioRenderer } from "@/components/portfolio/Renderer";
-import { BlockEditor } from "../BlockEditor";
 import { ThemePicker } from "./ThemePicker";
+import { LayoutPicker } from "./LayoutPicker";
 import { BlockUI } from "@/components/editor/BlockUI";
 import { PublishModal } from "@/components/editor/PublishModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -117,6 +117,7 @@ export default function EditPortfolioPage() {
   const {
     sections,
     theme,
+    layout,
     addBlock,
     username,
     setUsername,
@@ -188,7 +189,7 @@ export default function EditPortfolioPage() {
     }
 
     setIsDirty(true);
-  }, [sections, theme, isLoading]);
+  }, [sections, theme, layout, isLoading]);
 
   // Prevent browser closing / reloading when page is dirty
   useEffect(() => {
@@ -257,7 +258,9 @@ export default function EditPortfolioPage() {
           </div>
 
           {activeSidebarTab === "design" ? (
-            <div className="flex-1 overflow-y-auto p-4" data-lenis-prevent>
+            <div className="flex-1 overflow-y-auto p-4 space-y-8" data-lenis-prevent>
+              <LayoutPicker />
+              <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
               <ThemePicker />
             </div>
           ) : (
@@ -414,7 +417,7 @@ export default function EditPortfolioPage() {
 
             {/* Preview content */}
             <div className="border border-zinc-300 dark:border-zinc-800 rounded-b-2xl overflow-hidden bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/60 relative min-h-[600px] transition-colors duration-500">
-              <PortfolioRenderer sections={sections} theme={theme} />
+              <PortfolioRenderer sections={sections} theme={theme} layout={layout} />
 
               {sections.length === 0 && !isLoading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
