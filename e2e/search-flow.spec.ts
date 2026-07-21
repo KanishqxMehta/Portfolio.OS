@@ -10,14 +10,14 @@ test.describe("Search & Explorer E2E Suite", () => {
     const searchInput = page.locator("input[placeholder*='Search']");
     await expect(searchInput).toBeVisible();
 
-    const tagButton = page.getByRole("button", { name: "React" });
+    const tagButton = page.getByRole("button", { name: "React", exact: true });
     await expect(tagButton).toBeVisible();
   });
 
   test("should update input when tag is clicked", async ({ page }) => {
     await page.goto("/search");
 
-    const tagButton = page.getByRole("button", { name: "React" });
+    const tagButton = page.getByRole("button", { name: "React", exact: true });
     await tagButton.click();
 
     const searchInput = page.locator("input[placeholder*='Search']");

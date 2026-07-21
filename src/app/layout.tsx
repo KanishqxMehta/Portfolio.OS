@@ -8,6 +8,8 @@ import SmoothCursor from "@/components/ui/CursorAnimations/SmoothCursor";
 import SmoothScroll from "@/components/ui/Scroll/SmoothScroll";
 
 import { Toaster } from "@/components/ui/Toaster";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -74,6 +76,8 @@ export default function RootLayout({
               {children}
               <SmoothCursor />
               <Toaster />
+              <Analytics />
+              <SpeedInsights />
             </SmoothScroll>
           </SessionProvider>
         </ThemeProvider>
