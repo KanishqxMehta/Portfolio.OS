@@ -13,6 +13,8 @@ import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { PortfolioRenderer } from "@/components/portfolio/Renderer";
 import { BlockEditor } from "../BlockEditor";
 import { ThemePicker } from "./ThemePicker";
+import { BlockUI } from "@/components/editor/BlockUI";
+import { PublishModal } from "@/components/editor/PublishModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { Loader } from "@/components/ui/Loader";
@@ -68,140 +70,7 @@ const TYPE_COLORS: Record<string, string> = {
   CONTACT_FORM: "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/40",
 };
 
-function BlockUI({
-  section,
-  index,
-  hoveredId,
-  setHoveredId,
-  sections,
-  dragHandleProps,
-  setNodeRef,
-  style,
-  isDraggingOverlay = false,
-}: any) {
-  const { removeBlock, moveBlock, toggleBlockVisibility } = usePortfolioStore();
 
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      onMouseEnter={() => setHoveredId(section.id)}
-      onMouseLeave={() => setHoveredId(null)}
-      className={cn(
-        "rounded-xl border transition-colors duration-200",
-        hoveredId === section.id
-          ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/60"
-          : "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30",
-        isDraggingOverlay && "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-xl"
-      )}
-    >
-      {/* Block header */}
-      <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        <div className="flex items-center gap-2">
-          {/* Drag handle */}
-          {dragHandleProps && (
-            <button
-              {...dragHandleProps.attributes}
-              {...dragHandleProps.listeners}
-              className="cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-500 transition-colors -ml-1.5 touch-none"
-              tabIndex={-1}
-            >
-              <GripVertical className="w-4 h-4" />
-            </button>
-          )}
-          <span
-            className={cn(
-              "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
-              TYPE_COLORS[section.type] ??
-                "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600"
-            )}
-          >
-            {section.type}
-          </span>
-          <span className="text-[10px] text-zinc-400">
-            #{index + 1}
-          </span>
-        </div>
-
-        <div
-          className={cn(
-            "flex items-center gap-0.5 transition-opacity",
-            hoveredId === section.id ? "opacity-100" : "opacity-0"
-          )}
-        >
-          {/* Visibility toggle */}
-          {section.type !== "HERO" && (
-            <button
-              onClick={() => toggleBlockVisibility(section.id)}
-              className={cn(
-                "w-6 h-6 rounded flex items-center justify-center transition-colors",
-                section.isVisible
-                  ? "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                  : "text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-500"
-              )}
-              title={section.isVisible ? "Hide from preview" : "Show in preview"}
-            >
-              {section.isVisible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            </button>
-          )}
-          {section.type !== "HERO" && section.type !== "CONTACT_FORM" && (
-            <>
-              <button
-                onClick={() => {
-                  const isFirst = index === 0 || (index === 1 && sections[0].type === "HERO");
-                  if (!isFirst) moveBlock(section.id, "up");
-                }}
-                disabled={index === 0 || (index === 1 && sections[0].type === "HERO")}
-                className={cn(
-                  "w-6 h-6 rounded flex items-center justify-center transition-colors",
-                  (index === 0 || (index === 1 && sections[0].type === "HERO"))
-                    ? "text-zinc-300 dark:text-zinc-800 cursor-not-allowed opacity-30"
-                    : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
-                )}
-              >
-                <ChevronUp className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => {
-                  const isLast = index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM");
-                  if (!isLast) moveBlock(section.id, "down");
-                }}
-                disabled={index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM")}
-                className={cn(
-                  "w-6 h-6 rounded flex items-center justify-center transition-colors",
-                  (index === sections.length - 1 || (index === sections.length - 2 && sections[sections.length - 1].type === "CONTACT_FORM"))
-                    ? "text-zinc-300 dark:text-zinc-800 cursor-not-allowed opacity-30"
-                    : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
-                )}
-              >
-                <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-            </>
-          )}
-          {section.type !== "HERO" && (
-            <button
-              onClick={() => removeBlock(section.id)}
-              className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors ml-1"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Block content — dim if hidden */}
-      {!isDraggingOverlay && (
-        <div className={cn("px-4 pb-4", !section.isVisible && "opacity-40")}>
-          {section.isVisible ? (
-            <BlockEditor block={section} />
-          ) : (
-            <p className="text-[11px] text-zinc-500 italic">Block is hidden from preview. Toggle the eye icon to show it.</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 function SortableBlock({ section, index, hoveredId, setHoveredId, sections }: any) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
@@ -565,53 +434,11 @@ export default function EditPortfolioPage() {
       </div>
 
       {/* Success dialog */}
-      <Dialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
-        <DialogContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-2xl pt-10">
-          <DialogHeader className="flex flex-col items-center space-y-3 pt-2">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-              <CheckCircle2 className="w-7 h-7 text-emerald-500 dark:text-emerald-400" />
-            </div>
-            <DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-              Portfolio Published
-            </DialogTitle>
-            <DialogDescription className="text-center text-zinc-500 dark:text-zinc-400 text-sm">
-              Your portfolio is live and ready to share.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 p-3 rounded-xl mt-2 min-w-0">
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">
-                Public URL
-              </p>
-              <p className="text-sm font-mono text-zinc-600 dark:text-zinc-300 truncate break-all">
-                {publicUrl}
-              </p>
-            </div>
-            <button
-              onClick={() => navigator.clipboard.writeText(publicUrl)}
-              className="w-8 h-8 rounded-lg bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-            >
-              <Copy className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-2 mt-2">
-            <a href={publicUrl} target="_blank" rel="noreferrer">
-              <Button className="w-full h-11 bg-violet-600 hover:bg-violet-500 text-white border-0 rounded-xl font-medium cursor-pointer">
-                View Live Site <ExternalLink className="ml-2 w-4 h-4" />
-              </Button>
-            </a>
-            <Button
-              variant="ghost"
-              onClick={() => setIsSuccessOpen(false)}
-              className="w-full text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl cursor-pointer"
-            >
-              Back to Editor
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PublishModal
+        isOpen={isSuccessOpen}
+        onOpenChange={setIsSuccessOpen}
+        publicUrl={publicUrl}
+      />
 
       {/* Mobile view toggle floating button */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden">
