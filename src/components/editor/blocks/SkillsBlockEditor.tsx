@@ -18,11 +18,12 @@ export function SkillsBlockEditor({
   labelClass,
   fieldClass,
 }: SkillsBlockEditorProps) {
+  const content: any = block.content || {};
   const [newSkill, setNewSkill] = useState("");
 
   const addSkill = () => {
     if (!newSkill.trim()) return;
-    const current = block.content?.items || [];
+    const current = content.items || [];
 
     const rawSkills = newSkill.split(",").map((s) => s.trim()).filter(Boolean);
     const updated = Array.from(new Set([...current, ...rawSkills]));
@@ -32,7 +33,7 @@ export function SkillsBlockEditor({
   };
 
   const removeSkill = (index: number) => {
-    const current = block.content?.items || [];
+    const current = content.items || [];
     handleUpdate({ items: current.filter((_: any, i: number) => i !== index) });
   };
 
@@ -70,7 +71,7 @@ export function SkillsBlockEditor({
       </div>
 
       <div className="flex flex-wrap gap-1.5 pt-1">
-        {(block.content?.items || []).map((skill: string, idx: number) => (
+        {(content.items || []).map((skill: string, idx: number) => (
           <span
             key={idx}
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-200/80 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-medium border border-zinc-300/60 dark:border-zinc-700/60"
@@ -84,7 +85,7 @@ export function SkillsBlockEditor({
             </button>
           </span>
         ))}
-        {(!block.content?.items || block.content.items.length === 0) && (
+        {(!content.items || content.items.length === 0) && (
           <p className="text-[11px] text-zinc-400 dark:text-zinc-500 italic">
             No skills added yet. Type a skill above to start.
           </p>

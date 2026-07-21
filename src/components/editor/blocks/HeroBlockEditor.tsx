@@ -20,21 +20,23 @@ export function HeroBlockEditor({
   fieldClass,
   isValidUrl,
 }: HeroBlockEditorProps) {
+  const content: any = block.content || {};
+
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
         <label className={labelClass}>Full Name</label>
         <Input
           placeholder="Enter your full name"
-          value={block.content?.fullName || ""}
+          value={content.fullName || ""}
           onChange={(e) => handleUpdate({ fullName: e.target.value })}
           className={cn(
             fieldClass,
-            !block.content?.fullName &&
+            !content.fullName &&
               "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400"
           )}
         />
-        {!block.content?.fullName && (
+        {!content.fullName && (
           <p className="text-[10px] text-red-500 mt-0.5">Full name is required.</p>
         )}
       </div>
@@ -49,7 +51,7 @@ export function HeroBlockEditor({
         <Textarea
           placeholder="A short, catchy bio..."
           className={cn(fieldClass, "min-h-[90px] h-auto resize-none")}
-          value={block.content?.bio || ""}
+          value={content.bio || ""}
           onChange={(e) => handleUpdate({ bio: e.target.value })}
         />
       </div>
@@ -65,16 +67,16 @@ export function HeroBlockEditor({
             <label className={labelClass}>GitHub URL</label>
             <Input
               placeholder="https://github.com/username"
-              value={block.content?.github || ""}
+              value={content.github || ""}
               onChange={(e) => handleUpdate({ github: e.target.value })}
               className={cn(
                 fieldClass,
-                block.content?.github &&
-                  !isValidUrl(block.content.github) &&
+                content.github &&
+                  !isValidUrl(content.github) &&
                   "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400"
               )}
             />
-            {block.content?.github && !isValidUrl(block.content.github) && (
+            {content.github && !isValidUrl(content.github) && (
               <p className="text-[10px] text-red-500 mt-0.5">
                 Please enter a valid URL (e.g., https://github.com/...)
               </p>
@@ -85,16 +87,16 @@ export function HeroBlockEditor({
             <label className={labelClass}>LinkedIn URL</label>
             <Input
               placeholder="https://linkedin.com/in/username"
-              value={block.content?.linkedin || ""}
+              value={content.linkedin || ""}
               onChange={(e) => handleUpdate({ linkedin: e.target.value })}
               className={cn(
                 fieldClass,
-                block.content?.linkedin &&
-                  !isValidUrl(block.content.linkedin) &&
+                content.linkedin &&
+                  !isValidUrl(content.linkedin) &&
                   "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400"
               )}
             />
-            {block.content?.linkedin && !isValidUrl(block.content.linkedin) && (
+            {content.linkedin && !isValidUrl(content.linkedin) && (
               <p className="text-[10px] text-red-500 mt-0.5">
                 Please enter a valid URL (e.g., https://linkedin.com/in/...)
               </p>
@@ -105,16 +107,16 @@ export function HeroBlockEditor({
             <label className={labelClass}>Instagram URL</label>
             <Input
               placeholder="https://instagram.com/username"
-              value={block.content?.instagram || ""}
+              value={content.instagram || ""}
               onChange={(e) => handleUpdate({ instagram: e.target.value })}
               className={cn(
                 fieldClass,
-                block.content?.instagram &&
-                  !isValidUrl(block.content.instagram) &&
+                content.instagram &&
+                  !isValidUrl(content.instagram) &&
                   "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400"
               )}
             />
-            {block.content?.instagram && !isValidUrl(block.content.instagram) && (
+            {content.instagram && !isValidUrl(content.instagram) && (
               <p className="text-[10px] text-red-500 mt-0.5">
                 Please enter a valid URL (e.g., https://instagram.com/...)
               </p>
@@ -125,16 +127,16 @@ export function HeroBlockEditor({
             <label className={labelClass}>Twitter / X URL</label>
             <Input
               placeholder="https://x.com/username"
-              value={block.content?.twitter || ""}
+              value={content.twitter || ""}
               onChange={(e) => handleUpdate({ twitter: e.target.value })}
               className={cn(
                 fieldClass,
-                block.content?.twitter &&
-                  !isValidUrl(block.content.twitter) &&
+                content.twitter &&
+                  !isValidUrl(content.twitter) &&
                   "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400"
               )}
             />
-            {block.content?.twitter && !isValidUrl(block.content.twitter) && (
+            {content.twitter && !isValidUrl(content.twitter) && (
               <p className="text-[10px] text-red-500 mt-0.5">
                 Please enter a valid URL (e.g., https://x.com/...)
               </p>

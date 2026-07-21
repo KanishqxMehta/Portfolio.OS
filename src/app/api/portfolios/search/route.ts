@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
-import { createRateLimitResponse } from "@/lib/api/rate-limit-response";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimitExceededResponse } from "@/lib/api/rate-limit-response";
 
 export async function GET(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-  const limit = rateLimit(`search:${ip}`, 30, 60000);
+  const clientIp = getClientIp(req);
+  const rateLimit = checkRateLimit(`search:${clientIp}`, {
+    limit: 30,
+    windowMs: 60000,
+  });
 
-  if (!limit.success) {
-    return createRateLimitResponse(limit.resetIn);
+  if (!rateLimit.allowed) {
+    return rateLimitExceededResponse(rateLimit);
   }
 
   const { searchParams } = new URL(req.url);

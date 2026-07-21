@@ -59,7 +59,8 @@ export function ProjectsBlockEditor({
   fieldClass,
   isValidUrl,
 }: ProjectsBlockEditorProps) {
-  const items = (block.content?.items || [
+  const content: any = block.content || {};
+  const items = (content.items || [
     { title: "", description: "", link: "" },
   ]).map((it: any) => ({
     ...it,

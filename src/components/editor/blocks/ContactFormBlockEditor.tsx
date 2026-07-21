@@ -20,13 +20,15 @@ export function ContactFormBlockEditor({
   fieldClass,
   isValidEmail,
 }: ContactFormBlockEditorProps) {
+  const content: any = block.content || {};
+
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
         <label className={labelClass}>Section Title (Optional)</label>
         <Input 
           placeholder="Let's work together." 
-          value={block.content?.title || ""} 
+          value={content.title || ""} 
           onChange={(e) => handleUpdate({ title: e.target.value })} 
           className={fieldClass} 
         />
@@ -36,7 +38,7 @@ export function ContactFormBlockEditor({
         <label className={labelClass}>Section Description (Optional)</label>
         <Textarea 
           placeholder="I'm currently open for new opportunities..." 
-          value={block.content?.description || ""} 
+          value={content.description || ""} 
           onChange={(e) => handleUpdate({ description: e.target.value })} 
           className={cn(fieldClass, "min-h-[70px] h-auto resize-none")} 
         />
@@ -46,18 +48,18 @@ export function ContactFormBlockEditor({
         <label className={labelClass}>Target Email Address</label>
         <Input 
           placeholder="you@example.com" 
-          value={block.content?.emailTarget || ""} 
+          value={content.emailTarget || ""} 
           onChange={(e) => handleUpdate({ emailTarget: e.target.value })} 
           className={cn(
             fieldClass, 
-            (!block.content?.emailTarget || !isValidEmail(block.content?.emailTarget)) && 
+            (!content.emailTarget || !isValidEmail(content.emailTarget)) && 
               "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400"
           )} 
         />
-        {!block.content?.emailTarget && (
+        {!content.emailTarget && (
           <p className="text-[10px] text-red-500 mt-0.5">Email address is required.</p>
         )}
-        {block.content?.emailTarget && !isValidEmail(block.content?.emailTarget) && (
+        {content.emailTarget && !isValidEmail(content.emailTarget) && (
           <p className="text-[10px] text-red-500 mt-0.5">Please enter a valid email address (e.g., hello@domain.com)</p>
         )}
         <p className="text-[10px] text-zinc-500 mt-1">Visitors clicking the button will open their native mail app with this address pre-filled.</p>
@@ -67,11 +69,11 @@ export function ContactFormBlockEditor({
         <label className={labelClass}>Button Text</label>
         <Input 
           placeholder="Send me an email" 
-          value={block.content?.buttonText || ""} 
+          value={content.buttonText || ""} 
           onChange={(e) => handleUpdate({ buttonText: e.target.value })} 
-          className={cn(fieldClass, !block.content?.buttonText && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")} 
+          className={cn(fieldClass, !content.buttonText && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400")} 
         />
-        {!block.content?.buttonText && (
+        {!content.buttonText && (
           <p className="text-[10px] text-red-500 mt-0.5">Button text is required.</p>
         )}
       </div>

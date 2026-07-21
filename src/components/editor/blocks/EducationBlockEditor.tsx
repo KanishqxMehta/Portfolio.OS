@@ -56,7 +56,8 @@ export function EducationBlockEditor({
   handleUpdate,
   fieldClass,
 }: EducationBlockEditorProps) {
-  const items = (block.content?.items || [{ school: "", degree: "", year: "", grade: "" }]).map((it: any) => ({
+  const content: any = block.content || {};
+  const items = (content.items || [{ school: "", degree: "", year: "", grade: "" }]).map((it: any) => ({
     ...it,
     id: it.id || crypto.randomUUID(),
     isVisible: it.isVisible ?? true,

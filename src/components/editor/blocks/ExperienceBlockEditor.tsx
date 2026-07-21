@@ -58,7 +58,8 @@ export function ExperienceBlockEditor({
   handleUpdate,
   fieldClass,
 }: ExperienceBlockEditorProps) {
-  const items = (block.content?.items || [
+  const content: any = block.content || {};
+  const items = (content.items || [
     { company: "", role: "", years: "", description: "" },
   ]).map((it: any) => ({
     ...it,

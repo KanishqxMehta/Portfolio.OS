@@ -17,7 +17,8 @@ export function TestimonialsBlockEditor({
   handleUpdate,
   fieldClass,
 }: TestimonialsBlockEditorProps) {
-  const items = block.content?.items || [{ quote: "", author: "", role: "" }];
+  const content: any = block.content || {};
+  const items = content.items || [{ quote: "", author: "", role: "" }];
 
   const updateTestimonial = (index: number, fields: any) => {
     const newItems = items.map((it: any, i: number) =>
