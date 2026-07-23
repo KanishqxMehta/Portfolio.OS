@@ -247,9 +247,16 @@ export function AnalyticsDashboardClient({
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      {visitor.visitorName || visitor.visitorUsername || "Anonymous Visitor"}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        {visitor.visitorName || visitor.visitorUsername || "Anonymous Visitor"}
+                      </p>
+                      {visitor.visitorCountry && (
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+                          {visitor.visitorCountry}
+                        </span>
+                      )}
+                    </div>
                     {visitor.visitorEmail && (
                       <p className="text-xs text-zinc-500">{visitor.visitorEmail}</p>
                     )}
