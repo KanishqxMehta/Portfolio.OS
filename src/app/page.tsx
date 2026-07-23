@@ -136,6 +136,14 @@ export default function Home() {
               </Link>
             </li>
             <li>
+              <Link
+                href="/blog"
+                className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all"
+              >
+                Blog
+              </Link>
+            </li>
+            <li>
               <div className="relative group/pricing px-4 py-2 cursor-pointer rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-all">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover/pricing:text-zinc-900 dark:group-hover/pricing:text-zinc-100 transition-colors">
@@ -269,6 +277,13 @@ export default function Home() {
               className="text-base font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50"
             >
               Editor
+            </Link>
+            <Link
+              href="/blog"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-base font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50"
+            >
+              Blog
             </Link>
             <div className="text-base font-medium text-zinc-600 dark:text-zinc-400 p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50 flex items-center justify-between transition-colors">
               <span>Pricing</span>
