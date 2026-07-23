@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev").replace(/\/$/, "");
+  const envUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  const baseUrl = envUrl && envUrl.startsWith("http") ? envUrl.replace(/\/$/, "") : "https://portfolioos.dev";
 
   return {
     rules: [
@@ -11,8 +12,8 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/dashboard/", "/login", "/signup", "/forgot-password", "/reset-password", "/setup-username"],
       },
       {
-        // Block AI training bots from scraping content
-        userAgent: ["GPTBot", "CCBot", "anthropic-ai", "Google-Extended"],
+        // Block AI scrapers from stealing content (excluding Google-Extended so Google tools pass)
+        userAgent: ["GPTBot", "CCBot", "anthropic-ai"],
         disallow: "/",
       },
     ],
