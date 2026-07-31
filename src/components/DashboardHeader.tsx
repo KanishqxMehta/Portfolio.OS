@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import {
   Layers,
   Globe,
@@ -19,7 +20,8 @@ import {
   ChevronDown,
   CheckCircle2,
   Edit3,
-  ArrowLeft
+  ArrowLeft,
+  AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/Logo";
@@ -30,6 +32,7 @@ interface DashboardHeaderProps {
   isSaving?: boolean;
   isDirty?: boolean;
   onSave?: () => void;
+  onDiscard?: () => void;
   initialUser?: {
     name?: string | null;
     email?: string | null;
@@ -42,6 +45,7 @@ export function DashboardHeader({
   isSaving,
   isDirty,
   onSave,
+  onDiscard,
   initialUser
 }: DashboardHeaderProps) {
   const { data: clientSession, status: clientStatus } = useSession();
@@ -160,6 +164,56 @@ export function DashboardHeader({
         {/* Save/Publish controls (Editor only) */}
         {currentPage === "editor" && onSave && (
           <>
+            {isDirty && onDiscard && (
+              <Dialog>
+                <DialogTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      className="h-8 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200 dark:hover:border-red-900/50 transition-colors shadow-sm"
+                    >
+                      Discard
+                    </Button>
+                  }
+                />
+                <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800">
+                  <div className="p-6 border-b border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/30">
+                    <DialogHeader>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2.5 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-900/50">
+                          <AlertTriangle className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Discard Changes?</DialogTitle>
+                        </div>
+                      </div>
+                      <DialogDescription className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
+                        This will permanently delete all the changes you've made since your last publish. This action cannot be undone.
+                      </DialogDescription>
+                    </DialogHeader>
+                  </div>
+                  <div className="flex flex-col-reverse sm:flex-row sm:justify-end p-4 gap-2 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900">
+                    <DialogClose
+                      render={
+                        <Button variant="outline" className="border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900">Cancel</Button>
+                      }
+                    />
+                    <DialogClose
+                      render={
+                        <Button 
+                          variant="default"
+                          className="bg-red-600 hover:bg-red-700 text-white border-0 shadow-md shadow-red-500/20"
+                          onClick={onDiscard}
+                        >
+                          Yes, Discard
+                        </Button>
+                      }
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+
             <Button
               onClick={onSave}
               disabled={isSaving || !isDirty}

@@ -22,6 +22,8 @@ interface PortfolioState {
   setTheme: (theme: string) => void;
   layout: string;
   setLayout: (layout: string) => void;
+  isDraggingBlock: boolean;
+  setIsDraggingBlock: (isDragging: boolean) => void;
 }
 
 export const usePortfolioStore = create<PortfolioState>((set, get) => ({
@@ -31,9 +33,11 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   layout: "classic",
   isSaving: false,
   isLoading: true,
+  isDraggingBlock: false,
 
   setTheme: (theme) => set({ theme }),
   setLayout: (layout) => set({ layout }),
+  setIsDraggingBlock: (isDraggingBlock) => set({ isDraggingBlock }),
 
   setUsername: (username) => {
     set({ username: slugifyUsername(username) });

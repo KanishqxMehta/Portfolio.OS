@@ -381,23 +381,26 @@ export default function Home() {
           className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto text-left mb-24"
         >
           {/* Option A: AI Ingestion (Drop-zone) - Disabled with Coming Soon indicators */}
-          <div
+          <Link
+            href="/dashboard/edit?action=ai-parser"
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={cn(
               "relative rounded-2xl border p-8 flex flex-col justify-between group/ai transition-all duration-300 min-h-[260px]",
-              "border-zinc-200 dark:border-zinc-800/80 bg-zinc-100/50 dark:bg-zinc-900/10 cursor-not-allowed opacity-75 shadow-sm dark:shadow-none"
+              isDragging 
+                ? "border-violet-500 bg-violet-50 dark:bg-violet-500/10 scale-[1.02] shadow-xl" 
+                : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900/30 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 shadow-sm dark:shadow-none cursor-pointer"
             )}
           >
             {/* Corner Accent Badge */}
-            <div className="absolute top-3 right-3 bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-[9px] font-bold tracking-widest px-2 py-0.5 rounded-md border border-zinc-300 dark:border-zinc-700/60 shadow-sm uppercase transition-colors">
-              Coming Soon
+            <div className="absolute top-3 right-3 bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400 text-[9px] font-bold tracking-widest px-2 py-0.5 rounded-md border border-violet-200 dark:border-violet-500/30 shadow-sm uppercase transition-colors">
+              Live Now
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-6">
-                <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-800/60 border border-zinc-300 dark:border-zinc-700/50 flex items-center justify-center text-zinc-500 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/20 border border-violet-200 dark:border-violet-500/30 flex items-center justify-center text-violet-600 dark:text-violet-400 transition-colors">
                   <Cpu className="w-5 h-5" />
                 </div>
               </div>
@@ -408,13 +411,13 @@ export default function Home() {
             </div>
 
             {/* Ingestion Trigger Button Area */}
-            <div className="w-full py-4 border border-dashed border-zinc-300 dark:border-zinc-800/80 rounded-xl bg-zinc-50 dark:bg-zinc-950/20 flex flex-col items-center justify-center gap-1 transition-colors">
-              <UploadCloud className="w-5 h-5 text-zinc-400 dark:text-zinc-700" />
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-600">
-                AI Parser Offline
+            <div className="w-full py-4 border border-dashed border-violet-300 dark:border-violet-800/80 rounded-xl bg-violet-50 dark:bg-violet-950/20 flex flex-col items-center justify-center gap-1 group-hover/ai:border-violet-400 dark:group-hover/ai:border-violet-700 transition-colors">
+              <UploadCloud className="w-5 h-5 text-violet-500 dark:text-violet-400" />
+              <span className="text-xs font-semibold text-violet-600 dark:text-violet-400">
+                Go to Editor & Drop Resume
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* Option B: Manual Builder Path - Fully Active */}
           <Link

@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import { DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay, type DragEndEvent } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -15,6 +15,7 @@ import { ThemePicker } from "./ThemePicker";
 import { LayoutPicker } from "./LayoutPicker";
 import { BlockUI } from "@/components/editor/BlockUI";
 import { PublishModal } from "@/components/editor/PublishModal";
+import { ResumeParserModal } from "@/components/editor/ResumeParserModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { Loader } from "@/components/ui/Loader";
@@ -41,6 +42,7 @@ import {
   Moon,
   TrendingUp,
   GripVertical,
+  Wand2,
 } from "lucide-react";
 import {
   Dialog,
@@ -132,9 +134,26 @@ export default function EditPortfolioPage() {
   } = usePortfolioStore();
 
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const isDraggingBlock = usePortfolioStore((state) => state.isDraggingBlock); 
+  const setIsDraggingBlock = usePortfolioStore((state) => state.setIsDraggingBlock);
+  const [localActiveId, setLocalActiveId] = useState<string | null>(null);
+  const [isParserOpen, setIsParserOpen] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const initialLoadRef = useRef(true);
+
+  // Auto-open AI Parser if navigated from home page
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("action") === "ai-parser") {
+        setIsParserOpen(true);
+        // Clean up URL so it doesn't reopen on refresh
+        url.searchParams.delete("action");
+        window.history.replaceState({}, "", url.toString());
+      }
+    }
+  }, []);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -145,21 +164,22 @@ export default function EditPortfolioPage() {
     .filter((s) => s.type !== "HERO" && s.type !== "CONTACT_FORM")
     .map((s) => s.id);
 
-  const [activeId, setActiveId] = useState<string | null>(null);
-
-  const handleDragStart = (event: any) => {
-    setActiveId(event.active.id);
+  const handleDragStart = (event: DragStartEvent) => {
+    setLocalActiveId(event.active.id as string);
+    setIsDraggingBlock(true);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    setActiveId(null);
+    setLocalActiveId(null);
+    setIsDraggingBlock(false);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     reorderBlocks(active.id as string, over.id as string);
   };
 
   const handleDragCancel = () => {
-    setActiveId(null);
+    setLocalActiveId(null);
+    setIsDraggingBlock(false);
   };
 
   // Auth redirection is handled by middleware.ts, client side only loads when authenticated.
@@ -213,6 +233,11 @@ export default function EditPortfolioPage() {
     }
   };
 
+  const handleDiscard = async () => {
+    await loadPortfolio();
+    setIsDirty(false);
+  };
+
   const publicUrl = `${process.env.NEXT_PUBLIC_BASE_URL}p/${username}`;
 
   return (
@@ -224,6 +249,7 @@ export default function EditPortfolioPage() {
         isSaving={isSaving}
         isDirty={isDirty}
         onSave={handleSave}
+        onDiscard={handleDiscard}
       />
 
       {/* Main Workspace */}
@@ -332,11 +358,11 @@ export default function EditPortfolioPage() {
 
                 {typeof window !== "undefined" && createPortal(
                   <DragOverlay adjustScale={false}>
-                    {activeId ? (
+                    {localActiveId ? (
                       <div className="w-[calc(100vw-32px)] md:w-[328px] pointer-events-none select-none">
                         <BlockUI
-                          section={sections.find((s: any) => s.id === activeId)!}
-                          index={sections.findIndex((s: any) => s.id === activeId)}
+                          section={sections.find((s: any) => s.id === localActiveId)!}
+                          index={sections.findIndex((s: any) => s.id === localActiveId)}
                           hoveredId={null}
                           setHoveredId={() => {}}
                           sections={sections}
@@ -357,44 +383,63 @@ export default function EditPortfolioPage() {
           </div>
 
           {/* Add block panel */}
-          {!activeId && (
-            <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shrink-0 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-none animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <div className="flex items-center justify-between mb-3 px-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                  Add Block
-                </p>
-                <p className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                  {sections.length}/{BLOCK_TYPES.length} Active
-                </p>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                {BLOCK_TYPES.map(({ type, label }) => {
-                  const isAdded = sections.some((s) => s.type === type);
-                  return (
-                    <button
-                      key={type}
-                      onClick={() => !isAdded && addBlock(type, label)}
-                      disabled={isAdded}
-                      className={cn(
-                        "group flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all whitespace-nowrap",
-                        isAdded
-                          ? "border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
-                          : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-700 dark:hover:text-violet-300 cursor-pointer shadow-sm hover:shadow"
-                      )}
-                    >
-                      {isAdded ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-500/50" />
-                      ) : (
-                        <Plus className="w-3.5 h-3.5 text-violet-500 group-hover:scale-110 transition-transform" />
-                      )}
-                      {label}
-                    </button>
-                  );
-                })}
+          {/* Add block panel */}
+          <div
+            className={cn(
+              "grid transition-[grid-template-rows,opacity,transform] duration-500 ease-in-out",
+              isDraggingBlock
+                ? "grid-rows-[0fr] opacity-0 translate-y-8 pointer-events-none"
+                : "grid-rows-[1fr] opacity-100 translate-y-0"
+            )}
+          >
+            <div className="overflow-hidden">
+              <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shrink-0 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-none animate-in fade-in slide-in-from-bottom-2 duration-200">
+                
+                <Button 
+                  onClick={() => setIsParserOpen(true)}
+                  className="w-full mb-4 bg-violet-600 hover:bg-violet-700 text-white shadow-sm border border-violet-500 flex items-center justify-center gap-2"
+                >
+                  <Wand2 className="w-4 h-4" />
+                  AI Resume Import
+                </Button>
+
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                    Add Block
+                  </p>
+                  <p className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+                    {sections.length}/{BLOCK_TYPES.length} Active
+                  </p>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {BLOCK_TYPES.map(({ type, label }) => {
+                    const isAdded = sections.some((s) => s.type === type);
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => !isAdded && addBlock(type, label)}
+                        disabled={isAdded}
+                        className={cn(
+                          "group flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all whitespace-nowrap",
+                          isAdded
+                            ? "border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
+                            : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-700 dark:hover:text-violet-300 cursor-pointer shadow-sm hover:shadow"
+                        )}
+                      >
+                        {isAdded ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-500/50" />
+                        ) : (
+                          <Plus className="w-3.5 h-3.5 text-violet-500 group-hover:scale-110 transition-transform" />
+                        )}
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          )}
+          </div>
             </>
           )}
         </aside>
@@ -442,6 +487,11 @@ export default function EditPortfolioPage() {
         isOpen={isSuccessOpen}
         onOpenChange={setIsSuccessOpen}
         publicUrl={publicUrl}
+      />
+
+      <ResumeParserModal
+        isOpen={isParserOpen}
+        onOpenChange={setIsParserOpen}
       />
 
       {/* Mobile view toggle floating button */}
