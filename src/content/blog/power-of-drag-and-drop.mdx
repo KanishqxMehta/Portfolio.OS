@@ -1,0 +1,33 @@
+---
+title: "The Power of Drag-and-Drop: Why Layouts Shouldn't Be Hardcoded"
+date: "2026-07-31"
+description: "How we completely overhauled the Portfolio.OS architecture to support dynamic, drag-and-drop block sorting without layout distortion."
+readingTime: "4 min read"
+---
+
+When building a personal portfolio, the narrative order of your content matters. If you're a junior developer, your Education block might belong at the very top. If you're an industry veteran, your 10-year Experience block should take center stage, and Education gets pushed to the footer.
+
+In traditional website builders, you either have to fight with rigid templates or dive into the code to reorder components. In Portfolio.OS, we believe your canvas should be as fluid as your career.
+
+Today, we're sharing how we built our robust drag-and-drop engine.
+
+## The dnd-kit Architecture
+
+To achieve butter-smooth sorting, we integrated `@dnd-kit/core`. However, building a universal drag-and-drop system across highly diverse React components is uniquely challenging. 
+
+### The Problem: Container Distortion
+
+Initially, when users tried to drag large blocks (like a dense Project grid), the browser would attempt to render the component exactly where the cursor was. If the user dragged a block into a smaller container (like a sidebar), the DOM would forcibly resize the component mid-drag, causing severe visual stretching and layout breaking.
+
+### The Solution: Global State and DragOverlay
+
+We solved this by detaching the visual representation of the dragged item from the DOM hierarchy. 
+
+When a drag event begins:
+1. We intercept the `onDragStart` event and elevate it to a global `usePortfolioStore` state (`isDraggingBlock: true`).
+2. This global state triggers a synchronized UI reaction across the entire app. For example, our "Add Block" sidebar smoothly slides away so it doesn't interfere with the drop zone.
+3. We render a `DragOverlay`. Instead of stretching the original component, `DragOverlay` creates an isolated, portal-rendered clone of the component that perfectly tracks your cursor using `CSS.Translate` and a locked scale (`adjustScale={false}`).
+
+The result is a pixel-perfect, frictionless sorting experience. You can grab your Hero block and throw it to the bottom of the page, and the entire layout flows around it effortlessly.
+
+Your portfolio is your story. Now you have the tools to tell it in any order you want.

@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Eye, EyeOff, GripVertical } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, GripVertical, Sparkles } from "lucide-react";
 import { Section } from "@/lib/validations/portfolio";
 import { cn } from "@/lib/utils";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
@@ -38,6 +38,7 @@ function ProjectItemUI({
   isValidUrl,
   dragHandleProps,
 }: any) {
+  const [isEnhancing, setIsEnhancing] = useState(false);
   return (
     <div
       className={cn(
@@ -45,6 +46,12 @@ function ProjectItemUI({
         !item.isVisible && "opacity-50 grayscale"
       )}
     >
+      {isEnhancing && (
+        <div className="absolute inset-0 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm z-20 flex flex-col items-center justify-center rounded-lg">
+          <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mb-2" />
+          <span className="text-[10px] font-medium text-violet-600 dark:text-violet-400">Enhancing...</span>
+        </div>
+      )}
       <div
         {...dragHandleProps}
         className="absolute -left-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-grab active:cursor-grabbing opacity-0 group-hover/proj:opacity-100 transition-opacity z-10"
@@ -83,16 +90,45 @@ function ProjectItemUI({
         )}
       />
 
-      <Textarea
-        placeholder="Short description of what you built and tech used..."
-        value={item.description}
-        onChange={(e) => updateProject && updateProject(idx, { description: e.target.value })}
-        className={cn(
-          fieldClass,
-          "min-h-[60px] h-auto resize-none",
-          !item.description && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400"
-        )}
-      />
+      <div className="relative">
+        <Textarea
+          placeholder="Short description of what you built and tech used..."
+          value={item.description}
+          onChange={(e) => updateProject && updateProject(idx, { description: e.target.value })}
+          className={cn(
+            fieldClass,
+            "min-h-[60px] h-auto resize-none pb-8",
+            !item.description && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400"
+          )}
+        />
+        <button
+          onClick={async () => {
+            if (!updateProject || !item.description) return;
+            try {
+              setIsEnhancing(true);
+              const res = await fetch('/api/enhance-text', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: item.description, type: 'project' })
+              });
+              if (!res.ok) throw new Error('Enhance failed');
+              const data = await res.json();
+              if (data.enhancedText) {
+                updateProject(idx, { description: data.enhancedText });
+              }
+            } catch (error) {
+              console.error(error);
+            } finally {
+              setIsEnhancing(false);
+            }
+          }}
+          disabled={!item.description || isEnhancing}
+          title="Enhance with AI"
+          className="absolute bottom-1.5 right-1.5 p-1.5 text-violet-500 hover:bg-violet-500/10 dark:hover:bg-violet-500/20 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed z-10"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+        </button>
+      </div>
 
       <div className="space-y-1">
         <Input
