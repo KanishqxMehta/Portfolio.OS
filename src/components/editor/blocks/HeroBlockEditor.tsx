@@ -56,6 +56,31 @@ export function HeroBlockEditor({
         />
       </div>
 
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <label className={labelClass}>Phone Number</label>
+          <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-medium">
+            Optional
+          </span>
+        </div>
+        <Input
+          placeholder="+1 (555) 123-4567"
+          value={content.phone || ""}
+          onChange={(e) => handleUpdate({ phone: e.target.value })}
+          className={cn(
+            fieldClass,
+            content.phone &&
+              !/^[0-9+\-() ]*$/.test(content.phone) &&
+              "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20 text-red-600 dark:text-red-400"
+          )}
+        />
+        {content.phone && !/^[0-9+\-() ]*$/.test(content.phone) && (
+          <p className="text-[10px] text-red-500 mt-0.5">
+            Please enter a valid phone number (numbers, spaces, and + - ( ) only).
+          </p>
+        )}
+      </div>
+
       {/* Social Links Sub-section */}
       <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/80 space-y-3">
         <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 block">

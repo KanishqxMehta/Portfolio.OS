@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import * as motion from "framer-motion/client";
-import { ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send } from "lucide-react";
+import { ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send, Phone } from "lucide-react";
 import { Timeline, TimelineItem } from "./Timeline";
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -103,8 +103,17 @@ const Hero = ({ data }: { data: HeroContent }) => {
       </motion.p>
 
       {/* Social links row */}
-      {(data.github || data.linkedin || data.instagram || data.twitter) && (
+      {(data.phone || data.github || data.linkedin || data.instagram || data.twitter) && (
         <div className="mt-8 flex flex-wrap items-center gap-4">
+          {data.phone && (
+            <a
+              href={`tel:${data.phone}`}
+              title="Phone Number"
+              className="w-11 h-11 rounded-full border border-[var(--p-border)] bg-[var(--p-bg-secondary)] flex items-center justify-center text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] hover:border-[var(--p-primary)] hover:scale-105 active:scale-95 transition-all duration-200"
+            >
+              <Phone className="w-5 h-5" />
+            </a>
+          )}
           {data.github && (
             <a
               href={data.github}
@@ -737,8 +746,13 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
             <p className="text-sm text-[var(--p-fg-muted)] leading-relaxed line-clamp-3">{bio}</p>
             
             {/* Socials */}
-            {(heroData?.github || heroData?.linkedin || heroData?.twitter || heroData?.instagram) && (
+            {(heroData?.phone || heroData?.github || heroData?.linkedin || heroData?.twitter || heroData?.instagram) && (
               <div className="mt-6 flex flex-wrap gap-4">
+                {heroData.phone && (
+                  <a href={`tel:${heroData.phone}`} className="text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] transition-colors">
+                    <Phone className="w-4 h-4" />
+                  </a>
+                )}
                 {heroData.github && (
                   <a href={heroData.github} target="_blank" rel="noreferrer" className="text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] transition-colors">
                     <GithubIcon className="w-4 h-4" />

@@ -231,6 +231,8 @@ async function PortfolioContent({ slug }: { slug: string }) {
           </span>
         </Link>
       </div>
+
+      <ViewTracker slug={slug} />
     </div>
   );
 }

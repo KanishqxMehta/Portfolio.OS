@@ -21,7 +21,8 @@ import {
   CheckCircle2,
   Edit3,
   ArrowLeft,
-  AlertTriangle
+  AlertTriangle,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/Logo";
@@ -262,6 +263,19 @@ export function DashboardHeader({
           >
             <Globe className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">View Live</span>
+          </Link>
+        )}
+
+        {/* Download PDF button (Editor only) */}
+        {currentPage === "editor" && publicSlug && (
+          <Link
+            href="/dashboard/pdf-export"
+            target="_blank"
+            className="hidden md:flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 px-2.5 sm:px-3 py-1.5 rounded-lg transition-colors"
+            title="Download ATS-Friendly PDF"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Export PDF</span>
           </Link>
         )}
 

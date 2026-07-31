@@ -4,6 +4,10 @@ import { z } from "zod";
 export const HeroContentSchema = z.object({
   fullName: z.string().min(1, "Full Name is required"),
   bio: z.string().optional().or(z.literal("")),
+  phone: z.string()
+    .regex(/^[0-9+\-() ]*$/, "Please enter a valid phone number (only numbers, spaces, and + - ( ) are allowed)")
+    .optional()
+    .or(z.literal("")),
   github: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
   linkedin: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
   instagram: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
