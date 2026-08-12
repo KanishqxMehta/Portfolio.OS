@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";
 import { OrganizationJsonLd, FAQJsonLd, SiteNavigationJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
+import { ThemeShowcaseHero } from "@/components/landing/ThemeShowcaseHero";
 
 const faqs = [
   {
@@ -447,6 +448,9 @@ export default function Home() {
             </div>
           </Link>
         </motion.div>
+
+        {/* Live Interactive Theme Showcase */}
+        <ThemeShowcaseHero />
       </main>
 
       {/* Features */}
