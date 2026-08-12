@@ -23,10 +23,21 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Portfolio.OS | Free Developer Portfolio Builder",
+    default: "Portfolio.OS | AI Resume to Portfolio Converter & Developer Builder",
     template: "%s | Portfolio.OS",
   },
-  description: "Create a stunning developer portfolio in minutes. 🚀 Free templates, drag-and-drop editing, and instant publishing. Stand out to recruiters — no code needed!",
+  description: "Convert your PDF resume into a live, interactive developer portfolio website in seconds with AI. Free templates, ATS optimization, drag-and-drop editing, and instant publishing. Stand out to recruiters!",
+  keywords: [
+    "ai portfolio builder from resume",
+    "resume to portfolio converter",
+    "convert resume to portfolio website",
+    "ai resume parser",
+    "developer portfolio builder",
+    "free developer portfolio",
+    "resume to website converter",
+    "ATS resume optimizer",
+    "portfolioos"
+  ],
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"),
   alternates: {
     canonical: "/",
@@ -43,8 +54,8 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Portfolio.OS | Free Developer Portfolio Builder",
-    description: "Create a stunning developer portfolio in minutes. 🚀 Free templates, drag-and-drop editing, and instant publishing.",
+    title: "Portfolio.OS | AI Resume to Portfolio Converter",
+    description: "Convert your PDF resume into a live developer portfolio website in seconds with AI. Free templates, ATS optimization, and instant publishing.",
     type: "website",
     siteName: "Portfolio.OS",
     locale: "en_US",
@@ -52,8 +63,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Portfolio.OS | Free Developer Portfolio Builder",
-    description: "Create a stunning developer portfolio in minutes. 🚀 Free templates, drag-and-drop editing, and instant publishing.",
+    title: "Portfolio.OS | AI Resume to Portfolio Converter",
+    description: "Convert your PDF resume into a live developer portfolio website in seconds with AI. Free templates, ATS optimization, and instant publishing.",
   },
 };
 

@@ -345,10 +345,10 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/20 bg-violet-500/10 text-violet-300 text-sm font-medium mb-8"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-300 text-xs sm:text-sm font-semibold mb-8 shadow-sm"
         >
-          <Sparkles className="w-4 h-4" />
-          <span>Resume-to-Portfolio Engine Active</span>
+          <Sparkles className="w-4 h-4 text-violet-500 dark:text-violet-400" />
+          <span>#1 AI Resume to Portfolio Converter</span>
         </motion.div>
 
         <motion.h1
@@ -370,7 +370,7 @@ export default function Home() {
           transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
           className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 mb-16 max-w-2xl mx-auto leading-relaxed transition-colors duration-500"
         >
-          Drop your resume to compile a high-performance portfolio via AI, or map your layout components manually. Zero friction, total control.
+          Drop your PDF resume to instantly convert it into a high-performance developer portfolio website via AI, or build block-by-block. Zero friction, total control.
         </motion.p>
 
         {/* DEVELOPER IMPLEMENTATION: THE SPLIT-ROUTE CHOICE INTERFACE */}
@@ -489,6 +489,87 @@ export default function Home() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Convert: Static PDF vs Live Portfolio Website */}
+      <section className="relative z-10 py-24 bg-white dark:bg-zinc-900/30 border-t border-zinc-200 dark:border-zinc-800/80 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-500/10 border border-violet-500/20 px-3 py-1 rounded-full">
+              Why Convert Your Resume?
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-4 mb-4">
+              A PDF resume gets buried. A live portfolio gets hired.
+            </h2>
+            <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Recruiters receive hundreds of static PDF attachments daily. Stand out instantly with a fast, interactive website generated directly from your resume in seconds.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Left: Static PDF */}
+            <div className="p-8 rounded-3xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800/80 space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 font-bold">
+                  📄
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Static PDF Resume</h3>
+                  <p className="text-xs text-zinc-500">Traditional attachment</p>
+                </div>
+              </div>
+              <ul className="space-y-3.5 text-sm text-zinc-600 dark:text-zinc-400">
+                <li className="flex items-start gap-2.5">
+                  <span className="text-red-500 font-bold shrink-0">✕</span>
+                  <span>Buried inside an inbox or filtered out by strict ATS algorithms.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-red-500 font-bold shrink-0">✕</span>
+                  <span>Flat plain text — zero live project previews, interactive demos, or branding.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-red-500 font-bold shrink-0">✕</span>
+                  <span>Impossible to know if a recruiter actually opened or read your resume.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-red-500 font-bold shrink-0">✕</span>
+                  <span>Hard to update on the fly once sent out in applications.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Right: Portfolio.OS */}
+            <div className="p-8 rounded-3xl bg-violet-500/5 dark:bg-violet-950/20 border border-violet-500/30 dark:border-violet-500/30 space-y-6 shadow-xl shadow-violet-500/5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-violet-400 font-bold">
+                  🚀
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Portfolio.OS Live Website</h3>
+                  <p className="text-xs text-violet-600 dark:text-violet-400 font-medium">Converted via AI in 3 seconds</p>
+                </div>
+              </div>
+              <ul className="space-y-3.5 text-sm text-zinc-700 dark:text-zinc-300">
+                <li className="flex items-start gap-2.5">
+                  <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                  <span>One crisp, custom link (`portfolioos.dev/p/you`) you can share anywhere.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                  <span>Interactive project showcases, tech stack badges, and 6 switchable themes.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                  <span>Real-time analytics dashboard to track when employers visit your page.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                  <span>Native ATS-Friendly PDF Export whenever you need to upload a standard file.</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
