@@ -20,7 +20,7 @@ export function ResumeParserModal({ isOpen, onOpenChange }: ResumeParserModalPro
   const [parsingState, setParsingState] = useState<"idle" | "reading" | "extracting" | "populating" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { sections, updateBlockData, addBlock } = usePortfolioStore();
+  const { sections, setProposedSections } = usePortfolioStore();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,162 +95,151 @@ export function ResumeParserModal({ isOpen, onOpenChange }: ResumeParserModalPro
   };
 
   const applyParsedData = (data: any) => {
+    let draftSections: any[] = JSON.parse(JSON.stringify(sections));
+
     // HERO
-    const heroSection = sections.find(s => s.type === "HERO");
-    if (heroSection) {
-      updateBlockData(heroSection.id, {
-        fullName: data.name || heroSection.content.fullName,
-        bio: data.bio || heroSection.content.bio || "Passionate professional with experience in software development.",
-        github: data.github || heroSection.content.github || "",
-        linkedin: data.linkedin || heroSection.content.linkedin || "",
-      });
+    const heroIdx = draftSections.findIndex((s) => s.type === 'HERO');
+    if (heroIdx !== -1) {
+      draftSections[heroIdx].content = {
+        ...draftSections[heroIdx].content,
+        fullName: data.name || draftSections[heroIdx].content.fullName,
+        bio: data.bio || draftSections[heroIdx].content.bio || 'Passionate professional',
+        github: data.github || draftSections[heroIdx].content.github || '',
+        linkedin: data.linkedin || draftSections[heroIdx].content.linkedin || '',
+      };
     } else {
-      addBlock("HERO", "About Me");
-      setTimeout(() => {
-        const newHero = usePortfolioStore.getState().sections.find(s => s.type === "HERO");
-        if (newHero) {
-          updateBlockData(newHero.id, { 
-            fullName: data.name || "", 
-            bio: data.bio || "Passionate professional...",
-            github: data.github || "",
-            linkedin: data.linkedin || ""
-          });
-        }
-      }, 0);
+      draftSections.unshift({
+        id: crypto.randomUUID(),
+        type: 'HERO',
+        title: 'About Me',
+        content: {
+          fullName: data.name || '',
+          bio: data.bio || 'Passionate professional',
+          github: data.github || '',
+          linkedin: data.linkedin || '',
+        },
+        isVisible: true,
+      });
     }
 
     // SKILLS
-    const skillsSection = sections.find(s => s.type === "SKILLS");
-    if (skillsSection) {
-      const existing = skillsSection.content.items || [];
-      const newItems = (data.skills || []).filter((s: string) => !existing.some((es: string) => es.toLowerCase() === s.toLowerCase()));
-      updateBlockData(skillsSection.id, {
-        items: [...existing, ...newItems]
-      });
-    } else if (data.skills && data.skills.length > 0) {
-      addBlock("SKILLS", "Skills");
-      setTimeout(() => {
-        const newSkills = usePortfolioStore.getState().sections.find(s => s.type === "SKILLS");
-        if (newSkills) {
-          updateBlockData(newSkills.id, { items: data.skills });
-        }
-      }, 0);
+    if (data.skills && data.skills.length > 0) {
+      const skillsIdx = draftSections.findIndex((s) => s.type === 'SKILLS');
+      if (skillsIdx !== -1) {
+        const existing = draftSections[skillsIdx].content.items || [];
+        const newItems = data.skills.filter((s: string) => !existing.some((es: string) => es.toLowerCase().trim() === s.toLowerCase().trim()));
+        draftSections[skillsIdx].content = {
+          ...draftSections[skillsIdx].content,
+          items: [...existing, ...newItems],
+        };
+      } else {
+        draftSections.push({
+          id: crypto.randomUUID(),
+          type: 'SKILLS',
+          title: 'Skills',
+          content: { items: data.skills },
+          isVisible: true,
+        });
+      }
     }
 
     // EDUCATION
-    const eduSection = sections.find(s => s.type === "EDUCATION");
-    if (eduSection) {
-      const existing = eduSection.content.items || [];
-      const updatedItems = existing.map((eItem: any) => {
-        const matching = (data.education || []).find((newEd: any) => 
-          newEd.school && eItem.school && newEd.school.toLowerCase().trim() === eItem.school.toLowerCase().trim()
-        );
-        if (matching) {
-          const merged = { ...eItem };
-          if (matching.school) merged.school = matching.school;
-          if (matching.degree) merged.degree = matching.degree;
-          if (matching.year) merged.year = matching.year;
-          if (matching.grade) merged.grade = matching.grade;
-          return { ...merged, id: eItem.id, isVisible: eItem.isVisible };
-        }
-        return eItem;
-      });
-      const trulyNewItems = (data.education || []).filter((newEd: any) => !existing.some((e: any) => e.school && newEd.school && e.school.toLowerCase().trim() === newEd.school.toLowerCase().trim()));
-      updateBlockData(eduSection.id, {
-        items: [...updatedItems, ...trulyNewItems].map((item: any) => ({ ...item, id: item.id || crypto.randomUUID(), isVisible: item.isVisible !== false }))
-      });
-    } else if (data.education && data.education.length > 0) {
-      const validEdu = data.education.map((item: any) => ({ ...item, id: crypto.randomUUID(), isVisible: true }));
-      addBlock("EDUCATION", "Education");
-      setTimeout(() => {
-        const newEdu = usePortfolioStore.getState().sections.find(s => s.type === "EDUCATION");
-        if (newEdu) {
-          updateBlockData(newEdu.id, { items: validEdu });
-        }
-      }, 0);
+    if (data.education && data.education.length > 0) {
+      const eduIdx = draftSections.findIndex((s) => s.type === 'EDUCATION');
+      const validEdu = data.education.map((item: any) => ({
+        ...item,
+        id: item.id || crypto.randomUUID(),
+        isVisible: item.isVisible !== false,
+      }));
+      if (eduIdx !== -1) {
+        const existing = draftSections[eduIdx].content.items || [];
+        const updatedItems = existing.map((eItem: any) => {
+          const matching = validEdu.find((newEd: any) => 
+            newEd.school && eItem.school && newEd.school.toLowerCase().trim() === eItem.school.toLowerCase().trim()
+          );
+          return matching ? { ...eItem, ...matching } : eItem;
+        });
+        const trulyNew = validEdu.filter((newEd: any) => !existing.some((e: any) => e.school && newEd.school && e.school.toLowerCase().trim() === newEd.school.toLowerCase().trim()));
+        draftSections[eduIdx].content = {
+          ...draftSections[eduIdx].content,
+          items: [...updatedItems, ...trulyNew],
+        };
+      } else {
+        draftSections.push({
+          id: crypto.randomUUID(),
+          type: 'EDUCATION',
+          title: 'Education',
+          content: { items: validEdu },
+          isVisible: true,
+        });
+      }
     }
 
     // EXPERIENCE
-    const expSection = sections.find(s => s.type === "EXPERIENCE");
-    if (expSection) {
-      const existing = expSection.content.items || [];
-      const updatedItems = existing.map((exItem: any) => {
-        const matching = (data.experience || []).find((newEx: any) => 
-          newEx.company && exItem.company && newEx.company.toLowerCase().trim() === exItem.company.toLowerCase().trim()
-        );
-        if (matching) {
-          const merged = { ...exItem };
-          if (matching.company) merged.company = matching.company;
-          if (matching.role) merged.role = matching.role;
-          if (matching.years) merged.years = matching.years;
-          if (matching.description) merged.description = matching.description;
-          return { ...merged, id: exItem.id, isVisible: exItem.isVisible };
-        }
-        return exItem;
-      });
-      const trulyNewItems = (data.experience || []).filter((newEx: any) => !existing.some((e: any) => e.company && newEx.company && e.company.toLowerCase().trim() === newEx.company.toLowerCase().trim()));
-      updateBlockData(expSection.id, {
-        items: [...updatedItems, ...trulyNewItems].map((item: any) => ({ ...item, id: item.id || crypto.randomUUID(), isVisible: item.isVisible !== false }))
-      });
-    } else if (data.experience && data.experience.length > 0) {
-      const validExp = data.experience.map((item: any) => ({ ...item, id: item.id || crypto.randomUUID(), isVisible: item.isVisible !== false }));
-      addBlock("EXPERIENCE", "Experience");
-      setTimeout(() => {
-        const newExp = usePortfolioStore.getState().sections.find(s => s.type === "EXPERIENCE");
-        if (newExp) {
-          updateBlockData(newExp.id, { items: validExp });
-        }
-      }, 0);
+    if (data.experience && data.experience.length > 0) {
+      const expIdx = draftSections.findIndex((s) => s.type === 'EXPERIENCE');
+      const validExp = data.experience.map((item: any) => ({
+        ...item,
+        id: item.id || crypto.randomUUID(),
+        isVisible: item.isVisible !== false,
+      }));
+      if (expIdx !== -1) {
+        const existing = draftSections[expIdx].content.items || [];
+        const updatedItems = existing.map((exItem: any) => {
+          const matching = validExp.find((newEx: any) => 
+            newEx.company && exItem.company && newEx.company.toLowerCase().trim() === exItem.company.toLowerCase().trim()
+          );
+          return matching ? { ...exItem, ...matching } : exItem;
+        });
+        const trulyNew = validExp.filter((newEx: any) => !existing.some((e: any) => e.company && newEx.company && e.company.toLowerCase().trim() === newEx.company.toLowerCase().trim()));
+        draftSections[expIdx].content = {
+          ...draftSections[expIdx].content,
+          items: [...updatedItems, ...trulyNew],
+        };
+      } else {
+        draftSections.push({
+          id: crypto.randomUUID(),
+          type: 'EXPERIENCE',
+          title: 'Experience',
+          content: { items: validExp },
+          isVisible: true,
+        });
+      }
     }
 
     // PROJECTS
-    const projectsSection = sections.find(s => s.type === "PROJECTS");
-    if (projectsSection) {
-      const existing = projectsSection.content.items || [];
-      const updatedItems = existing.map((pItem: any) => {
-        const matching = (data.projects || []).find((newProj: any) => 
-          newProj.title && pItem.title && newProj.title.toLowerCase().trim() === pItem.title.toLowerCase().trim()
-        );
-        if (matching) {
-          const merged = { ...pItem };
-          if (matching.title) merged.title = matching.title;
-          if (matching.description) merged.description = matching.description;
-          if (matching.link) merged.link = matching.link;
-          return { ...merged, id: pItem.id, isVisible: pItem.isVisible };
-        }
-        return pItem;
-      });
-      const trulyNewItems = (data.projects || []).filter((newProj: any) => !existing.some((p: any) => p.title && newProj.title && p.title.toLowerCase().trim() === newProj.title.toLowerCase().trim()));
-      updateBlockData(projectsSection.id, {
-        items: [...updatedItems, ...trulyNewItems].map((item: any) => ({ ...item, id: item.id || crypto.randomUUID(), isVisible: item.isVisible !== false }))
-      });
-    } else if (data.projects && data.projects.length > 0) {
-      const validProjects = data.projects.map((item: any) => ({ ...item, id: item.id || crypto.randomUUID(), isVisible: item.isVisible !== false }));
-      addBlock("PROJECTS", "Projects");
-      setTimeout(() => {
-        const newProj = usePortfolioStore.getState().sections.find(s => s.type === "PROJECTS");
-        if (newProj) {
-          updateBlockData(newProj.id, { items: validProjects });
-        }
-      }, 0);
+    if (data.projects && data.projects.length > 0) {
+      const projIdx = draftSections.findIndex((s) => s.type === 'PROJECTS');
+      const validProjects = data.projects.map((item: any) => ({
+        ...item,
+        id: item.id || crypto.randomUUID(),
+        isVisible: item.isVisible !== false,
+      }));
+      if (projIdx !== -1) {
+        const existing = draftSections[projIdx].content.items || [];
+        const updatedItems = existing.map((pItem: any) => {
+          const matching = validProjects.find((newProj: any) => 
+            newProj.title && pItem.title && newProj.title.toLowerCase().trim() === pItem.title.toLowerCase().trim()
+          );
+          return matching ? { ...pItem, ...matching } : pItem;
+        });
+        const trulyNew = validProjects.filter((newProj: any) => !existing.some((p: any) => p.title && newProj.title && p.title.toLowerCase().trim() === newProj.title.toLowerCase().trim()));
+        draftSections[projIdx].content = {
+          ...draftSections[projIdx].content,
+          items: [...updatedItems, ...trulyNew],
+        };
+      } else {
+        draftSections.push({
+          id: crypto.randomUUID(),
+          type: 'PROJECTS',
+          title: 'Projects',
+          content: { items: validProjects },
+          isVisible: true,
+        });
+      }
     }
 
-    // CONTACT FORM
-    const contactSection = sections.find(s => s.type === "CONTACT_FORM");
-    if (contactSection && data.email) {
-      updateBlockData(contactSection.id, {
-        emailTarget: data.email || contactSection.content.emailTarget,
-      });
-    } else if (data.email) {
-      addBlock("CONTACT_FORM", "Contact Me");
-      setTimeout(() => {
-        const newContact = usePortfolioStore.getState().sections.find(s => s.type === "CONTACT_FORM");
-        if (newContact) {
-          updateBlockData(newContact.id, { emailTarget: data.email, buttonText: "Send Message", title: "Get In Touch", description: "Feel free to reach out to me directly." });
-        }
-      }, 0);
-    }
-
+    setProposedSections(draftSections);
   };
 
   const getLoaderText = () => {

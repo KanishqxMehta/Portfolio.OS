@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/Logo";
+import { usePortfolioStore } from "@/store/usePortfolioStore";
+import { Wand2, Split } from "lucide-react";
 
 interface DashboardHeaderProps {
   currentPage: "editor" | "analytics" | "profile";
@@ -51,6 +53,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const { data: clientSession, status: clientStatus } = useSession();
   const { theme: activeMode, setTheme: setActiveMode } = useTheme();
+  const { isDiffMode, enableDiffMode, disableDiffMode, proposedSections } = usePortfolioStore();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -264,6 +267,27 @@ export function DashboardHeader({
             <Globe className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">View Live</span>
           </Link>
+        )}
+
+        {/* Diff Mode Toggle (Editor only) */}
+        {currentPage === "editor" && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => isDiffMode ? disableDiffMode() : enableDiffMode()}
+            className={cn(
+              "h-8 px-3 text-xs font-medium rounded-full transition-all flex items-center gap-1.5 border",
+              isDiffMode
+                ? "bg-violet-600 text-white border-violet-500 shadow-md shadow-violet-500/30 hover:bg-violet-700"
+                : "bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800"
+            )}
+          >
+            <Split className="w-3.5 h-3.5 text-violet-400" />
+            <span>{isDiffMode ? "Exit Diff" : "Diff View"}</span>
+            {proposedSections && (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+            )}
+          </Button>
         )}
 
         {/* Download PDF button (Editor only) */}

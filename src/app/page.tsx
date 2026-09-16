@@ -8,7 +8,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";
 import { OrganizationJsonLd, FAQJsonLd, SiteNavigationJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
-import { ThemeShowcaseHero } from "@/components/landing/ThemeShowcaseHero";
+import { ShowcaseStackSection } from "@/components/landing/ShowcaseStackSection";
+
+import { GitCompare } from "lucide-react";
 
 const faqs = [
   {
@@ -449,16 +451,22 @@ export default function Home() {
           </Link>
         </motion.div>
 
-        {/* Live Interactive Theme Showcase */}
-        <ThemeShowcaseHero />
+        {/* Live Interactive Showcase Stack Section */}
+        <ShowcaseStackSection />
       </main>
 
       {/* Features */}
       <section id="features" className="relative z-10 py-24 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-transparent transition-colors duration-500">
         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 text-center mb-16 transition-colors duration-500">Everything You Need to Build Your Portfolio</h2>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
+              {
+                icon: GitCompare,
+                title: "Selective Diff & Version Control",
+                description:
+                  "Review, compare, and selectively accept AI resume updates or manual edits with item-level green (added), yellow (modified), and red (removed) status rings.",
+              },
               {
                 icon: Layout,
                 title: "Flexible Block Editor",

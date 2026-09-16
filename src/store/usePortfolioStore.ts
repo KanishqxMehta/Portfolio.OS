@@ -4,6 +4,16 @@ import { Section, portfolioSchema } from '@/lib/validations/portfolio';
 import { slugifyUsername } from '@/lib/validations/user';
 
 interface PortfolioState {
+  savedSections: Section[] | null;
+  proposedSections: Section[] | null;
+  isDiffMode: boolean;
+  enableDiffMode: (proposed?: Section[]) => void;
+  disableDiffMode: () => void;
+  setProposedSections: (proposed: Section[]) => void;
+  acceptBlockDiff: (blockId: string) => void;
+  rejectBlockDiff: (blockId: string) => void;
+  acceptAllDiffs: () => void;
+  discardAllDiffs: () => void;
   sections: Section[];
   username: string;
   isSaving: boolean;
@@ -34,6 +44,69 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   isSaving: false,
   isLoading: true,
   isDraggingBlock: false,
+  savedSections: null,
+  proposedSections: null,
+  isDiffMode: false,
+
+  enableDiffMode: (proposed) => set((state) => ({
+    isDiffMode: true,
+    savedSections: state.savedSections || JSON.parse(JSON.stringify(state.sections)),
+    proposedSections: proposed || JSON.parse(JSON.stringify(state.sections)),
+  })),
+
+  disableDiffMode: () => set({ isDiffMode: false }),
+
+  setProposedSections: (proposedSections) => set((state) => ({
+    proposedSections,
+    savedSections: state.savedSections || JSON.parse(JSON.stringify(state.sections)),
+    isDiffMode: true,
+  })),
+
+  acceptBlockDiff: (blockId) => set((state) => {
+    if (!state.proposedSections) return {};
+    const proposedBlock = state.proposedSections.find((p) => p.id === blockId);
+    if (!proposedBlock) return {};
+
+    const exists = state.sections.some((s) => s.id === blockId);
+    let updatedSections: Section[];
+    if (exists) {
+      updatedSections = state.sections.map((s) => (s.id === blockId ? proposedBlock : s));
+    } else {
+      updatedSections = [...state.sections, proposedBlock];
+    }
+
+    const remainingProposed = state.proposedSections.filter((p) => p.id !== blockId);
+
+    return {
+      sections: updatedSections,
+      proposedSections: remainingProposed.length > 0 ? remainingProposed : null,
+      isDiffMode: remainingProposed.length > 0,
+    };
+  }),
+
+  rejectBlockDiff: (blockId) => set((state) => {
+    if (!state.proposedSections) return {};
+    const remainingProposed = state.proposedSections.filter((p) => p.id !== blockId);
+    return {
+      proposedSections: remainingProposed.length > 0 ? remainingProposed : null,
+      isDiffMode: remainingProposed.length > 0,
+    };
+  }),
+
+  acceptAllDiffs: () => set((state) => {
+    if (!state.proposedSections) return {};
+    return {
+      sections: [...state.proposedSections],
+      proposedSections: null,
+      isDiffMode: false,
+    };
+  }),
+
+  discardAllDiffs: () => set((state) => ({
+    proposedSections: null,
+    isDiffMode: false,
+    sections: state.savedSections || state.sections,
+  })),
 
   setTheme: (theme) => set({ theme }),
   setLayout: (layout) => set({ layout }),
@@ -128,6 +201,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
       set({
         sections: loadedSections,
+        savedSections: JSON.parse(JSON.stringify(loadedSections)),
         theme: content.theme || "classic",
         layout: content.layout || "classic",
         username: data.publicSlug || '',
@@ -181,6 +255,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
         const err = await response.json();
         throw new Error(err.error || "Failed to save");
       }
+      set({ savedSections: JSON.parse(JSON.stringify(get().sections)) });
       useToastStore.getState().toast("Portfolio saved successfully!", "success");
       return true;
     } catch (error: any) {

@@ -18,6 +18,9 @@ import {
   Layers,
   Pause,
   Play,
+  GitCompare,
+  Check,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -75,7 +78,7 @@ const standaloneThemes = [
 ];
 
 export function ThemeShowcaseHero() {
-  const [mode, setMode] = useState<"combos" | "themes">("combos");
+  const [mode, setMode] = useState<"combos" | "themes" | "diff">("combos");
   const [comboIndex, setComboIndex] = useState(0);
   const [themeIndex, setThemeIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -152,6 +155,21 @@ export function ThemeShowcaseHero() {
               <Layers className="w-3.5 h-3.5" />
               <span>Single Themes</span>
             </button>
+            <button
+              onClick={() => {
+                setMode("diff");
+                setIsAutoPlaying(false);
+              }}
+              className={cn(
+                "px-4 py-1.5 rounded-full transition-all cursor-pointer flex items-center gap-1.5",
+                mode === "diff"
+                  ? "bg-violet-600 text-white shadow-md font-bold"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+              )}
+            >
+              <GitCompare className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Selective Diff Mode</span>
+            </button>
           </div>
 
           {/* Auto-Play Toggle */}
@@ -166,7 +184,7 @@ export function ThemeShowcaseHero() {
 
         {/* Option Bar for Combos */}
         {mode === "combos" ? (
-          <div className="flex flex-wrap items-center justify-center gap-2.5 p-2 rounded-2xl bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 backdrop-blur-xl shadow-inner max-w-full">
+          <div className="flex items-center gap-2.5 p-2 rounded-2xl bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 backdrop-blur-xl shadow-inner max-w-full overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth py-3 px-4">
             {bestCombinations.map((combo, idx) => {
               const Icon = combo.icon;
               const isActive = comboIndex === idx;
@@ -197,7 +215,7 @@ export function ThemeShowcaseHero() {
           </div>
         ) : (
           /* Standalone Theme Pills */
-          <div className="flex flex-wrap items-center justify-center gap-2 p-2 rounded-2xl bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 backdrop-blur-xl shadow-inner">
+          <div className="flex items-center gap-2.5 p-2 rounded-2xl bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 backdrop-blur-xl shadow-inner overflow-x-auto max-w-full no-scrollbar whitespace-nowrap scroll-smooth py-3 px-4">
             {standaloneThemes.map((theme, idx) => {
               const Icon = theme.icon;
               const isActive = themeIndex === idx;
@@ -468,6 +486,83 @@ export function ThemeShowcaseHero() {
                   <p className="text-xs text-[var(--p-fg-muted)] leading-relaxed">
                     Extracted semantic document parsing engine converting raw PDF resume text into structured layout components.
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          
+          {/* 5. SELECTIVE DIFF PREVIEW MODE */}
+          {mode === "diff" && (
+            <div className="space-y-4 text-left">
+              {/* Header Bar */}
+              <div className="flex flex-wrap items-center justify-between p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white gap-3">
+                <div className="flex items-center gap-2">
+                  <GitCompare className="w-4 h-4 text-violet-400" />
+                  <span className="font-bold text-xs">Selective Diff &amp; Version Review</span>
+                  <span className="px-2 py-0.5 rounded-full bg-violet-950 text-violet-300 text-[10px] font-mono border border-violet-800">
+                    2 Pending Changes
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-zinc-400 border border-zinc-700 px-2 py-0.5 rounded-full">Discard All</span>
+                  <span className="text-[10px] font-bold bg-violet-600 text-white px-2.5 py-0.5 rounded-full shadow">Accept All</span>
+                </div>
+              </div>
+
+              {/* Dual Pane Grid */}
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Left: Original Live Version */}
+                <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-950/80 space-y-3">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 border-b border-zinc-800 pb-2">
+                    Current Live Version
+                  </div>
+                  <div className="p-3 rounded-lg border border-zinc-800 bg-black/40 space-y-2 text-xs text-zinc-300">
+                    <p className="font-bold">Portfolio.OS Developer Platform</p>
+                    <p className="text-[11px] text-zinc-400">Full-stack web application for developers.</p>
+                  </div>
+                  <div className="p-3 rounded-lg border border-zinc-800 bg-black/40 space-y-1.5 text-xs">
+                    <p className="font-bold text-zinc-400 text-[11px]">Skills Stack</p>
+                    <div className="flex flex-wrap gap-1">
+                      <span className="px-2 py-0.5 text-[10px] rounded bg-zinc-900 border border-zinc-800 text-zinc-400">Next.js</span>
+                      <span className="px-2 py-0.5 text-[10px] rounded bg-zinc-900 border border-zinc-800 text-zinc-400">TypeScript</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: Proposed Resume Draft with Per-Item Border Colors */}
+                <div className="p-4 rounded-xl border border-violet-500/30 bg-violet-950/10 space-y-3">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-violet-400 border-b border-zinc-800 pb-2 flex items-center justify-between">
+                    <span>Proposed Version (Item Diff)</span>
+                    <span className="text-[9px] text-emerald-400 font-mono">Item-Level Review</span>
+                  </div>
+
+                  {/* Modified Project Item Card */}
+                  <div className="p-3 rounded-xl border-2 border-amber-500 bg-amber-950/30 ring-1 ring-amber-500/50 space-y-2 text-xs shadow-lg shadow-amber-500/10">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-amber-300">Portfolio.OS AI Platform</span>
+                      <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[9px] border border-amber-500/40">~ Modified Item</span>
+                    </div>
+                    <div className="p-2 rounded bg-zinc-900/90 text-[10px] font-mono text-zinc-300">
+                      <span className="text-amber-400 font-bold">[description]:</span> Updated with AI resume parser details
+                    </div>
+                  </div>
+
+                  {/* Added Skill Pill Item */}
+                  <div className="p-3 rounded-xl border-2 border-emerald-500 bg-emerald-950/30 ring-1 ring-emerald-500/50 space-y-2 text-xs shadow-lg shadow-emerald-500/10">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-emerald-300">Skills Added</span>
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[9px] border border-emerald-500/40">+ Added Skill</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      <span className="px-2 py-0.5 text-[10px] rounded-lg border-2 border-emerald-500 bg-emerald-950/60 text-emerald-300 font-bold ring-2 ring-emerald-500/40">
+                        + Tailwind CSS
+                      </span>
+                      <span className="px-2 py-0.5 text-[10px] rounded-lg border-2 border-emerald-500 bg-emerald-950/60 text-emerald-300 font-bold ring-2 ring-emerald-500/40">
+                        + PostgreSQL
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

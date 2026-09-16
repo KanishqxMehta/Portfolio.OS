@@ -15,6 +15,7 @@ import { ThemePicker } from "./ThemePicker";
 import { LayoutPicker } from "./LayoutPicker";
 import { BlockUI } from "@/components/editor/BlockUI";
 import { PublishModal } from "@/components/editor/PublishModal";
+import { DiffViewer } from "@/components/editor/DiffViewer";
 import { ResumeParserModal } from "@/components/editor/ResumeParserModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DashboardHeader } from "@/components/DashboardHeader";
@@ -118,6 +119,13 @@ export default function EditPortfolioPage() {
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const {
     sections,
+    savedSections,
+    proposedSections,
+    isDiffMode,
+    acceptBlockDiff,
+    rejectBlockDiff,
+    acceptAllDiffs,
+    discardAllDiffs,
     theme,
     layout,
     addBlock,
@@ -139,6 +147,7 @@ export default function EditPortfolioPage() {
   const [localActiveId, setLocalActiveId] = useState<string | null>(null);
   const [isParserOpen, setIsParserOpen] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [isAddBlockPanelHidden, setIsAddBlockPanelHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const initialLoadRef = useRef(true);
 
@@ -260,7 +269,7 @@ export default function EditPortfolioPage() {
           </div>
         )}
         {/* Left Sidebar */}
-        <aside className={cn("w-full md:w-[360px] border-r border-zinc-200 dark:border-zinc-900 flex flex-col bg-zinc-50/80 dark:bg-zinc-950/50 backdrop-blur-xl shrink-0 z-30 shadow-lg dark:shadow-2xl dark:shadow-black/40 transition-colors duration-500", mobileView === "edit" ? "flex" : "hidden md:flex")}>
+        <aside className={cn("w-full transition-all duration-300 ease-in-out border-r border-zinc-200 dark:border-zinc-900 flex flex-col bg-zinc-50/80 dark:bg-zinc-950/50 backdrop-blur-xl shrink-0 z-30 shadow-lg dark:shadow-2xl dark:shadow-black/40 transition-colors duration-500", isDiffMode ? "w-0 md:w-0 overflow-hidden border-none opacity-0 pointer-events-none p-0 max-w-0" : "md:w-[360px]", mobileView === "edit" ? "flex" : "hidden md:flex")}>
           {/* Sidebar header */}
           <div className="flex border-b border-zinc-200 dark:border-zinc-900 transition-colors duration-500">
             <button
@@ -404,15 +413,25 @@ export default function EditPortfolioPage() {
                 </Button>
 
                 <div className="flex items-center justify-between mb-3 px-1">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                    Add Block
-                  </p>
+                  <div className="flex items-center justify-between w-full">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                      Add Block
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddBlockPanelHidden(!isAddBlockPanelHidden)}
+                      className="text-[10px] font-medium text-violet-600 dark:text-violet-400 hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      {isAddBlockPanelHidden ? "Show Blocks" : "Hide Panel"}
+                    </button>
+                  </div>
                   <p className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
                     {sections.length}/{BLOCK_TYPES.length} Active
                   </p>
                 </div>
                 
-                <div className="flex flex-wrap gap-2">
+                {!isAddBlockPanelHidden && (
+                  <div className="flex flex-wrap gap-2 animate-in fade-in duration-200">
                   {BLOCK_TYPES.map(({ type, label }) => {
                     const isAdded = sections.some((s) => s.type === type);
                     return (
@@ -437,6 +456,7 @@ export default function EditPortfolioPage() {
                     );
                   })}
                 </div>
+                )}
               </div>
             </div>
           </div>
@@ -447,7 +467,7 @@ export default function EditPortfolioPage() {
         {/* Preview pane */}
         <main className={cn("flex-1 overflow-y-auto bg-zinc-100 dark:bg-zinc-950 flex flex-col items-center py-6 md:py-10 px-4 md:px-8 transition-colors duration-500", mobileView === "preview" ? "flex" : "hidden md:flex")} data-lenis-prevent>
           {/* Preview Container Wrapper */}
-          <div className="max-w-[1000px] mx-auto w-full">
+          <div className={cn("mx-auto w-full transition-all duration-300", isDiffMode ? "max-w-[1600px]" : "max-w-[1000px]")}>
             {/* macOS window chrome */}
             <div className="rounded-t-2xl bg-zinc-200 dark:bg-zinc-900 border-x border-t border-zinc-300 dark:border-zinc-800 flex items-center px-4 h-10 gap-2 transition-colors duration-500">
               <div className="flex gap-1.5">
@@ -462,7 +482,20 @@ export default function EditPortfolioPage() {
 
             {/* Preview content */}
             <div className="border border-zinc-300 dark:border-zinc-800 rounded-b-2xl overflow-hidden bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/60 relative min-h-[600px] transition-colors duration-500">
+              {isDiffMode ? (
+              <DiffViewer
+                originalSections={savedSections || sections}
+                proposedSections={proposedSections || sections}
+                theme={theme}
+                layout={layout}
+                onAcceptBlock={acceptBlockDiff}
+                onRejectBlock={rejectBlockDiff}
+                onAcceptAll={acceptAllDiffs}
+                onDiscardAll={discardAllDiffs}
+              />
+            ) : (
               <PortfolioRenderer sections={sections} theme={theme} layout={layout} />
+            )}
 
               {sections.length === 0 && !isLoading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
