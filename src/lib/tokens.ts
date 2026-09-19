@@ -43,7 +43,7 @@ export const getPasswordResetTokenByToken = async (token: string) => {
     
     if (result.rows.length === 0) return null;
     return result.rows[0];
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -60,7 +60,7 @@ export const getPasswordResetTokenByEmail = async (email: string) => {
     
     if (result.rows.length === 0) return null;
     return result.rows[0];
-  } catch (error) {
+  } catch {
     return null;
   }
 };

@@ -20,7 +20,7 @@ export const useTheme = () => useContext(ThemeContext);
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  ...props
+  ..._props
 }: {
   children: React.ReactNode;
   defaultTheme?: Theme | string;

@@ -1,15 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { User, Mail, Globe, CheckCircle2, Loader2 } from "lucide-react";
 
 export default function ProfilePage() {
-  const { data: session, update, status } = useSession();
-  const router = useRouter();
+  const { data: session, update } = useSession();
 
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);

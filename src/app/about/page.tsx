@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { StaticHeader } from "@/components/StaticHeader";
-import { ChevronRight, Layout, TrendingUp, Sparkles, FileText, Cpu, ArrowRight, ShieldCheck, Zap } from "lucide-react";
+import { Layout, TrendingUp, Sparkles, FileText, Cpu, ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import type { Metadata } from "next";
 

@@ -1,10 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useTheme } from "@/components/ThemeProvider";
+import { useSession } from "next-auth/react";
 import { DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -17,41 +14,19 @@ import { BlockUI } from "@/components/editor/BlockUI";
 import { PublishModal } from "@/components/editor/PublishModal";
 import { DiffViewer } from "@/components/editor/DiffViewer";
 import { ResumeParserModal } from "@/components/editor/ResumeParserModal";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { Loader } from "@/components/ui/Loader";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Plus,
-  ExternalLink,
-  CheckCircle2,
-  Copy,
   ChevronUp,
   ChevronDown,
-  Trash2,
   Layers,
-  Globe,
-  LogOut,
-  LayoutDashboard,
   Check,
-  UserCircle,
   Eye,
-  EyeOff,
   Edit3,
-  Sun,
-  Moon,
-  TrendingUp,
-  GripVertical,
   Wand2,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const BLOCK_TYPES = [
@@ -63,16 +38,6 @@ const BLOCK_TYPES = [
   { type: "TESTIMONIALS", label: "Testimonials", description: "Quotes from peers" },
   { type: "CONTACT_FORM", label: "Contact Form", description: "Email you directly" },
 ] as const;
-
-const TYPE_COLORS: Record<string, string> = {
-  HERO: "bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-400 border-violet-100 dark:border-violet-900/40",
-  PROJECTS: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border-sky-100 dark:border-sky-900/40",
-  SKILLS: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40",
-  EXPERIENCE: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/40",
-  EDUCATION: "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/40",
-  TESTIMONIALS: "bg-fuchsia-50 dark:bg-fuchsia-950/40 text-fuchsia-700 dark:text-fuchsia-400 border-fuchsia-100 dark:border-fuchsia-900/40",
-  CONTACT_FORM: "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/40",
-};
 
 
 
@@ -113,8 +78,6 @@ function FixedBlock({ section, index, hoveredId, setHoveredId, sections }: any) 
 
 export default function EditPortfolioPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-  const { theme: activeMode, setTheme: setActiveMode } = useTheme();
   const [activeSidebarTab, setActiveSidebarTab] = useState<"content" | "design">("content");
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const {
@@ -138,10 +101,7 @@ export default function EditPortfolioPage() {
     isSaving,
     isLoading,
     loadPortfolio,
-    moveBlock,
-    removeBlock,
     reorderBlocks,
-    toggleBlockVisibility,
   } = usePortfolioStore();
 
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);

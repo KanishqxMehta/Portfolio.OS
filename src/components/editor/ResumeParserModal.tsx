@@ -2,7 +2,6 @@
 
 import React, { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/Loader";
 import { Badge } from "@/components/ui/badge";
 import { UploadCloud, Wand2, FileText, CheckCircle2 } from "lucide-react";

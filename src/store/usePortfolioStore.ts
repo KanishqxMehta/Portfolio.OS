@@ -143,7 +143,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     set({ username: slugifyUsername(username) });
   },
 
-  setSections: (sections) => set((state) => {
+  setSections: (sections) => set(() => {
     let newSections = [...sections];
     const heroIdx = newSections.findIndex((s) => s.type === "HERO");
     if (heroIdx === -1) {

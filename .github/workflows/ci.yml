@@ -15,6 +15,21 @@ jobs:
     name: Lint, typecheck & unit tests
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: portfolio_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,11 +37,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Setup database
+        run: |
+          npx prisma db push --accept-data-loss
+          npx prisma generate
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/portfolio_db"
 
       - name: Lint
         run: npm run lint
@@ -36,9 +58,13 @@ jobs:
 
       - name: Unit tests
         run: npm run test
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/portfolio_db"
 
       - name: Unit test coverage
         run: npm run test:coverage
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/portfolio_db"
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium

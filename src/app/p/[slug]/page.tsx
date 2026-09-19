@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         },
       };
     }
-  } catch (e) {
+  } catch {
     // Fallback on database error
   }
 

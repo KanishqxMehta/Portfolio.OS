@@ -1,6 +1,6 @@
 import React from "react";
 import * as motion from "framer-motion/client";
-import { Briefcase, GraduationCap, Quote, Send, ArrowRight, Globe } from "lucide-react";
+import { Quote, Send, Globe } from "lucide-react";
 import {
   HeroContent,
   SkillsContent,

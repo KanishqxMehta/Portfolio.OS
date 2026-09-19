@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { THEMES } from "@/lib/themes";
 import {
   Moon,
@@ -14,13 +14,10 @@ import {
   Code2,
   CheckCircle2,
   Globe,
-  MapPin,
   Layers,
   Pause,
   Play,
   GitCompare,
-  Check,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

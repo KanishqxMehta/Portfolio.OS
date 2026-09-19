@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { ArrowRight, Layers, Layout, Palette, Sparkles, UploadCloud, Cpu, PenTool, LogOut, LayoutDashboard, Menu, X, ChevronDown, UserCircle, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { ArrowRight, Layout, Palette, Sparkles, UploadCloud, Cpu, PenTool, LogOut, LayoutDashboard, Menu, X, ChevronDown, UserCircle, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";

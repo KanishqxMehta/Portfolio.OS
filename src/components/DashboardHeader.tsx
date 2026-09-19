@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import {
-  Layers,
   Globe,
   LogOut,
   LayoutDashboard,
@@ -27,7 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/Logo";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
-import { Wand2, Split } from "lucide-react";
+import { Split } from "lucide-react";
 
 interface DashboardHeaderProps {
   currentPage: "editor" | "analytics" | "profile";
@@ -65,7 +63,6 @@ export function DashboardHeader({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const router = useRouter();
   const [backUrl, setBackUrl] = useState("/dashboard/edit");
   const [backLabel, setBackLabel] = useState("Back to Editor");
 

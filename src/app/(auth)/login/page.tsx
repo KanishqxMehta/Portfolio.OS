@@ -38,11 +38,6 @@ function LoginForm() {
     }
   };
 
-  const handleOAuth = async (provider: string) => {
-    setLoading(true);
-    await signIn(provider, { callbackUrl: "/dashboard/edit" });
-  };
-
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-6 selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-violet-100 transition-colors duration-500 relative overflow-hidden">
       {/* Background Effects */}

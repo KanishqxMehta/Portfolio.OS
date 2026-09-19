@@ -64,7 +64,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile: _profile }) {
       if (account?.provider === "google" || account?.provider === "github") {
         const email = user.email?.toLowerCase();
         if (!email) return false;
