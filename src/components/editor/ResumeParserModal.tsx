@@ -95,7 +95,7 @@ export function ResumeParserModal({ isOpen, onOpenChange }: ResumeParserModalPro
   };
 
   const applyParsedData = (data: any) => {
-    let draftSections: any[] = JSON.parse(JSON.stringify(sections));
+    const draftSections: any[] = JSON.parse(JSON.stringify(sections));
 
     // HERO
     const heroIdx = draftSections.findIndex((s) => s.type === 'HERO');

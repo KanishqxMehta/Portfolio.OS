@@ -29,6 +29,9 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "node_modules/**",
     "next-env.d.ts",
+    "playwright-report/**",
+    "test-results/**",
+    "test-zod*.ts",
   ]),
 ]);
 

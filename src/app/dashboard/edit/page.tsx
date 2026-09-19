@@ -121,11 +121,14 @@ export default function EditPortfolioPage() {
     sections,
     savedSections,
     proposedSections,
+    diffDecisions,
     isDiffMode,
+    setBlockDiffDecision,
     acceptBlockDiff,
     rejectBlockDiff,
     acceptAllDiffs,
     discardAllDiffs,
+    applyDiffChanges,
     theme,
     layout,
     addBlock,
@@ -488,10 +491,13 @@ export default function EditPortfolioPage() {
                 proposedSections={proposedSections || sections}
                 theme={theme}
                 layout={layout}
+                diffDecisions={diffDecisions}
+                onSetDecision={setBlockDiffDecision}
                 onAcceptBlock={acceptBlockDiff}
                 onRejectBlock={rejectBlockDiff}
                 onAcceptAll={acceptAllDiffs}
                 onDiscardAll={discardAllDiffs}
+                onApplyChanges={applyDiffChanges}
               />
             ) : (
               <PortfolioRenderer sections={sections} theme={theme} layout={layout} />

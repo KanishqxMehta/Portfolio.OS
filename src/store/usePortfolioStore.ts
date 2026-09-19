@@ -2,18 +2,22 @@ import { create } from 'zustand';
 import { useToastStore } from './useToastStore';
 import { Section, portfolioSchema } from '@/lib/validations/portfolio';
 import { slugifyUsername } from '@/lib/validations/user';
+import { BlockDecision, applyDecisionsToSections, calculatePortfolioDiff } from '@/lib/diffUtils';
 
 interface PortfolioState {
   savedSections: Section[] | null;
   proposedSections: Section[] | null;
+  diffDecisions: Record<string, BlockDecision>;
   isDiffMode: boolean;
   enableDiffMode: (proposed?: Section[]) => void;
   disableDiffMode: () => void;
   setProposedSections: (proposed: Section[]) => void;
+  setBlockDiffDecision: (blockId: string, decision: BlockDecision) => void;
   acceptBlockDiff: (blockId: string) => void;
   rejectBlockDiff: (blockId: string) => void;
   acceptAllDiffs: () => void;
   discardAllDiffs: () => void;
+  applyDiffChanges: () => void;
   sections: Section[];
   username: string;
   isSaving: boolean;
@@ -46,67 +50,90 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   isDraggingBlock: false,
   savedSections: null,
   proposedSections: null,
+  diffDecisions: {},
   isDiffMode: false,
 
   enableDiffMode: (proposed) => set((state) => ({
     isDiffMode: true,
     savedSections: state.savedSections || JSON.parse(JSON.stringify(state.sections)),
     proposedSections: proposed || JSON.parse(JSON.stringify(state.sections)),
+    diffDecisions: {},
   })),
 
   disableDiffMode: () => set({ isDiffMode: false }),
 
   setProposedSections: (proposedSections) => set((state) => ({
     proposedSections,
-    savedSections: state.savedSections || JSON.parse(JSON.stringify(state.sections)),
+    savedSections: JSON.parse(JSON.stringify(state.sections)),
+    diffDecisions: {},
     isDiffMode: true,
   })),
 
-  acceptBlockDiff: (blockId) => set((state) => {
-    if (!state.proposedSections) return {};
-    const proposedBlock = state.proposedSections.find((p) => p.id === blockId);
-    if (!proposedBlock) return {};
-
-    const exists = state.sections.some((s) => s.id === blockId);
-    let updatedSections: Section[];
-    if (exists) {
-      updatedSections = state.sections.map((s) => (s.id === blockId ? proposedBlock : s));
-    } else {
-      updatedSections = [...state.sections, proposedBlock];
-    }
-
-    const remainingProposed = state.proposedSections.filter((p) => p.id !== blockId);
-
+  setBlockDiffDecision: (blockId, decision) => set((state) => {
+    const newDecisions = { ...state.diffDecisions, [blockId]: decision };
+    const baseline = state.savedSections || state.sections;
+    const proposed = state.proposedSections || [];
+    const updatedSections = applyDecisionsToSections(baseline, proposed, newDecisions);
     return {
+      diffDecisions: newDecisions,
       sections: updatedSections,
-      proposedSections: remainingProposed.length > 0 ? remainingProposed : null,
-      isDiffMode: remainingProposed.length > 0,
     };
   }),
 
-  rejectBlockDiff: (blockId) => set((state) => {
-    if (!state.proposedSections) return {};
-    const remainingProposed = state.proposedSections.filter((p) => p.id !== blockId);
-    return {
-      proposedSections: remainingProposed.length > 0 ? remainingProposed : null,
-      isDiffMode: remainingProposed.length > 0,
-    };
-  }),
+  acceptBlockDiff: (blockId) => {
+    get().setBlockDiffDecision(blockId, 'accepted');
+  },
+
+  rejectBlockDiff: (blockId) => {
+    get().setBlockDiffDecision(blockId, 'rejected');
+  },
 
   acceptAllDiffs: () => set((state) => {
     if (!state.proposedSections) return {};
+    const baseline = state.savedSections || state.sections;
+    const diffs = calculatePortfolioDiff(baseline, state.proposedSections);
+    const newDecisions: Record<string, BlockDecision> = {};
+    for (const d of diffs) {
+      if (d.status !== 'UNCHANGED') {
+        newDecisions[d.blockId] = 'accepted';
+      }
+    }
+    const updatedSections = applyDecisionsToSections(baseline, state.proposedSections, newDecisions);
+    useToastStore.getState().toast("All changes accepted and applied!", "success");
     return {
-      sections: [...state.proposedSections],
+      sections: updatedSections,
+      savedSections: JSON.parse(JSON.stringify(updatedSections)),
       proposedSections: null,
+      diffDecisions: {},
       isDiffMode: false,
     };
   }),
 
-  discardAllDiffs: () => set((state) => ({
-    proposedSections: null,
-    isDiffMode: false,
-    sections: state.savedSections || state.sections,
-  })),
+  discardAllDiffs: () => set((state) => {
+    const original = state.savedSections ? JSON.parse(JSON.stringify(state.savedSections)) : state.sections;
+    useToastStore.getState().toast("Discarded all diff changes", "info");
+    return {
+      sections: original,
+      proposedSections: null,
+      diffDecisions: {},
+      isDiffMode: false,
+    };
+  }),
+
+  applyDiffChanges: () => set((state) => {
+    const baseline = state.savedSections || state.sections;
+    const proposed = state.proposedSections || [];
+    const updatedSections = applyDecisionsToSections(baseline, proposed, state.diffDecisions);
+    const acceptedCount = Object.values(state.diffDecisions).filter((d) => d === 'accepted').length;
+    useToastStore.getState().toast(`Applied ${acceptedCount} changes to your portfolio!`, "success");
+    return {
+      sections: updatedSections,
+      savedSections: JSON.parse(JSON.stringify(updatedSections)),
+      proposedSections: null,
+      diffDecisions: {},
+      isDiffMode: false,
+    };
+  }),
 
   setTheme: (theme) => set({ theme }),
   setLayout: (layout) => set({ layout }),

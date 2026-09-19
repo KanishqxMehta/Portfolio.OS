@@ -12,6 +12,8 @@ export interface ItemDiff {
   changes?: { field: string; oldValue: any; newValue: any }[];
 }
 
+export type BlockDecision = 'pending' | 'accepted' | 'rejected';
+
 export interface BlockDiff {
   blockId: string;
   type: string;
@@ -227,4 +229,60 @@ export function calculatePortfolioDiff(
   }
 
   return diffs;
+}
+
+export function applyDecisionsToSections(
+  baselineSections: Section[],
+  proposedSections: Section[],
+  decisions: Record<string, BlockDecision> = {}
+): Section[] {
+  const diffs = calculatePortfolioDiff(baselineSections, proposedSections);
+  const result: Section[] = [];
+  const addedTypes = new Set<string>();
+
+  for (const diff of diffs) {
+    const decision = decisions[diff.blockId] || 'pending';
+
+    if (diff.status === 'UNCHANGED') {
+      if (diff.originalSection && !addedTypes.has(diff.originalSection.type)) {
+        result.push(diff.originalSection);
+        addedTypes.add(diff.originalSection.type);
+      }
+    } else if (diff.status === 'MODIFIED') {
+      if (decision === 'accepted' && diff.proposedSection) {
+        if (!addedTypes.has(diff.type)) {
+          // Accept proposed change, maintaining original section ID if present
+          result.push({
+            ...diff.proposedSection,
+            id: diff.originalSection?.id || diff.proposedSection.id,
+          });
+          addedTypes.add(diff.type);
+        }
+      } else if (diff.originalSection) {
+        // Keep original baseline if rejected or pending
+        if (!addedTypes.has(diff.type)) {
+          result.push(diff.originalSection);
+          addedTypes.add(diff.type);
+        }
+      }
+    } else if (diff.status === 'ADDED') {
+      if (decision === 'accepted' && diff.proposedSection) {
+        if (!addedTypes.has(diff.type)) {
+          result.push(diff.proposedSection);
+          addedTypes.add(diff.type);
+        }
+      }
+    } else if (diff.status === 'REMOVED') {
+      // If decision is accepted, user agrees to remove block -> don't include
+      // If decision is rejected or pending, keep original section
+      if (decision !== 'accepted' && diff.originalSection) {
+        if (!addedTypes.has(diff.type)) {
+          result.push(diff.originalSection);
+          addedTypes.add(diff.type);
+        }
+      }
+    }
+  }
+
+  return result;
 }

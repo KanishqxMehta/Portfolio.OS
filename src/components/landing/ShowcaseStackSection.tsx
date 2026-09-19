@@ -56,11 +56,11 @@ export function ShowcaseStackSection() {
       setTimeout(() => {
         setLiftingCardId(null);
         setActiveCardIndex((prev) => (prev + 1) % cards.length);
-      }, 180),
+      }, 300),
       setTimeout(() => {
         setIsCycling(false);
         cycleLock.current = false;
-      }, 520),
+      }, 620),
     ];
   };
 
@@ -142,15 +142,23 @@ export function ShowcaseStackSection() {
           const isTop = offset === 0;
           const isLifting = liftingCardId === card.id;
           const stackPositions = [
-            { x: -10, y: 0, rotate: -2, scale: 1, opacity: 1 },
-            { x: 10, y: 18, rotate: 2.5, scale: 0.965, opacity: 0.92 },
-            { x: -4, y: 34, rotate: -1, scale: 0.93, opacity: 0.84 },
+            { x: -16, y: 0, rotate: -1.8, scale: 1, opacity: 1 },
+            { x: 18, y: 24, rotate: 2.2, scale: 0.96, opacity: 0.88 },
+            { x: -8, y: 46, rotate: -0.7, scale: 0.92, opacity: 0.78 },
           ];
           const position = stackPositions[Math.min(offset, stackPositions.length - 1)];
           const target = isLifting
-            ? { x: -18, y: -86, rotate: -5, scale: 1.015, opacity: 1 }
+            ? { x: -280, y: -50, rotate: -14, scale: 0.85, opacity: 0 }
             : position;
-          const isFloating = isTop && !isCycling;
+
+          // Per-card staggered floating - each card bobs independently
+          const floatConfigs = [
+            { amp: 5, dur: 3.8 },
+            { amp: 3.5, dur: 4.4 },
+            { amp: 2.5, dur: 5.0 },
+          ];
+          const cardFloat = floatConfigs[Math.min(offset, floatConfigs.length - 1)];
+          const shouldFloat = !isCycling && !isLifting;
 
           return (
             <motion.div
@@ -192,14 +200,14 @@ export function ShowcaseStackSection() {
               }}
               animate={{
                 ...target,
-                y: isFloating ? [target.y, target.y - 6, target.y] : target.y,
+                y: shouldFloat ? [target.y, target.y - cardFloat.amp, target.y] : target.y,
               }}
               transition={{
-                duration: isLifting ? 0.18 : 0.34,
-                ease: isLifting ? [0.23, 1, 0.32, 1] : [0.77, 0, 0.175, 1],
-                y: isFloating
-                  ? { duration: 2.8, repeat: Infinity, ease: "easeInOut" }
-                  : { duration: isLifting ? 0.18 : 0.34 },
+                duration: isLifting ? 0.32 : 0.4,
+                ease: isLifting ? [0.4, 0, 0.2, 1] : [0.77, 0, 0.175, 1],
+                y: shouldFloat
+                  ? { duration: cardFloat.dur, repeat: Infinity, ease: "easeInOut", delay: offset * 0.4 }
+                  : { duration: isLifting ? 0.32 : 0.4 },
               }}
               style={{
                 zIndex: isLifting ? total + 1 : total - offset,
@@ -207,8 +215,8 @@ export function ShowcaseStackSection() {
               className={cn(
                 "absolute inset-0 rounded-2xl border p-4 sm:p-8 flex flex-col justify-between text-zinc-900 dark:text-zinc-100 cursor-pointer overflow-hidden will-change-transform",
                 isTop
-                  ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 shadow-[0_24px_70px_-34px_rgba(24,24,27,0.28)] dark:shadow-black/40 ring-1 ring-violet-500/20"
-                  : "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30 shadow-[0_18px_50px_-36px_rgba(24,24,27,0.22)]"
+                  ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 shadow-[0_32px_80px_-18px_rgba(24,24,27,0.35)] dark:shadow-[0_32px_80px_-18px_rgba(0,0,0,0.7)] ring-1 ring-violet-500/20"
+                  : "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30 shadow-[0_22px_60px_-24px_rgba(24,24,27,0.28)] dark:shadow-[0_22px_60px_-24px_rgba(0,0,0,0.55)]"
               )}
             >
               {(isTop || isLifting) && (
