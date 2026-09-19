@@ -32,6 +32,7 @@ const eslintConfig = defineConfig([
     "playwright-report/**",
     "test-results/**",
     "test-zod*.ts",
+    ".worktrees/**",
   ]),
 ]);
 
