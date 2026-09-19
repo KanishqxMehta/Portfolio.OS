@@ -114,15 +114,26 @@ export default function EditPortfolioPage() {
   const [isDirty, setIsDirty] = useState(false);
   const initialLoadRef = useRef(true);
 
-  // Auto-open AI Parser if navigated from home page
+  // Auto-open AI Parser if navigated from home page or landing pages
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
-      if (url.searchParams.get("action") === "ai-parser") {
+      const action = url.searchParams.get("action");
+      const isFromLandingPage =
+        typeof document !== "undefined" &&
+        Boolean(
+          document.referrer &&
+            (document.referrer.includes("/resume-to-portfolio") ||
+              document.referrer.includes("/ai-portfolio-builder"))
+        );
+
+      if (action === "ai-parser" || action === "resume-parser" || isFromLandingPage) {
         setIsParserOpen(true);
-        // Clean up URL so it doesn't reopen on refresh
-        url.searchParams.delete("action");
-        window.history.replaceState({}, "", url.toString());
+        if (action) {
+          // Clean up URL so it doesn't reopen on refresh
+          url.searchParams.delete("action");
+          window.history.replaceState({}, "", url.toString());
+        }
       }
     }
   }, []);
