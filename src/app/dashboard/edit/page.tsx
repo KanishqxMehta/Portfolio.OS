@@ -416,21 +416,33 @@ export default function EditPortfolioPage() {
                 </Button>
 
                 <div className="flex items-center justify-between mb-3 px-1">
-                  <div className="flex items-center justify-between w-full">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                      Add Block
-                    </p>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                    Add Block
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+                      {sections.length}/{BLOCK_TYPES.length} Active
+                    </span>
+                    <span className="text-zinc-300 dark:text-zinc-700 text-xs">•</span>
                     <button
                       type="button"
                       onClick={() => setIsAddBlockPanelHidden(!isAddBlockPanelHidden)}
-                      className="text-[10px] font-medium text-violet-600 dark:text-violet-400 hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-[10px] font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 cursor-pointer flex items-center gap-0.5 transition-colors"
+                      title={isAddBlockPanelHidden ? "Show Add Block panel" : "Hide Add Block panel"}
                     >
-                      {isAddBlockPanelHidden ? "Show Blocks" : "Hide Panel"}
+                      {isAddBlockPanelHidden ? (
+                        <>
+                          <ChevronDown className="w-3 h-3" />
+                          <span>Show</span>
+                        </>
+                      ) : (
+                        <>
+                          <ChevronUp className="w-3 h-3" />
+                          <span>Hide</span>
+                        </>
+                      )}
                     </button>
                   </div>
-                  <p className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                    {sections.length}/{BLOCK_TYPES.length} Active
-                  </p>
                 </div>
                 
                 {!isAddBlockPanelHidden && (
