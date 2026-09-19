@@ -540,7 +540,7 @@ const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles }: { sections
           </div>
           <div className="flex-1 text-center">
             <span className="text-xs font-semibold text-[var(--p-fg-muted)] font-mono">
-              kanishq@portfolio ~ zsh
+              developer@portfolio ~ zsh
             </span>
           </div>
           <div className="w-[56px]" />

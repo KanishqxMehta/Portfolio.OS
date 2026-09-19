@@ -68,17 +68,19 @@ model PasswordResetToken {
 }
 
 model Portfolio {
-  id            String         @id @default(cuid())
-  content       Json
-  publicSlug    String         @unique
-  userId        String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pageViews     PageView[]
-  profileVisits ProfileVisit[]
+  id               String         @id @default(cuid())
+  content          Json
+  publicSlug       String         @unique
+  isPublicOnSearch Boolean        @default(false)
+  userId           String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pageViews        PageView[]
+  profileVisits    ProfileVisit[]
 
   @@index([userId])
+  @@index([isPublicOnSearch])
 }
 
 model PageView {

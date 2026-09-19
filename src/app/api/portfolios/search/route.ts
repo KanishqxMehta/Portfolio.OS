@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
       FROM "Portfolio"
       WHERE "publicSlug" IS NOT NULL
         AND content IS NOT NULL
+        AND "isPublicOnSearch" = true
     `;
     const params: any[] = [];
 

@@ -106,4 +106,40 @@ describe("portfolioSchema", () => {
     );
     expect(result.success).toBe(false);
   });
+
+  it("defaults isPublicOnSearch to false when omitted", () => {
+    const result = portfolioSchema.safeParse(buildPortfolio([validHero]));
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.isPublicOnSearch).toBe(false);
+    }
+  });
+
+  it("accepts isPublicOnSearch when explicitly set to true or false", () => {
+    const trueResult = portfolioSchema.safeParse({
+      ...buildPortfolio([validHero]),
+      isPublicOnSearch: true,
+    });
+    expect(trueResult.success).toBe(true);
+    if (trueResult.success) {
+      expect(trueResult.data.isPublicOnSearch).toBe(true);
+    }
+
+    const falseResult = portfolioSchema.safeParse({
+      ...buildPortfolio([validHero]),
+      isPublicOnSearch: false,
+    });
+    expect(falseResult.success).toBe(true);
+    if (falseResult.success) {
+      expect(falseResult.data.isPublicOnSearch).toBe(false);
+    }
+  });
+
+  it("rejects non-boolean isPublicOnSearch", () => {
+    const result = portfolioSchema.safeParse({
+      ...buildPortfolio([validHero]),
+      isPublicOnSearch: "yes",
+    });
+    expect(result.success).toBe(false);
+  });
 });

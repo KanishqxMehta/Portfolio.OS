@@ -3,14 +3,14 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { ArrowRight, Layout, Palette, Sparkles, UploadCloud, Cpu, PenTool, LogOut, LayoutDashboard, Menu, X, ChevronDown, UserCircle, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { ArrowRight, Palette, Sparkles, UploadCloud, Cpu, PenTool, LogOut, LayoutDashboard, Menu, X, ChevronDown, UserCircle, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";
 import { OrganizationJsonLd, FAQJsonLd, SiteNavigationJsonLd, BreadcrumbJsonLd, HowToJsonLd } from "@/components/JsonLd";
 import { ShowcaseStackSection } from "@/components/landing/ShowcaseStackSection";
 
-import { GitCompare } from "lucide-react";
+import { GitCompare, GripVertical } from "lucide-react";
 
 const faqs = [
   {
@@ -483,10 +483,10 @@ export default function Home() {
                   "Review, compare, and selectively accept AI resume updates or manual edits with item-level green (added), yellow (modified), and red (removed) status rings.",
               },
               {
-                icon: Layout,
-                title: "Flexible Block Editor",
+                icon: GripVertical,
+                title: "Drag & Drop Canvas Reordering",
                 description:
-                  "Decompose and arrange your layout block-by-block with project showcases, experience timelines, social profiles, and fixed contact widgets.",
+                  "Decompose and rearrange your portfolio sections block-by-block with fluid drag handles, instant reordering, and live-synchronized canvas previewing.",
               },
               {
                 icon: Palette,

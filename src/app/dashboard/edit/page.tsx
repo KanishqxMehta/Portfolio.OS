@@ -26,6 +26,7 @@ import {
   Eye,
   Edit3,
   Wand2,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -94,6 +95,8 @@ export default function EditPortfolioPage() {
     applyDiffChanges,
     theme,
     layout,
+    isPublicOnSearch,
+    updatePublicSearch,
     addBlock,
     username,
     setUsername,
@@ -271,6 +274,62 @@ export default function EditPortfolioPage() {
               <LayoutPicker />
               <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
               <ThemePicker />
+              <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-1">
+                    Search Directory
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-500">
+                    Control visibility on the public Explore page.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
+                  <div className="flex items-start gap-3 pr-3">
+                    <div className="p-2 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 mt-0.5 shrink-0">
+                      <Globe className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                          Public on Search
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border",
+                            isPublicOnSearch
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                              : "bg-zinc-200/80 dark:bg-zinc-700/60 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600"
+                          )}
+                        >
+                          {isPublicOnSearch ? "Public" : "Unlisted"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
+                        When enabled, your portfolio appears in search results and talent discovery for everyone.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isPublicOnSearch}
+                    onClick={() => updatePublicSearch(!isPublicOnSearch)}
+                    className={cn(
+                      "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
+                      isPublicOnSearch ? "bg-violet-600" : "bg-zinc-300 dark:bg-zinc-700"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
+                        isPublicOnSearch ? "translate-x-5" : "translate-x-0"
+                      )}
+                    />
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
             <>

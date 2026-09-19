@@ -87,6 +87,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
        FROM "Portfolio"
        WHERE "publicSlug" IS NOT NULL
          AND content IS NOT NULL
+         AND "isPublicOnSearch" = true
          AND jsonb_typeof(content->'sections') = 'array'
          AND jsonb_array_length(content->'sections') >= 2
        ORDER BY "updatedAt" DESC

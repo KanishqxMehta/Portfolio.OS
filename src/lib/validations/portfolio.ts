@@ -130,6 +130,7 @@ export const portfolioSchema = z.object({
     .regex(/^[a-z0-9-]+$/, {
       message: "Username can only contain lowercase letters, numbers, and hyphens",
     }),
+  isPublicOnSearch: z.boolean().optional().default(false),
   content: z.object({
     theme: z.string(),
     layout: z.string().optional(),

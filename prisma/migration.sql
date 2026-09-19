@@ -58,3 +58,7 @@ CREATE TABLE IF NOT EXISTS "PageView" (
 );
 
 CREATE INDEX IF NOT EXISTS idx_pageview_portfolioId ON "PageView"("portfolioId");
+
+-- Add public search indexing flag
+ALTER TABLE "Portfolio" ADD COLUMN IF NOT EXISTS "isPublicOnSearch" BOOLEAN NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS "idx_portfolio_isPublicOnSearch" ON "Portfolio"("isPublicOnSearch") WHERE "isPublicOnSearch" = true;

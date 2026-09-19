@@ -6,7 +6,7 @@ import { PortfolioRenderer } from '@/components/portfolio/Renderer';
 import { calculatePortfolioDiff, ItemDiff, BlockDecision } from '@/lib/diffUtils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, Wand2, ArrowRight } from 'lucide-react';
+import { Check, X, Wand2, ArrowRight, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DiffViewerProps {
@@ -68,8 +68,42 @@ export function DiffViewer({
   };
 
   return (
-    <div className="flex flex-col w-full h-full bg-zinc-950 text-white rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
-      {/* Top Bar Controls */}
+    <>
+      {/* Mobile Notice Screen: Diff view is optimized for desktop only */}
+      <div className="md:hidden flex flex-col items-center justify-center p-8 text-center bg-zinc-950 text-white rounded-2xl border border-zinc-800 shadow-2xl min-h-[440px] space-y-4">
+        <div className="p-3.5 rounded-2xl bg-violet-500/20 text-violet-400 border border-violet-500/30 shadow-inner">
+          <Monitor className="w-8 h-8" />
+        </div>
+        <div className="space-y-1.5">
+          <h3 className="font-bold text-lg text-zinc-100">Desktop View Only</h3>
+          <p className="text-xs text-zinc-400 max-w-xs leading-relaxed">
+            Selective Split-Screen Diff View is designed for larger displays (tablet and desktop) to compare original and proposed changes side-by-side.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 w-full max-w-xs pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDiscardAll}
+            className="border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 text-xs w-full"
+          >
+            Exit Diff View
+          </Button>
+          {onApplyChanges && (
+            <Button
+              size="sm"
+              onClick={onApplyChanges}
+              className="bg-violet-600 hover:bg-violet-700 text-white text-xs w-full shadow-md shadow-violet-500/30"
+            >
+              Apply All Changes & Exit
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Full Desktop / Tablet Split-Screen Diff Viewer */}
+      <div className="hidden md:flex flex-col w-full h-full bg-zinc-950 text-white rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
+        {/* Top Bar Controls */}
       <div className="flex flex-wrap items-center justify-between px-6 py-4 bg-zinc-900/90 border-b border-zinc-800 gap-4 shrink-0">
         <div className="flex items-center gap-3.5">
           <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-400 border border-violet-500/30 shadow-inner">
@@ -360,5 +394,6 @@ export function DiffViewer({
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

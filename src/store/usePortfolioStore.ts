@@ -36,6 +36,9 @@ interface PortfolioState {
   setTheme: (theme: string) => void;
   layout: string;
   setLayout: (layout: string) => void;
+  isPublicOnSearch: boolean;
+  setIsPublicOnSearch: (isPublic: boolean) => void;
+  updatePublicSearch: (isPublic: boolean) => Promise<boolean>;
   isDraggingBlock: boolean;
   setIsDraggingBlock: (isDragging: boolean) => void;
 }
@@ -45,6 +48,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   username: "",
   theme: "classic",
   layout: "classic",
+  isPublicOnSearch: false,
   isSaving: false,
   isLoading: true,
   isDraggingBlock: false,
@@ -137,6 +141,25 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
   setTheme: (theme) => set({ theme }),
   setLayout: (layout) => set({ layout }),
+  setIsPublicOnSearch: (isPublicOnSearch) => set({ isPublicOnSearch }),
+  updatePublicSearch: async (isPublic) => {
+    set({ isPublicOnSearch: isPublic });
+    try {
+      const res = await fetch('/api/portfolios', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublicOnSearch: isPublic }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to update search visibility');
+      }
+      return true;
+    } catch (err) {
+      console.error('Error updating search visibility:', err);
+      set({ isPublicOnSearch: !isPublic });
+      return false;
+    }
+  },
   setIsDraggingBlock: (isDraggingBlock) => set({ isDraggingBlock }),
 
   setUsername: (username) => {
@@ -232,6 +255,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
         theme: content.theme || "classic",
         layout: content.layout || "classic",
         username: data.publicSlug || '',
+        isPublicOnSearch: Boolean(data.isPublicOnSearch),
       });
     } catch (error) {
       console.error('Failed to load portfolio:', error);
@@ -246,7 +270,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   },
 
   savePortfolio: async () => {
-    const { sections, username, theme, layout } = get();
+    const { sections, username, theme, layout, isPublicOnSearch } = get();
     if (!username) {
       useToastStore.getState().toast("Please set a username first!", "error");
       return false;
@@ -254,6 +278,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
     const validation = portfolioSchema.safeParse({
       username,
+      isPublicOnSearch,
       content: { theme, layout, sections }
     });
 
@@ -270,6 +295,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username,
+          isPublicOnSearch,
           content: {
             theme,
             layout,

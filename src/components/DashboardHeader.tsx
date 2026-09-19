@@ -20,11 +20,14 @@ import {
   Edit3,
   ArrowLeft,
   AlertTriangle,
-  FileText
+  FileText,
+  ExternalLink,
+  MoreHorizontal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/Logo";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
+import { useToastStore } from "@/store/useToastStore";
 import { Split } from "lucide-react";
 
 interface DashboardHeaderProps {
@@ -51,13 +54,42 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const { data: clientSession, status: clientStatus } = useSession();
   const { theme: activeMode, setTheme: setActiveMode } = useTheme();
-  const { isDiffMode, enableDiffMode, disableDiffMode, proposedSections } = usePortfolioStore();
+  const {
+    isDiffMode,
+    enableDiffMode,
+    disableDiffMode,
+    proposedSections,
+    isPublicOnSearch,
+    updatePublicSearch,
+  } = usePortfolioStore();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
+  const [isUpdatingPublic, setIsUpdatingPublic] = useState(false);
+
+  const handleTogglePublicSearch = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const nextVal = !isPublicOnSearch;
+    setIsUpdatingPublic(true);
+    const success = await updatePublicSearch(nextVal);
+    setIsUpdatingPublic(false);
+    if (success) {
+      useToastStore.getState().toast(
+        nextVal
+          ? "Portfolio is now visible on public search!"
+          : "Portfolio is now unlisted from public search.",
+        "success"
+      );
+    } else {
+      useToastStore.getState().toast("Failed to update search visibility", "error");
+    }
+  };
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest("[data-user-menu]")) setMenuOpen(false);
+      if (!target.closest("[data-actions-menu]")) setActionsMenuOpen(false);
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -222,8 +254,8 @@ export function DashboardHeader({
             >
               {isSaving ? (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  <span className="hidden xs:inline">Saving</span>
+                  <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  <span>Publishing...</span>
                 </span>
               ) : (
                 <>
@@ -233,22 +265,126 @@ export function DashboardHeader({
               )}
             </Button>
 
-            <div className="hidden md:flex items-center gap-1.5 text-xs font-medium mr-1">
-              {isSaving ? (
-                <span className="flex items-center gap-1.5 text-zinc-400">
-                  <span className="w-2.5 h-2.5 rounded-full border-2 border-zinc-600 border-t-zinc-300 animate-spin" />
-                  Saving...
-                </span>
-              ) : isDirty ? (
-                <span className="flex items-center gap-1 text-zinc-400 dark:text-zinc-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-700" />
-                  Unsaved Changes
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-zinc-600 dark:text-zinc-300">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  Saved
-                </span>
+            <div className="hidden md:flex items-center gap-1.5 text-xs font-medium mr-1 select-none">
+              {!isSaving && (
+                isDirty ? (
+                  <span className="flex items-center gap-1 text-zinc-400 dark:text-zinc-500">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-700" />
+                    Unsaved Changes
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-zinc-600 dark:text-zinc-300">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    Saved
+                  </span>
+                )
+              )}
+            </div>
+
+            {/* More Actions Dropdown (Editor only) */}
+            <div data-actions-menu className="relative">
+              <button
+                type="button"
+                onClick={() => setActionsMenuOpen(!actionsMenuOpen)}
+                className={cn(
+                  "h-8 w-8 rounded-full border flex items-center justify-center transition-all cursor-pointer",
+                  actionsMenuOpen
+                    ? "bg-zinc-200 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 ring-2 ring-violet-500/20"
+                    : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 shadow-sm"
+                )}
+                title="More Actions"
+                aria-label="More actions"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+
+              {actionsMenuOpen && (
+                <div className="absolute right-0 top-10 w-64 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 shadow-2xl shadow-black/10 dark:shadow-black/80 overflow-hidden z-50 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+                  <div className="px-3.5 py-2.5 border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/60 dark:bg-zinc-900/60">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                      Portfolio Actions
+                    </p>
+                  </div>
+                  <div className="p-1.5 space-y-1">
+                    {/* Public on Search Toggle */}
+                    <div className="p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/70 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Globe className="w-4 h-4 text-violet-500 shrink-0" />
+                          <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                            Public on Search
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={isPublicOnSearch}
+                          disabled={isUpdatingPublic}
+                          onClick={handleTogglePublicSearch}
+                          className={cn(
+                            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                            isPublicOnSearch ? "bg-violet-600" : "bg-zinc-300 dark:bg-zinc-700",
+                            isUpdatingPublic && "opacity-60 cursor-wait"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out",
+                              isPublicOnSearch ? "translate-x-4" : "translate-x-0"
+                            )}
+                          />
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between mt-1 pl-6">
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                          {isPublicOnSearch ? "Listed on Explore" : "Unlisted"}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border",
+                            isPublicOnSearch
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
+                          )}
+                        >
+                          {isPublicOnSearch ? "Public" : "Unlisted"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* View Live link */}
+                    {publicSlug && (
+                      <Link
+                        href={`/p/${publicSlug}`}
+                        target="_blank"
+                        onClick={() => setActionsMenuOpen(false)}
+                        className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <ExternalLink className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                          View Live
+                        </span>
+                        <span className="text-[10px] font-mono text-zinc-400 truncate max-w-[80px]">
+                          p/{publicSlug}
+                        </span>
+                      </Link>
+                    )}
+
+                    {/* Export PDF Link */}
+                    {publicSlug && (
+                      <Link
+                        href="/dashboard/pdf-export"
+                        target="_blank"
+                        onClick={() => setActionsMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                        title="Download ATS-Friendly PDF"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                        Export ATS PDF
+                      </Link>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           </>
@@ -271,7 +407,20 @@ export function DashboardHeader({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => isDiffMode ? disableDiffMode() : enableDiffMode()}
+            onClick={() => {
+              if (isDiffMode) {
+                disableDiffMode();
+              } else {
+                if (typeof window !== "undefined" && window.innerWidth < 768) {
+                  useToastStore.getState().toast(
+                    "Split-Screen Diff View is available on desktop view only.",
+                    "info"
+                  );
+                  return;
+                }
+                enableDiffMode();
+              }
+            }}
             className={cn(
               "h-8 px-3 text-xs font-medium rounded-full transition-all flex items-center gap-1.5 border",
               isDiffMode
@@ -287,23 +436,12 @@ export function DashboardHeader({
           </Button>
         )}
 
-        {/* Download PDF button (Editor only) */}
-        {currentPage === "editor" && publicSlug && (
-          <Link
-            href="/dashboard/pdf-export"
-            target="_blank"
-            className="hidden md:flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 px-2.5 sm:px-3 py-1.5 rounded-lg transition-colors"
-            title="Download ATS-Friendly PDF"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Export PDF</span>
-          </Link>
+        {/* Theme Toggle (Desktop only, hidden when in editor) */}
+        {currentPage !== "editor" && (
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
         )}
-
-        {/* Theme Toggle (Desktop only) */}
-        <div className="hidden md:block">
-          <ThemeToggle />
-        </div>
 
         {/* User Menu Avatar */}
         {status === "loading" ? (
@@ -329,15 +467,44 @@ export function DashboardHeader({
                     {session?.user?.email}
                   </p>
                 </div>
-                <div className="p-1.5">
+                <div className="p-1.5 space-y-0.5">
+                  {/* Dark Mode Toggle: always in menu when in editor; mobile-only otherwise */}
+                  <button
+                    onClick={() => {
+                      setActiveMode(activeMode === "dark" ? "light" : "dark");
+                      setMenuOpen(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-left",
+                      currentPage === "editor" ? "flex" : "md:hidden"
+                    )}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      {activeMode === "dark" ? (
+                        <>
+                          <Sun className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                          Light Mode
+                        </>
+                      ) : (
+                        <>
+                          <Moon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                          Dark Mode
+                        </>
+                      )}
+                    </span>
+                    <span className="text-[10px] uppercase font-semibold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                      {activeMode === "dark" ? "Dark" : "Light"}
+                    </span>
+                  </button>
+
                   {/* Mobile-only Switch to Analytics */}
                   {(currentPage === "editor" || currentPage === "profile") && (
                     <Link
                       href="/dashboard/analytics"
                       onClick={() => setMenuOpen(false)}
-                      className="md:hidden flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                      className="md:hidden flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     >
-                      <TrendingUp className="w-4 h-4 text-zinc-500 shrink-0" />
+                      <TrendingUp className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                       View Analytics
                     </Link>
                   )}
@@ -347,55 +514,37 @@ export function DashboardHeader({
                     <Link
                       href="/dashboard/edit"
                       onClick={() => setMenuOpen(false)}
-                      className="md:hidden flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                      className="md:hidden flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     >
-                      <Edit3 className="w-4 h-4 text-zinc-500 shrink-0" />
+                      <Edit3 className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                       Go to Editor
                     </Link>
                   )}
 
-                  {/* Mobile-only Theme Toggle */}
-                  <button
-                    onClick={() => {
-                      setActiveMode(activeMode === "dark" ? "light" : "dark");
-                      setMenuOpen(false);
-                    }}
-                    className="md:hidden w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-left"
-                  >
-                    {activeMode === "dark" ? (
-                      <span className="flex items-center gap-2.5">
-                        <Sun className="w-4 h-4 text-zinc-500 shrink-0" />
-                        Light Mode
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2.5">
-                        <Moon className="w-4 h-4 text-zinc-500 shrink-0" />
-                        Dark Mode
-                      </span>
-                    )}
-                  </button>
-
                   <Link
                     href="/dashboard/profile"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                   >
-                    <UserCircle className="w-4 h-4 text-zinc-500 shrink-0" />
+                    <UserCircle className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                     Edit Profile
                   </Link>
                   <Link
                     href="/"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                   >
-                    <LayoutDashboard className="w-4 h-4 text-zinc-500 shrink-0" />
+                    <LayoutDashboard className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                     Home
                   </Link>
+
+                  <div className="h-px bg-zinc-100 dark:bg-zinc-800/80 my-1" />
+
                   <button
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer text-left mt-1"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer text-left"
                   >
-                    <LogOut className="w-4 h-4 text-zinc-500 shrink-0" />
+                    <LogOut className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                     Log out
                   </button>
                 </div>
