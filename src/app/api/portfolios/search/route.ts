@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
     let queryText = `
       SELECT "publicSlug", content, "updatedAt"
       FROM "Portfolio"
-      WHERE "isPublished" = true
+      WHERE "publicSlug" IS NOT NULL
+        AND content IS NOT NULL
     `;
     const params: any[] = [];
 
