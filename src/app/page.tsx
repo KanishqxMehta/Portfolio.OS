@@ -651,7 +651,19 @@ export default function Home() {
         </div>
 
         {/* Right Side: Navigation Columns */}
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-xs font-medium">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium">
+          <Link href="/free-portfolio-maker" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+            Free Portfolio Maker
+          </Link>
+          <Link href="/ai-portfolio-builder" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+            AI Portfolio Builder
+          </Link>
+          <Link href="/resume-to-portfolio" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+            Resume Converter
+          </Link>
+          <Link href="/developer-portfolio-builder" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+            Dev Portfolios
+          </Link>
           <Link href="/search" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             Explore Portfolios
           </Link>
