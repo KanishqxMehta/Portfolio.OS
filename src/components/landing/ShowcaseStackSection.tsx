@@ -96,13 +96,13 @@ export function ShowcaseStackSection() {
       <div className="text-center max-w-3xl mx-auto mb-12">
         <span className="text-xs font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-500/10 border border-violet-500/20 px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 shadow-sm">
           <Sparkles className="w-3.5 h-3.5" />
-          Interactive Card Stack
+          Interactive Portfolio Builder Suite
         </span>
         <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 mt-4 mb-4">
-          Tilted Card Stack Experience
+          The All-in-One AI Portfolio Maker
         </h2>
         <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400">
-          The cards tilt dynamically to reveal layers underneath. Swipe or click to flip the top card to the back of the stack.
+          Turn your static resume into an interactive developer portfolio. Explore selective diff version control, 6+ modern themes, and versatile structural layouts.
         </p>
       </div>
 

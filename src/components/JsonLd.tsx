@@ -168,3 +168,43 @@ export function BreadcrumbJsonLd({ crumbs }: { crumbs: { name: string; url: stri
     />
   );
 }
+
+export function HowToJsonLd({ baseUrl }: { baseUrl: string }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to Convert Your Resume to a Developer Portfolio with AI",
+    "description": "Step-by-step guide to transform your PDF resume into an interactive developer portfolio website using Portfolio.OS.",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Upload Your Resume",
+        "text": "Upload your existing PDF resume or drag and drop it into the Portfolio.OS AI ingestion engine.",
+        "url": `${baseUrl}/#features`,
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Review AI Diff & Customize Theme",
+        "text": "Review extracted skills, projects, and work history using the Selective Diff Review tool, and choose from 6+ developer themes like Terminal or Neo-Brutalism.",
+        "url": `${baseUrl}/dashboard/edit`,
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Publish Your Portfolio",
+        "text": "Publish instantly to a unique public URL, track live analytics, and export an ATS-optimized PDF resume anytime.",
+        "url": `${baseUrl}/dashboard/edit`,
+      },
+    ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+

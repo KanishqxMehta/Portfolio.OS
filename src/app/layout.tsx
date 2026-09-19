@@ -23,20 +23,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Portfolio.OS | AI Resume to Portfolio Converter & Developer Builder",
+    default: "Portfolio.OS | Free AI Portfolio Maker & Resume to Portfolio Converter",
     template: "%s | Portfolio.OS",
   },
-  description: "Convert your PDF resume into a live, interactive developer portfolio website in seconds with AI. Free templates, ATS optimization, drag-and-drop editing, and instant publishing. Stand out to recruiters!",
+  description: "The #1 free AI portfolio maker for developers. Convert your PDF resume into an interactive developer portfolio website in seconds with AI, 6+ developer themes, ATS optimization, and instant publishing.",
   keywords: [
-    "ai portfolio builder from resume",
+    "free portfolio maker",
+    "ai portfolio maker",
     "resume to portfolio converter",
+    "free developer portfolio maker",
     "convert resume to portfolio website",
-    "ai resume parser",
+    "ai resume to portfolio",
     "developer portfolio builder",
-    "free developer portfolio",
-    "resume to website converter",
+    "free portfolio website for developers",
+    "software engineer portfolio generator",
     "ATS resume optimizer",
-    "portfolioos"
+    "portfolioos",
   ],
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"),
   alternates: {
@@ -54,8 +56,8 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Portfolio.OS | AI Resume to Portfolio Converter",
-    description: "Convert your PDF resume into a live developer portfolio website in seconds with AI. Free templates, ATS optimization, and instant publishing.",
+    title: "Portfolio.OS | Free AI Portfolio Maker & Resume to Portfolio Converter",
+    description: "The #1 free AI portfolio maker for developers. Convert your PDF resume into an interactive developer portfolio website in seconds with AI, 6+ developer themes, and instant publishing.",
     type: "website",
     siteName: "Portfolio.OS",
     locale: "en_US",
@@ -63,8 +65,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Portfolio.OS | AI Resume to Portfolio Converter",
-    description: "Convert your PDF resume into a live developer portfolio website in seconds with AI. Free templates, ATS optimization, and instant publishing.",
+    title: "Portfolio.OS | Free AI Portfolio Maker & Resume to Portfolio Converter",
+    description: "The #1 free AI portfolio maker for developers. Convert your PDF resume into an interactive developer portfolio website in seconds with AI, 6+ developer themes, and instant publishing.",
   },
 };
 

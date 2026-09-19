@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (result.rows.length > 0) {
       const content = result.rows[0].content || {};
       const sections = content.sections || [];
+      const hasSufficientContent = Array.isArray(sections) && sections.length >= 2;
       const hero = sections.find((s: any) => s.type === "HERO");
       const name = hero?.content?.fullName || slug;
       const bio = hero?.content?.bio || "View my professional developer portfolio.";
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           canonical: canonicalUrl,
         },
         robots: {
-          index: true,
+          index: hasSufficientContent,
           follow: true,
         },
         openGraph: {

@@ -34,6 +34,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/search`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    },
   ];
 
   let blogPosts: MetadataRoute.Sitemap = [];
@@ -51,10 +57,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let portfolioRoutes: MetadataRoute.Sitemap = [];
 
   try {
+    // Only index portfolios with actual content (at least 2 sections) to prevent thin content deranking
     const result = await pool.query(
       `SELECT "publicSlug", "updatedAt"
        FROM "Portfolio"
        WHERE "publicSlug" IS NOT NULL
+         AND content IS NOT NULL
+         AND jsonb_typeof(content->'sections') = 'array'
+         AND jsonb_array_length(content->'sections') >= 2
        ORDER BY "updatedAt" DESC
        LIMIT 5000`,
     );

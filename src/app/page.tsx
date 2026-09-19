@@ -7,7 +7,7 @@ import { ArrowRight, Layers, Layout, Palette, Sparkles, UploadCloud, Cpu, PenToo
 import { ThemeToggle } from "@/components/ThemeToggle";
 import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";
-import { OrganizationJsonLd, FAQJsonLd, SiteNavigationJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
+import { OrganizationJsonLd, FAQJsonLd, SiteNavigationJsonLd, BreadcrumbJsonLd, HowToJsonLd } from "@/components/JsonLd";
 import { ShowcaseStackSection } from "@/components/landing/ShowcaseStackSection";
 
 import { GitCompare } from "lucide-react";
@@ -144,6 +144,14 @@ export default function Home() {
                 className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all"
               >
                 Blog
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/search"
+                className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-full transition-all"
+              >
+                Explore
               </Link>
             </li>
             <li>
@@ -288,6 +296,13 @@ export default function Home() {
             >
               Blog
             </Link>
+            <Link
+              href="/search"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-base font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50"
+            >
+              Explore Portfolios
+            </Link>
             <div className="text-base font-medium text-zinc-600 dark:text-zinc-400 p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900/50 flex items-center justify-between transition-colors">
               <span>Pricing</span>
               <span className="text-[10px] font-bold bg-violet-500/10 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded border border-violet-500/20 uppercase tracking-wider">
@@ -351,7 +366,7 @@ export default function Home() {
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-300 text-xs sm:text-sm font-semibold mb-8 shadow-sm"
         >
           <Sparkles className="w-4 h-4 text-violet-500 dark:text-violet-400" />
-          <span>#1 AI Resume to Portfolio Converter</span>
+          <span>#1 Free AI Portfolio Maker &amp; Resume Converter</span>
         </motion.div>
 
         <motion.h1
@@ -360,10 +375,10 @@ export default function Home() {
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
           className="text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tighter text-zinc-900 dark:text-zinc-100 mb-6 max-w-5xl mx-auto leading-[1.05] transition-colors duration-500"
         >
-          Your raw experience,
+          Free AI Portfolio Maker.
           <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-indigo-400 to-cyan-400">
-            instantly production ready.
+            Convert Your Resume in Seconds.
           </span>
         </motion.h1>
 
@@ -373,7 +388,7 @@ export default function Home() {
           transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
           className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 mb-16 max-w-2xl mx-auto leading-relaxed transition-colors duration-500"
         >
-          Drop your PDF resume to instantly convert it into a high-performance developer portfolio website via AI, or build block-by-block. Zero friction, total control.
+          The fastest resume to portfolio converter for developers. Upload your PDF resume to instantly generate a modern developer portfolio website with AI, multiple themes, selective diff review, and live analytics. 100% free.
         </motion.p>
 
         {/* DEVELOPER IMPLEMENTATION: THE SPLIT-ROUTE CHOICE INTERFACE */}
@@ -614,6 +629,8 @@ export default function Home() {
       <SiteNavigationJsonLd links={[
         { name: "Features", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/#features` },
         { name: "Editor", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/dashboard/edit` },
+        { name: "Explore", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/search` },
+        { name: "Blog", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/blog` },
         { name: "About", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/about` },
         { name: "Contact", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/contact` }
       ]} />
@@ -621,6 +638,7 @@ export default function Home() {
         { name: "Home", url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"}/` }
       ]} />
       <OrganizationJsonLd baseUrl={process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"} />
+      <HowToJsonLd baseUrl={process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"} />
       <FAQJsonLd faqs={faqs} />
 
       <footer className="relative z-10 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-950 py-12 text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
@@ -634,6 +652,12 @@ export default function Home() {
 
         {/* Right Side: Navigation Columns */}
         <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-xs font-medium">
+          <Link href="/search" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+            Explore Portfolios
+          </Link>
+          <Link href="/blog" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+            Developer Blog
+          </Link>
           <Link href="/about" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
             About
           </Link>
