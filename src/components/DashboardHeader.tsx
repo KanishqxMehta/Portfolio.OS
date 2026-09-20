@@ -299,13 +299,33 @@ export function DashboardHeader({
               </button>
 
               {actionsMenuOpen && (
-                <div className="absolute right-0 top-10 w-64 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 shadow-2xl shadow-black/10 dark:shadow-black/80 overflow-hidden z-50 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute right-[-3.5rem] sm:right-0 top-10 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 shadow-2xl shadow-black/10 dark:shadow-black/80 overflow-hidden z-50 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
                   <div className="px-3.5 py-2.5 border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/60 dark:bg-zinc-900/60">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
                       Portfolio Actions
                     </p>
                   </div>
                   <div className="p-1.5 space-y-1">
+                    {/* View Analytics (Highlighted at top of menu) */}
+                    <Link
+                      href="/dashboard/analytics"
+                      onClick={() => setActionsMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold bg-violet-500/10 hover:bg-violet-500/15 text-violet-700 dark:text-violet-300 border border-violet-500/25 dark:border-violet-500/35 transition-all cursor-pointer shadow-sm group"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <span className="p-1 rounded-lg bg-violet-500/20 text-violet-600 dark:text-violet-400 group-hover:scale-105 transition-transform">
+                          <TrendingUp className="w-3.5 h-3.5" />
+                        </span>
+                        <span>View Analytics</span>
+                      </span>
+                      <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-600 text-white shadow-sm shadow-violet-500/25">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Live
+                      </span>
+                    </Link>
+
+                    <div className="h-px bg-zinc-100 dark:bg-zinc-800/80 my-1" />
+
                     {/* Public on Search Toggle */}
                     <div className="p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/70 transition-colors">
                       <div className="flex items-center justify-between">
@@ -496,18 +516,6 @@ export function DashboardHeader({
                       {activeMode === "dark" ? "Dark" : "Light"}
                     </span>
                   </button>
-
-                  {/* Mobile-only Switch to Analytics */}
-                  {(currentPage === "editor" || currentPage === "profile") && (
-                    <Link
-                      href="/dashboard/analytics"
-                      onClick={() => setMenuOpen(false)}
-                      className="md:hidden flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                    >
-                      <TrendingUp className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                      View Analytics
-                    </Link>
-                  )}
 
                   {/* Mobile-only Switch to Editor */}
                   {(currentPage === "analytics" || currentPage === "profile") && (

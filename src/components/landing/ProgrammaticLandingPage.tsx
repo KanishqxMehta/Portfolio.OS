@@ -25,6 +25,7 @@ import {
   GitBranch,
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
+import { Footer } from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FAQJsonLd, HowToJsonLd } from "@/components/JsonLd";
 import { cn } from "@/lib/utils";
@@ -434,103 +435,7 @@ export function ProgrammaticLandingPage({
         </section>
       </main>
 
-      {/* Footer with SEO internal links */}
-      <footer className="border-t border-zinc-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 py-12">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 text-sm">
-          <div>
-            <div className="mb-4">
-              <Logo />
-            </div>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              The free, open, and AI-powered portfolio maker crafted specifically for developers and software engineers.
-            </p>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 text-xs uppercase tracking-wider">
-              Free Tools
-            </h4>
-            <ul className="space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
-              <li>
-                <Link href="/free-portfolio-maker" className="hover:text-violet-600 transition-colors">
-                  Free Portfolio Maker
-                </Link>
-              </li>
-              <li>
-                <Link href="/ai-portfolio-builder" className="hover:text-violet-600 transition-colors">
-                  AI Portfolio Builder
-                </Link>
-              </li>
-              <li>
-                <Link href="/resume-to-portfolio" className="hover:text-violet-600 transition-colors">
-                  Resume to Portfolio Converter
-                </Link>
-              </li>
-              <li>
-                <Link href="/developer-portfolio-builder" className="hover:text-violet-600 transition-colors">
-                  Developer Portfolio Builder
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 text-xs uppercase tracking-wider">
-              Explore & Resources
-            </h4>
-            <ul className="space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
-              <li>
-                <Link href="/search" className="hover:text-violet-600 transition-colors">
-                  Portfolio Directory
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="hover:text-violet-600 transition-colors">
-                  Developer Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard/edit" className="hover:text-violet-600 transition-colors">
-                  Portfolio Editor
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="hover:text-violet-600 transition-colors">
-                  About Us
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 text-xs uppercase tracking-wider">
-              Legal
-            </h4>
-            <ul className="space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
-              <li>
-                <Link href="/privacy" className="hover:text-violet-600 transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-violet-600 transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-violet-600 transition-colors">
-                  Contact Support
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 pt-6 border-t border-zinc-100 dark:border-zinc-900 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-400">
-          <p>© {new Date().getFullYear()} Portfolio.OS. All rights reserved.</p>
-          <p>Built for developers with Next.js, Tailwind CSS & AI.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

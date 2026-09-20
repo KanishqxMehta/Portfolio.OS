@@ -9,6 +9,7 @@ import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";
 import { OrganizationJsonLd, FAQJsonLd, SiteNavigationJsonLd, BreadcrumbJsonLd, HowToJsonLd } from "@/components/JsonLd";
 import { ShowcaseStackSection } from "@/components/landing/ShowcaseStackSection";
+import { Footer } from "@/components/Footer";
 
 import { GitCompare, GripVertical } from "lucide-react";
 
@@ -641,51 +642,7 @@ export default function Home() {
       <HowToJsonLd baseUrl={process.env.NEXT_PUBLIC_BASE_URL || "https://portfolioos.dev"} />
       <FAQJsonLd faqs={faqs} />
 
-      <footer className="relative z-10 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-950 py-12 text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-        
-        {/* Left Side: Brand Indicator */}
-        <div className="flex items-center gap-2">
-          <Logo size="sm" />
-          <span className="text-xs text-zinc-500 dark:text-zinc-600 transition-colors">© {new Date().getFullYear()}</span>
-        </div>
-
-        {/* Right Side: Navigation Columns */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium">
-          <Link href="/free-portfolio-maker" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Free Portfolio Maker
-          </Link>
-          <Link href="/ai-portfolio-builder" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            AI Portfolio Builder
-          </Link>
-          <Link href="/resume-to-portfolio" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Resume Converter
-          </Link>
-          <Link href="/developer-portfolio-builder" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Dev Portfolios
-          </Link>
-          <Link href="/search" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Explore Portfolios
-          </Link>
-          <Link href="/blog" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Developer Blog
-          </Link>
-          <Link href="/about" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            About
-          </Link>
-          <Link href="/contact" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Contact Us
-          </Link>
-          <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Privacy Policy
-          </Link>
-          <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Terms of Service
-          </Link>
-        </div>
-        
-      </div>
-    </footer>
+      <Footer />
     </div>
   );
 }
