@@ -86,7 +86,13 @@ export async function POST(req: Request) {
       },
     };
 
-    const fallbackModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash', 'gemini-3.1-flash-lite', 'gemini-1.5-flash'];
+    const fallbackModels = [
+      'gemini-3.5-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3.5-flash',
+      'gemini-flash-latest',
+      'gemini-3.8-flash',
+    ];
     let responseText = null;
     let lastError = null;
 
@@ -100,7 +106,7 @@ export async function POST(req: Request) {
             config: generateConfig as any,
           }),
           new Promise<any>((_, reject) => 
-            setTimeout(() => reject(new Error(`Model ${model} timed out after 3 seconds`)), 3000)
+            setTimeout(() => reject(new Error(`Model ${model} timed out after 15 seconds`)), 15000)
           )
         ]);
 

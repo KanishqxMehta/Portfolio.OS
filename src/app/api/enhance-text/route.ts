@@ -41,7 +41,13 @@ export async function POST(req: Request) {
       responseMimeType: 'text/plain',
     };
 
-    const fallbackModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash', 'gemini-3.1-flash-lite', 'gemini-1.5-flash'];
+    const fallbackModels = [
+      'gemini-3.5-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3.5-flash',
+      'gemini-flash-latest',
+      'gemini-3.8-flash',
+    ];
     let responseText = null;
     let lastError = null;
 
@@ -56,7 +62,7 @@ export async function POST(req: Request) {
             config: generateConfig as any,
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error(`Timeout after 8000ms using ${model}`)), 8000)
+            setTimeout(() => reject(new Error(`Timeout after 10000ms using ${model}`)), 10000)
           )
         ]) as any;
 
