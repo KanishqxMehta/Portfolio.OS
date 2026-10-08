@@ -1,8 +1,25 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
+import { auth } from '@/lib/auth';
+import { aiQuotaExceededResponse, aiServiceUnavailableResponse } from '@/lib/api/ai-usage-response';
+import {
+  checkAiBurstLimit,
+  completeAiUsage,
+  isAiProviderCapacityError,
+  markAiServiceUnavailable,
+  startAiUsage,
+} from '@/lib/ai-usage';
 
 export async function POST(req: Request) {
+  const requestStartedAt = Date.now();
+  let usageEventId: string | undefined;
+
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { text } = await req.json();
 
     if (!text) {
@@ -16,6 +33,23 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    const burstLimit = checkAiBurstLimit(session.user.id, 'resume_import');
+    if (!burstLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many AI requests. Please try again shortly.' },
+        { status: 429, headers: { 'Retry-After': String(burstLimit.retryAfterSeconds) } }
+      );
+    }
+
+    const usage = await startAiUsage(session.user.id, 'resume_import', text.length);
+    if (!usage.allowed) {
+      if (usage.reason === 'service_unavailable') {
+        return aiServiceUnavailableResponse(usage.resetsAt);
+      }
+      return aiQuotaExceededResponse(usage.limit, usage.resetsAt);
+    }
+    usageEventId = usage.eventId;
 
     const ai = new GoogleGenAI({ apiKey });
 
@@ -95,6 +129,7 @@ export async function POST(req: Request) {
     ];
     let responseText = null;
     let lastError = null;
+    let providerCapacityExceeded = false;
 
     for (const model of fallbackModels) {
       try {
@@ -117,21 +152,42 @@ export async function POST(req: Request) {
         }
       } catch (err: any) {
         console.warn(`[Parser] Model ${model} failed:`, err.message);
+        providerCapacityExceeded ||= isAiProviderCapacityError(err);
         lastError = err;
       }
     }
 
     if (!responseText) {
-      throw lastError || new Error("All fallback models failed to generate content");
+      throw providerCapacityExceeded
+        ? new Error("AI provider quota exceeded")
+        : lastError || new Error("All fallback models failed to generate content");
     }
 
     const parsedData = JSON.parse(responseText);
 
-    return NextResponse.json({ data: parsedData });
+    await completeAiUsage(
+      usageEventId,
+      'succeeded',
+      Date.now() - requestStartedAt,
+      responseText.length
+    );
+
+    return NextResponse.json({
+      data: parsedData,
+      aiUsage: { remaining: usage.remaining, limit: usage.limit },
+      aiService: usage.service,
+    });
   } catch (error: any) {
+    if (usageEventId) {
+      await completeAiUsage(usageEventId, 'failed', Date.now() - requestStartedAt);
+    }
     console.error('Error parsing resume:', error);
+    if (isAiProviderCapacityError(error)) {
+      const service = await markAiServiceUnavailable();
+      return aiServiceUnavailableResponse(service.resetsAt);
+    }
     return NextResponse.json(
-      { error: error.message || 'An error occurred during parsing' },
+      { error: 'Unable to import this resume right now. Please try again.' },
       { status: 500 }
     );
   }

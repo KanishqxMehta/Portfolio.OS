@@ -4,10 +4,11 @@ import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Eye, EyeOff, GripVertical, Sparkles } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, GripVertical, Sparkles, Star } from "lucide-react";
 import { Section } from "@/lib/validations/portfolio";
 import { cn } from "@/lib/utils";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
+import { useToastStore } from "@/store/useToastStore";
 import {
   DndContext,
   closestCenter,
@@ -64,6 +65,20 @@ function ProjectItemUI({
         </span>
         <div className="flex items-center gap-1 opacity-0 group-hover/proj:opacity-100 transition-all">
           <button
+            type="button"
+            aria-label={item.featured ? "Remove from featured projects" : "Feature this project"}
+            title={item.featured ? "Remove from featured projects" : "Feature this project"}
+            onClick={() => updateProject && updateProject(idx, { featured: !item.featured })}
+            className={cn(
+              "w-5 h-5 flex items-center justify-center transition-colors",
+              item.featured
+                ? "text-amber-500 hover:text-amber-600"
+                : "text-zinc-400 hover:text-amber-500",
+            )}
+          >
+            <Star className="w-3 h-3" fill={item.featured ? "currentColor" : "none"} />
+          </button>
+          <button
             onClick={() => updateProject && updateProject(idx, { isVisible: !item.isVisible })}
             className="w-5 h-5 flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-all"
           >
@@ -111,13 +126,20 @@ function ProjectItemUI({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: item.description, type: 'project' })
               });
-              if (!res.ok) throw new Error('Enhance failed');
+              if (!res.ok) {
+                const errorData = await res.json().catch(() => null) as { error?: string } | null;
+                throw new Error(errorData?.error || 'Enhance failed');
+              }
               const data = await res.json();
               if (data.enhancedText) {
                 updateProject(idx, { description: data.enhancedText });
               }
             } catch (error) {
-              console.error(error);
+              useToastStore.getState().toast(
+                error instanceof Error ? error.message : 'Unable to enhance text right now.',
+                'error',
+                5000
+              );
             } finally {
               setIsEnhancing(false);
             }
@@ -282,7 +304,7 @@ export function ProjectsBlockEditor({
           handleUpdate({
             items: [
               ...items,
-              { id: crypto.randomUUID(), isVisible: true, title: "", description: "", link: "" },
+              { id: crypto.randomUUID(), isVisible: true, featured: false, title: "", description: "", link: "" },
             ],
           })
         }

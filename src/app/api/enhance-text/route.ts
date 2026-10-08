@@ -1,8 +1,25 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import { auth } from '@/lib/auth';
+import { aiQuotaExceededResponse, aiServiceUnavailableResponse } from '@/lib/api/ai-usage-response';
+import {
+  checkAiBurstLimit,
+  completeAiUsage,
+  isAiProviderCapacityError,
+  markAiServiceUnavailable,
+  startAiUsage,
+} from '@/lib/ai-usage';
 
 export async function POST(req: Request) {
+  const requestStartedAt = Date.now();
+  let usageEventId: string | undefined;
+
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { text, type } = await req.json();
 
     if (!text) {
@@ -16,6 +33,23 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    const burstLimit = checkAiBurstLimit(session.user.id, 'text_replacement');
+    if (!burstLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many AI requests. Please try again shortly.' },
+        { status: 429, headers: { 'Retry-After': String(burstLimit.retryAfterSeconds) } }
+      );
+    }
+
+    const usage = await startAiUsage(session.user.id, 'text_replacement', text.length);
+    if (!usage.allowed) {
+      if (usage.reason === 'service_unavailable') {
+        return aiServiceUnavailableResponse(usage.resetsAt);
+      }
+      return aiQuotaExceededResponse(usage.limit, usage.resetsAt);
+    }
+    usageEventId = usage.eventId;
 
     const ai = new GoogleGenAI({ apiKey });
 
@@ -50,6 +84,7 @@ export async function POST(req: Request) {
     ];
     let responseText = null;
     let lastError = null;
+    let providerCapacityExceeded = false;
 
     for (const model of fallbackModels) {
       try {
@@ -73,24 +108,42 @@ export async function POST(req: Request) {
         }
       } catch (err: any) {
         console.warn(`[Enhancer] Model ${model} failed:`, err.message || err);
+        providerCapacityExceeded ||= isAiProviderCapacityError(err);
         lastError = err;
       }
     }
 
     if (!responseText) {
-      console.error("[Enhancer] All models in the fallback cascade failed.");
-      return NextResponse.json(
-        { error: 'Failed to enhance text. All AI models timed out or failed.', details: lastError?.message },
-        { status: 503 }
-      );
+      throw providerCapacityExceeded
+        ? new Error("AI provider quota exceeded")
+        : lastError || new Error("All fallback models failed to enhance text");
     }
 
-    return NextResponse.json({ enhancedText: responseText.trim() });
+    const enhancedText = responseText.trim();
+    await completeAiUsage(
+      usageEventId,
+      'succeeded',
+      Date.now() - requestStartedAt,
+      enhancedText.length
+    );
+
+    return NextResponse.json({
+      enhancedText,
+      aiUsage: { remaining: usage.remaining, limit: usage.limit },
+      aiService: usage.service,
+    });
 
   } catch (error: any) {
+    if (usageEventId) {
+      await completeAiUsage(usageEventId, 'failed', Date.now() - requestStartedAt);
+    }
     console.error('Enhance API Error:', error);
+    if (isAiProviderCapacityError(error)) {
+      const service = await markAiServiceUnavailable();
+      return aiServiceUnavailableResponse(service.resetsAt);
+    }
     return NextResponse.json(
-      { error: 'Internal server error while enhancing text', details: error.message },
+      { error: 'Unable to enhance text right now. Please try again.' },
       { status: 500 }
     );
   }

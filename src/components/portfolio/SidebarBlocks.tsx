@@ -1,6 +1,7 @@
 import React from "react";
 import * as motion from "framer-motion/client";
-import { Quote, Send, Globe } from "lucide-react";
+import { ArrowRight, Quote, Send, Globe } from "lucide-react";
+import { getVisibleProjects, selectMainPortfolioProjects } from "@/lib/project-collection";
 import {
   HeroContent,
   SkillsContent,
@@ -119,8 +120,10 @@ const SidebarExperience = ({ data }: { data: ExperienceContent }) => {
 };
 
 /* ─── PROJECTS ─── */
-const SidebarProjects = ({ data }: { data: ProjectsContent }) => {
-  const items = (data.items || []).filter((p: any) => p.isVisible !== false);
+const SidebarProjects = ({ data, projectArchiveHref }: { data: ProjectsContent; projectArchiveHref?: string }) => {
+  const allProjects = getVisibleProjects(data.items);
+  const items = selectMainPortfolioProjects(data.items);
+  const hasMoreProjects = allProjects.length > items.length;
   return (
     <motion.div
       initial="initial"
@@ -166,6 +169,23 @@ const SidebarProjects = ({ data }: { data: ProjectsContent }) => {
           </div>
         )}
       </div>
+      {hasMoreProjects && (
+        <div className="mt-8 flex justify-center">
+          {projectArchiveHref ? (
+            <a
+              href={projectArchiveHref}
+              className="theme-pill inline-flex items-center gap-2 border-[var(--p-border)] px-4 py-2 text-xs font-semibold text-[var(--p-fg)] transition-[transform,background-color] duration-150 ease-out hover:border-[var(--p-primary)] hover:text-[var(--p-primary)] active:scale-[0.98]"
+            >
+              View all {allProjects.length} projects
+              <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+          ) : (
+            <span className="text-xs text-[var(--p-fg-muted)]">
+              {allProjects.length - items.length} more projects appear on the public portfolio.
+            </span>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 };

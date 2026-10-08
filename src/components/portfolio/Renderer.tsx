@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import * as motion from "framer-motion/client";
-import { ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send, Phone } from "lucide-react";
+import { ArrowRight, ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send, Phone } from "lucide-react";
 import { Timeline, TimelineItem } from "./Timeline";
+import { getVisibleProjects, selectMainPortfolioProjects } from "@/lib/project-collection";
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -173,8 +174,10 @@ const Hero = ({ data }: { data: HeroContent }) => {
 );
 };
 
-const Projects = ({ data }: { data: ProjectsContent }) => {
-  const items = (data.items || []).filter((item: any) => item.isVisible !== false);
+const Projects = ({ data, projectArchiveHref }: { data: ProjectsContent; projectArchiveHref?: string }) => {
+  const allProjects = getVisibleProjects(data.items);
+  const items = selectMainPortfolioProjects(data.items);
+  const hasMoreProjects = allProjects.length > items.length;
   return (
     <section className="theme-bg py-24 px-8 sm:px-12 border-t border-[var(--p-border)] transition-colors duration-500">
       <motion.div
@@ -191,7 +194,7 @@ const Projects = ({ data }: { data: ProjectsContent }) => {
           </span>
           <div className="h-px flex-1 bg-[var(--p-border)] transition-colors duration-500" />
           <span className="text-xs font-mono text-[var(--p-fg-muted)] transition-colors duration-500">
-            {String(items.length).padStart(2, "0")}
+            {String(allProjects.length).padStart(2, "0")}
           </span>
         </motion.div>
 
@@ -239,6 +242,24 @@ const Projects = ({ data }: { data: ProjectsContent }) => {
             </div>
           )}
         </div>
+
+        {hasMoreProjects && (
+          <motion.div variants={fadeInUp} className="mt-10 flex justify-center">
+            {projectArchiveHref ? (
+              <a
+                href={projectArchiveHref}
+                className="theme-pill inline-flex items-center gap-2 border-[var(--p-border)] px-5 py-2.5 text-sm font-semibold text-[var(--p-fg)] transition-[transform,background-color] duration-150 ease-out hover:border-[var(--p-primary)] hover:text-[var(--p-primary)] active:scale-[0.98]"
+              >
+                View all {allProjects.length} projects
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            ) : (
+              <span className="text-sm text-[var(--p-fg-muted)]">
+                {allProjects.length - items.length} more projects appear on the public portfolio.
+              </span>
+            )}
+          </motion.div>
+        )}
       </motion.div>
     </section>
   );
@@ -434,7 +455,12 @@ const ContactForm = ({ data }: { data: ContactFormContent }) => {
   );
 };
 
-const BlockMap: Record<string, React.FC<{ data: any }>> = {
+type PortfolioBlockProps = {
+  data: any;
+  projectArchiveHref?: string;
+};
+
+const BlockMap: Record<string, React.FC<PortfolioBlockProps>> = {
   HERO: Hero,
   PROJECTS: Projects,
   SKILLS: Skills,
@@ -469,7 +495,7 @@ const InkSplashes = () => (
   </div>
 );
 
-const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles }: { sections: Section[], theme: string, baseStyle: React.CSSProperties, sharedStyles: React.ReactNode }) => {
+const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles, projectArchiveHref }: { sections: Section[], theme: string, baseStyle: React.CSSProperties, sharedStyles: React.ReactNode, projectArchiveHref?: string }) => {
   const [history, setHistory] = useState<{type: 'input' | 'output' | 'component', content: any}[]>([
     { type: 'output', content: 'Welcome to Portfolio OS v1.0.0\nType "help" for a list of available commands.' }
   ]);
@@ -570,7 +596,7 @@ const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles }: { sections
               const contentKey = Array.isArray(items) ? items.length : 0;
               return (
                 <div key={`${i}-v${contentKey}`} className="mb-6 ml-1 sm:ml-4 pl-3 sm:pl-4 border-l-2 border-[var(--p-primary)]/50 py-2 relative overflow-hidden">
-                   <Component data={latestSection.content} />
+                   <Component data={latestSection.content} projectArchiveHref={projectArchiveHref} />
                 </div>
               );
             }
@@ -597,7 +623,7 @@ const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles }: { sections
   );
 };
 
-export const PortfolioRenderer = ({ sections, theme = "classic", layout = "classic" }: { sections: Section[], theme?: string, layout?: string }) => {
+export const PortfolioRenderer = ({ sections, theme = "classic", layout = "classic", projectArchiveHref }: { sections: Section[], theme?: string, layout?: string, projectArchiveHref?: string }) => {
   const activeTheme = THEMES[theme] || THEMES["classic"];
   
   // Reorder sections so that CONTACT_FORM is always rendered at the very bottom
@@ -721,7 +747,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
             const colSpan = isFullWidth ? "lg:col-span-2" : "lg:col-span-1";
             return (
               <div key={`${section.id}-v${contentKey}`} className={`${colSpan} theme-card theme-bg-secondary flex flex-col justify-start overflow-hidden`}>
-                <Component data={section.content} />
+                <Component data={section.content} projectArchiveHref={projectArchiveHref} />
               </div>
             );
           })}
@@ -805,7 +831,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
                const contentKey = Array.isArray(items) ? items.length : 0;
                return (
                  <div key={`${s.id}-v${contentKey}`} className="w-full">
-                    <Component data={s.content} />
+                    <Component data={s.content} projectArchiveHref={projectArchiveHref} />
                  </div>
                );
              })}
@@ -816,7 +842,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
   }
 
   if (layout === "terminal") {
-    return <TerminalLayout sections={orderedSections} theme={theme} baseStyle={baseStyle} sharedStyles={sharedStyles} />;
+    return <TerminalLayout sections={orderedSections} theme={theme} baseStyle={baseStyle} sharedStyles={sharedStyles} projectArchiveHref={projectArchiveHref} />;
   }
 
   // Classic Layout (Default)
@@ -888,7 +914,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
           if (!Component) return null;
           const items = (section.content as any)?.items;
           const contentKey = Array.isArray(items) ? items.length : 0;
-          return <Component key={`${section.id}-v${contentKey}`} data={section.content} />;
+          return <Component key={`${section.id}-v${contentKey}`} data={section.content} projectArchiveHref={projectArchiveHref} />;
         })}
       </div>
     </div>

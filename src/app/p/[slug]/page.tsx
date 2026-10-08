@@ -1,4 +1,3 @@
-import { pool } from "@/lib/db";
 import { PortfolioRenderer } from "@/components/portfolio/Renderer";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -6,10 +5,12 @@ import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { THEMES } from "@/lib/themes";
 import { ViewTracker } from "@/components/portfolio/ViewTracker";
+import { getPublicPortfolio } from "@/lib/public-portfolio";
 import { Suspense } from "react";
 import Loading from "./loading";
 
 import type { Metadata } from "next";
+import type { Section } from "@/lib/validations/portfolio";
 
 export const revalidate = 60;
 
@@ -23,13 +24,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonicalUrl = `${baseUrl.replace(/\/$/, "")}/p/${slug}`;
 
   try {
-    const result = await pool.query(
-      'SELECT content FROM "Portfolio" WHERE "publicSlug" = $1',
-      [slug]
-    );
+    const content = await getPublicPortfolio(slug);
 
-    if (result.rows.length > 0) {
-      const content = result.rows[0].content || {};
+    if (content) {
       const sections = content.sections || [];
       const hasSufficientContent = Array.isArray(sections) && sections.length >= 2;
       const hero = sections.find((s: any) => s.type === "HERO");
@@ -85,17 +82,13 @@ export default async function PublicPortfolioPage({ params }: PageProps) {
 }
 
 async function PortfolioContent({ slug }: { slug: string }) {
-  const result = await pool.query(
-    'SELECT content FROM "Portfolio" WHERE "publicSlug" = $1',
-    [slug]
-  );
+  const content = await getPublicPortfolio(slug);
 
-  if (result.rows.length === 0) {
+  if (!content) {
     notFound();
   }
 
-  const content = result.rows[0].content || {};
-  let sections = content.sections || [];
+  let sections = (content.sections || []) as any[];
   
   // Extract details for JSON-LD Structured Data
   const hero = sections.find((s: any) => s.type === "HERO");
@@ -184,7 +177,12 @@ async function PortfolioContent({ slug }: { slug: string }) {
 
       {/* Publicly visible main content */}
       <main className="flex-1 w-full">
-        <PortfolioRenderer sections={sections} theme={theme} layout={layout} />
+        <PortfolioRenderer
+          sections={sections as Section[]}
+          theme={theme}
+          layout={layout}
+          projectArchiveHref={`/p/${slug}/projects`}
+        />
       </main>
 
       {/* Upgraded Footer CTA */}
@@ -233,7 +231,6 @@ async function PortfolioContent({ slug }: { slug: string }) {
         </Link>
       </div>
 
-      <ViewTracker slug={slug} />
     </div>
   );
 }

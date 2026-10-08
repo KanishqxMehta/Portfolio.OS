@@ -7,23 +7,39 @@ import { Badge } from "@/components/ui/badge";
 import { UploadCloud, Wand2, FileText, CheckCircle2 } from "lucide-react";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
-// Removed top-level PDF.js worker setup
+class ResumeImportError extends Error {}
 
 
 interface ResumeParserModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  usage?: { remaining: number; limit: number } | null;
+  availability?: { available: boolean; resetsAt: string } | null;
+  onUsageChange?: (usage: { remaining: number; limit: number }) => void;
+  onAvailabilityChange?: (availability: { available: boolean; resetsAt: string }) => void;
 }
 
-export function ResumeParserModal({ isOpen, onOpenChange }: ResumeParserModalProps) {
+export function ResumeParserModal({
+  isOpen,
+  onOpenChange,
+  usage,
+  availability,
+  onUsageChange,
+  onAvailabilityChange,
+}: ResumeParserModalProps) {
   const [parsingState, setParsingState] = useState<"idle" | "reading" | "extracting" | "populating" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { sections, setProposedSections } = usePortfolioStore();
+  const isServiceUnavailable = availability?.available === false;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (isServiceUnavailable) {
+      return;
+    }
 
     if (file.type !== "application/pdf") {
       setErrorMsg("Please upload a valid PDF file.");
@@ -34,11 +50,14 @@ export function ResumeParserModal({ isOpen, onOpenChange }: ResumeParserModalPro
     try {
       setParsingState("reading");
 
-      // Dynamically import pdf.js to prevent SSR DOMMatrix errors
+      // Dynamically import PDF.js because it relies on browser-only APIs.
       const pdfjsLib = await import("pdfjs-dist");
 
-      // Set PDF.js worker before processing
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+      // Reference the worker bundled by Next.js rather than relying on a CDN.
+      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+        "pdfjs-dist/build/pdf.worker.min.mjs",
+        import.meta.url,
+      ).toString();
       
       const arrayBuffer = await file.arrayBuffer();
       
@@ -69,12 +88,38 @@ export function ResumeParserModal({ isOpen, onOpenChange }: ResumeParserModalPro
         body: JSON.stringify({ text: fullText }),
       });
 
+      const responseData = await response.json();
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to parse with AI");
+        if (responseData.code === "AI_SERVICE_UNAVAILABLE") {
+          onAvailabilityChange?.({ available: false, resetsAt: responseData.resetsAt });
+          throw new ResumeImportError(
+            "AI resume import is temporarily unavailable. Please try again tomorrow.",
+          );
+        }
+        if (responseData.code === "AI_QUOTA_EXCEEDED") {
+          onUsageChange?.({ remaining: 0, limit: responseData.limit });
+          throw new ResumeImportError(
+            "You have reached today’s resume-import limit. Please try again tomorrow.",
+          );
+        }
+
+        throw new ResumeImportError(
+          "We couldn’t import your resume right now. Please try again.",
+        );
       }
 
-      const { data: parsedData } = await response.json();
+      const { data: parsedData, aiUsage, aiService } = responseData as {
+        data: unknown;
+        aiUsage?: { remaining: number; limit: number };
+        aiService?: { available: boolean; resetsAt: string };
+      };
+
+      if (aiUsage) {
+        onUsageChange?.(aiUsage);
+      }
+      if (aiService) {
+        onAvailabilityChange?.(aiService);
+      }
 
       setParsingState("populating");
 
@@ -86,9 +131,13 @@ export function ResumeParserModal({ isOpen, onOpenChange }: ResumeParserModalPro
         setParsingState("idle");
       }, 2000);
 
-    } catch (err: any) {
-      console.error(err);
-      setErrorMsg(err.message || "Failed to parse the PDF.");
+    } catch (err: unknown) {
+      console.error("AI resume import failed", err);
+      setErrorMsg(
+        err instanceof ResumeImportError
+          ? err.message
+          : "We couldn’t read this PDF. Please try another PDF file.",
+      );
       setParsingState("error");
     }
   };
@@ -277,25 +326,48 @@ export function ResumeParserModal({ isOpen, onOpenChange }: ResumeParserModalPro
           <>
             <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
               <DialogHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2.5 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
-                    <Wand2 className="w-5 h-5" />
+                <div className="flex flex-col gap-3 pr-10 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
+                      <Wand2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-xl font-bold">AI Resume Parser</DialogTitle>
+                      <DialogDescription className="text-sm mt-1">
+                        Instantly build your portfolio by uploading your resume.
+                      </DialogDescription>
+                    </div>
                   </div>
-                  <div>
-                    <DialogTitle className="text-xl font-bold">AI Resume Parser</DialogTitle>
-                    <DialogDescription className="text-sm mt-1">
-                      Instantly build your portfolio by uploading your resume.
-                    </DialogDescription>
-                  </div>
+                  <span
+                    aria-live="polite"
+                    className={
+                      isServiceUnavailable
+                        ? "inline-flex w-fit shrink-0 items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 shadow-sm dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-300"
+                        : "inline-flex w-fit shrink-0 items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-bold tabular-nums text-violet-700 shadow-sm dark:border-violet-800 dark:bg-violet-950/50 dark:text-violet-300"
+                    }
+                  >
+                    {isServiceUnavailable
+                      ? "Temporarily unavailable"
+                      : usage
+                        ? `${usage.remaining} left today`
+                        : "Checking usage…"}
+                  </span>
                 </div>
               </DialogHeader>
             </div>
 
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Option 1: Active */}
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className="group relative flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-violet-200 dark:border-violet-900/50 bg-violet-50/50 dark:bg-violet-950/20 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:border-violet-400 dark:hover:border-violet-500/50 transition-all cursor-pointer text-center"
+              <div
+                aria-disabled={isServiceUnavailable}
+                onClick={() => {
+                  if (!isServiceUnavailable) fileInputRef.current?.click();
+                }}
+                className={
+                  isServiceUnavailable
+                    ? "relative flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/40 cursor-not-allowed text-center opacity-60"
+                    : "group relative flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-violet-200 dark:border-violet-900/50 bg-violet-50/50 dark:bg-violet-950/20 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:border-violet-400 dark:hover:border-violet-500/50 transition-all cursor-pointer text-center"
+                }
               >
                 <div className="w-12 h-12 bg-white dark:bg-zinc-900 shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                   <UploadCloud className="w-6 h-6 text-violet-600 dark:text-violet-400" />
@@ -326,6 +398,15 @@ export function ResumeParserModal({ isOpen, onOpenChange }: ResumeParserModalPro
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">Create a highly customized layout based on your role</p>
               </div>
             </div>
+
+            {isServiceUnavailable && (
+              <div
+                role="status"
+                className="mx-6 mb-6 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-center text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-200"
+              >
+                AI resume import is temporarily unavailable. Please try again tomorrow.
+              </div>
+            )}
 
             {parsingState === "error" && (
               <div className="px-6 pb-6">

@@ -387,10 +387,24 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-          className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 mb-16 max-w-2xl mx-auto leading-relaxed transition-colors duration-500"
+          className={cn(
+            "text-base sm:text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed transition-colors duration-500",
+            status === "authenticated" ? "mb-8" : "mb-16",
+          )}
         >
           The fastest resume to portfolio converter for developers. Upload your PDF resume to instantly generate a modern developer portfolio website with AI, multiple themes, selective diff review, and live analytics. 100% free.
         </motion.p>
+
+        {status === "authenticated" && (
+          <Link
+            href="/dashboard/edit"
+            className="mb-16 inline-flex items-center gap-2 rounded-full bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition-[background-color,transform,box-shadow] duration-150 ease-out hover:bg-violet-700 hover:shadow-violet-500/30 active:scale-[0.98]"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            Continue editing
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        )}
 
         {/* DEVELOPER IMPLEMENTATION: THE SPLIT-ROUTE CHOICE INTERFACE */}
         <motion.div

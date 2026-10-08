@@ -8,6 +8,7 @@ import { Plus, Trash2, Eye, EyeOff, GripVertical, Sparkles } from "lucide-react"
 import { Section } from "@/lib/validations/portfolio";
 import { cn } from "@/lib/utils";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
+import { useToastStore } from "@/store/useToastStore";
 import {
   DndContext,
   closestCenter,
@@ -165,7 +166,10 @@ function ExperienceItemUI({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: item.description, type: 'experience' })
               });
-              if (!res.ok) throw new Error('Enhance failed');
+              if (!res.ok) {
+                const errorData = await res.json().catch(() => null) as { error?: string } | null;
+                throw new Error(errorData?.error || 'Enhance failed');
+              }
               const data = await res.json();
               if (data.enhancedText) {
                 const newItems = items.map((it: any, i: number) =>
@@ -174,7 +178,11 @@ function ExperienceItemUI({
                 handleUpdate({ items: newItems });
               }
             } catch (error) {
-              console.error(error);
+              useToastStore.getState().toast(
+                error instanceof Error ? error.message : 'Unable to enhance text right now.',
+                'error',
+                5000
+              );
             } finally {
               setIsEnhancing(false);
             }

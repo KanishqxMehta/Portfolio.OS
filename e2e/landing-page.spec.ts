@@ -31,4 +31,19 @@ test.describe("Landing Page E2E Suite", () => {
     const themeButton = page.locator("button[aria-label*='theme'], button:has(svg)").first();
     await expect(themeButton).toBeVisible();
   });
+
+  test("should load without runtime errors or the Next.js error overlay", async ({ page }) => {
+    const runtimeErrors: string[] = [];
+
+    page.on("pageerror", (error) => runtimeErrors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") runtimeErrors.push(message.text());
+    });
+
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByText("Page Error Detected")).toHaveCount(0);
+    await expect(page.getByText("Something went wrong")).toHaveCount(0);
+    expect(runtimeErrors).toEqual([]);
+  });
 });

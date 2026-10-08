@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 export type ErrorSeverity = "fatal" | "error" | "warning" | "info";
 
 export interface ErrorContext {
@@ -7,9 +9,8 @@ export interface ErrorContext {
 }
 
 /**
- * Production-ready error monitoring abstraction.
- * Integrates with Sentry if NEXT_PUBLIC_SENTRY_DSN is configured,
- * and falls back to structured logging in development.
+ * Sends client-side errors to Sentry when it is configured and always emits a
+ * structured console log for local development and platform log collection.
  */
 export function captureException(
   error: unknown,
@@ -25,19 +26,22 @@ export function captureException(
     timestamp: new Date().toISOString(),
   });
 
-  // If Sentry DSN is present, dynamically forward to Sentry if loaded
-  const dsn =
-    process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN;
+  if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    Sentry.withScope((scope) => {
+      if (context?.tags) scope.setTags(context.tags);
+      if (context?.extra) scope.setExtras(context.extra);
 
-  if (dsn && typeof window !== "undefined") {
-    const windowWithSentry = window as unknown as {
-      Sentry?: {
-        captureException: (err: unknown, ctx?: unknown) => void;
-      };
-    };
-    if (windowWithSentry.Sentry) {
-      windowWithSentry.Sentry.captureException(normalizedError, context);
-    }
+      // Do not attach email addresses here: errors should not introduce PII
+      // into monitoring unless the product explicitly opts into that policy.
+      if (context?.user?.id || context?.user?.username) {
+        scope.setUser({
+          id: context.user.id,
+          username: context.user.username,
+        });
+      }
+
+      Sentry.captureException(normalizedError);
+    });
   }
 }
 

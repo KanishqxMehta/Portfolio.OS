@@ -40,6 +40,16 @@ const BLOCK_TYPES = [
   { type: "CONTACT_FORM", label: "Contact Form", description: "Email you directly" },
 ] as const;
 
+type ResumeImportUsage = {
+  remaining: number;
+  limit: number;
+};
+
+type AiServiceAvailability = {
+  available: boolean;
+  resetsAt: string;
+};
+
 
 
 function SortableBlock({ section, index, hoveredId, setHoveredId, sections }: any) {
@@ -115,6 +125,8 @@ export default function EditPortfolioPage() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isAddBlockPanelHidden, setIsAddBlockPanelHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [resumeImportUsage, setResumeImportUsage] = useState<ResumeImportUsage | null>(null);
+  const [aiServiceAvailability, setAiServiceAvailability] = useState<AiServiceAvailability | null>(null);
   const initialLoadRef = useRef(true);
 
   // Auto-open AI Parser if navigated from home page or landing pages
@@ -178,6 +190,37 @@ export default function EditPortfolioPage() {
       }
       loadPortfolio();
     }
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    let isCurrent = true;
+
+    const loadAiUsage = async () => {
+      try {
+        const response = await fetch("/api/ai-usage");
+        if (!response.ok) return;
+
+        const usage = await response.json() as {
+          resumeImport?: ResumeImportUsage;
+          service?: AiServiceAvailability;
+        };
+        if (isCurrent && usage.resumeImport) {
+          setResumeImportUsage(usage.resumeImport);
+        }
+        if (isCurrent && usage.service) {
+          setAiServiceAvailability(usage.service);
+        }
+      } catch {
+        // Usage status is supplementary; the server remains the source of truth.
+      }
+    };
+
+    void loadAiUsage();
+    return () => {
+      isCurrent = false;
+    };
   }, [status]);
 
   // Monitor changes to sections or theme to mark form as dirty
@@ -439,10 +482,33 @@ export default function EditPortfolioPage() {
                 
                 <Button 
                   onClick={() => setIsParserOpen(true)}
-                  className="w-full mb-4 bg-violet-600 hover:bg-violet-700 text-white shadow-sm border border-violet-500 flex items-center justify-center gap-2"
+                  disabled={
+                    resumeImportUsage?.remaining === 0 ||
+                    aiServiceAvailability?.available === false
+                  }
+                  title={
+                    aiServiceAvailability?.available === false
+                      ? "AI resume import is temporarily unavailable. Please try again tomorrow."
+                      : resumeImportUsage
+                      ? `${resumeImportUsage.remaining} of ${resumeImportUsage.limit} AI resume imports left today`
+                      : "AI Resume Import"
+                  }
+                  className="w-full mb-4 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-600/55 disabled:text-white/80 text-white shadow-sm border border-violet-500 flex items-center justify-between gap-3 transition-[background-color,transform] duration-150 ease-out active:scale-[0.98]"
                 >
-                  <Wand2 className="w-4 h-4" />
-                  AI Resume Import
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Wand2 className="w-4 h-4 shrink-0" />
+                    <span>AI Resume Import</span>
+                  </span>
+                  <span
+                    aria-live="polite"
+                    className="inline-flex shrink-0 items-center rounded-full border border-white/25 bg-white/15 px-2 py-0.5 text-[10px] font-bold tabular-nums tracking-wide shadow-sm"
+                  >
+                    {aiServiceAvailability?.available === false
+                      ? "Temporarily unavailable"
+                      : resumeImportUsage
+                      ? `${resumeImportUsage.remaining} left today`
+                      : "Checking usage…"}
+                  </span>
                 </Button>
 
                 <div className="flex items-center justify-between mb-3 px-1">
@@ -573,6 +639,14 @@ export default function EditPortfolioPage() {
       <ResumeParserModal
         isOpen={isParserOpen}
         onOpenChange={setIsParserOpen}
+        usage={resumeImportUsage}
+        availability={aiServiceAvailability}
+        onUsageChange={(usage) => {
+          setResumeImportUsage(usage);
+        }}
+        onAvailabilityChange={(availability) => {
+          setAiServiceAvailability(availability);
+        }}
       />
 
       {/* Mobile view toggle floating button */}

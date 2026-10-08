@@ -20,6 +20,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   visitsMade    ProfileVisit[] @relation("VisitorUser")
+  aiUsage       AiUsage[]
+  aiUsageEvents AiUsageEvent[]
 }
 
 model Account {
@@ -111,4 +113,42 @@ model ProfileVisit {
   @@unique([portfolioId, visitorSessionId])
   @@index([portfolioId])
   @@index([visitorId])
+}
+
+model AiUsage {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String
+  usageDate   DateTime @db.Date
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, action, usageDate])
+  @@index([userId, usageDate])
+}
+
+model AiUsageEvent {
+  id               String   @id @default(cuid())
+  userId           String
+  action           String
+  status           String
+  inputCharacters  Int
+  outputCharacters Int?
+  durationMs       Int?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}
+
+model AiGlobalUsage {
+  id               String    @id @default(cuid())
+  usageDate        DateTime  @unique @db.Date
+  count            Int       @default(0)
+  unavailableUntil DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
