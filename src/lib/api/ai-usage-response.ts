@@ -12,13 +12,14 @@ export function aiQuotaExceededResponse(limit: number, resetsAt: string) {
   );
 }
 
-export function aiServiceUnavailableResponse(resetsAt: string) {
+export function aiServiceUnavailableResponse(resetsAt: string, reason?: "busy" | "daily_capacity") {
   return NextResponse.json(
     {
-      code: "AI_SERVICE_UNAVAILABLE",
-      error: "AI features are temporarily unavailable. Please try again tomorrow.",
+      code: reason === "busy" ? "AI_SERVICE_BUSY" : "AI_SERVICE_UNAVAILABLE",
+      error: reason === "busy" ? "AI is busy right now. Please try again in a few minutes." : "AI features are temporarily unavailable. Please try again tomorrow.",
       resetsAt,
+      reason,
     },
-    { status: 503 },
+    { status: 503, headers: { "Retry-After": String(Math.max(1, Math.ceil((new Date(resetsAt).getTime() - Date.now()) / 1000))) } },
   );
 }

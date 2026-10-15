@@ -37,6 +37,8 @@ export const ProjectItemSchema = z.object({
   link: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
   isVisible: z.boolean().default(true).optional(),
   featured: z.boolean().default(false).optional(),
+  tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+  year: z.string().regex(/^\d{4}$/).optional().or(z.literal("")),
 });
 export const ProjectsContentSchema = z.object({
   items: z.array(ProjectItemSchema).min(1, "At least one project is required"),

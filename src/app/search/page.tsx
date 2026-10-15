@@ -63,7 +63,7 @@ function SearchContent() {
     }, 300);
 
     return () => clearTimeout(handler);
-  }, [query]);
+  }, [query, router]);
 
   const handleTagClick = (tag: string) => {
     if (activeTag === tag) {

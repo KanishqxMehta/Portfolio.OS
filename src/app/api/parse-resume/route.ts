@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
 import { auth } from '@/lib/auth';
+import { captureException } from '@/lib/error-logger';
 import { aiQuotaExceededResponse, aiServiceUnavailableResponse } from '@/lib/api/ai-usage-response';
 import {
   checkAiBurstLimit,
@@ -8,6 +9,10 @@ import {
   isAiProviderCapacityError,
   markAiServiceUnavailable,
   startAiUsage,
+  reserveAiProviderAttempt,
+  getAiServiceAvailability,
+  isAiProviderBusyError,
+  refundFailedAiUsage,
 } from '@/lib/ai-usage';
 
 export async function POST(req: Request) {
@@ -45,13 +50,14 @@ export async function POST(req: Request) {
     const usage = await startAiUsage(session.user.id, 'resume_import', text.length);
     if (!usage.allowed) {
       if (usage.reason === 'service_unavailable') {
-        return aiServiceUnavailableResponse(usage.resetsAt);
+        return aiServiceUnavailableResponse(usage.resetsAt, usage.service.reason);
       }
       return aiQuotaExceededResponse(usage.limit, usage.resetsAt);
     }
     usageEventId = usage.eventId;
 
-    const ai = new GoogleGenAI({ apiKey });
+    // All retries are explicit and budgeted; disable the SDK's hidden retries.
+    const ai = new GoogleGenAI({ apiKey, httpOptions: { retryOptions: { attempts: 1 }, timeout: 15000 } });
 
     const prompt = `
     You are an expert resume parser. I will provide you with the raw extracted text from a PDF resume.
@@ -131,7 +137,10 @@ export async function POST(req: Request) {
     let lastError = null;
     let providerCapacityExceeded = false;
 
-    for (const model of fallbackModels) {
+    for (const [attemptIndex, model] of fallbackModels.entries()) {
+      if (attemptIndex > 0 && !(await reserveAiProviderAttempt())) {
+        throw new Error("AI provider quota exceeded");
+      }
       try {
         console.log(`[Parser] Attempting extraction with model: ${model}`);
         const response = await Promise.race([
@@ -153,6 +162,7 @@ export async function POST(req: Request) {
       } catch (err: any) {
         console.warn(`[Parser] Model ${model} failed:`, err.message);
         providerCapacityExceeded ||= isAiProviderCapacityError(err);
+        if (providerCapacityExceeded || isAiProviderBusyError(err)) throw err;
         lastError = err;
       }
     }
@@ -175,17 +185,23 @@ export async function POST(req: Request) {
     return NextResponse.json({
       data: parsedData,
       aiUsage: { remaining: usage.remaining, limit: usage.limit },
-      aiService: usage.service,
+      aiService: await getAiServiceAvailability(),
     });
   } catch (error: any) {
     if (usageEventId) {
-      await completeAiUsage(usageEventId, 'failed', Date.now() - requestStartedAt);
+      await refundFailedAiUsage(usageEventId, Date.now() - requestStartedAt).catch(() => {
+        captureException(new Error('AI quota refund failed'), { tags: { feature: 'parse-resume', stage: 'refund' } });
+      });
     }
-    console.error('Error parsing resume:', error);
+    if (isAiProviderBusyError(error)) {
+      const service = await markAiServiceUnavailable(true);
+      return aiServiceUnavailableResponse(service.resetsAt, service.reason);
+    }
     if (isAiProviderCapacityError(error)) {
       const service = await markAiServiceUnavailable();
-      return aiServiceUnavailableResponse(service.resetsAt);
+      return aiServiceUnavailableResponse(service.resetsAt, service.reason);
     }
+    captureException(new Error('Unexpected resume import failure'), { tags: { feature: 'resume_import', stage: 'provider_or_processing' } });
     return NextResponse.json(
       { error: 'Unable to import this resume right now. Please try again.' },
       { status: 500 }

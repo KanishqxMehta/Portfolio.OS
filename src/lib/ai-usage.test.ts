@@ -20,9 +20,16 @@ import {
   getAiUsageSummary,
   markAiServiceUnavailable,
   startAiUsage,
+  reserveAiProviderAttempt,
 } from "./ai-usage";
 
 describe("AI usage protection", () => {
+  it("reserves each fallback call and rejects when no capacity remains", async () => {
+    query.mockResolvedValueOnce({ rows: [{ count: 18 }] }).mockResolvedValueOnce({ rows: [] });
+    expect(await reserveAiProviderAttempt()).toBe(true);
+    expect(await reserveAiProviderAttempt()).toBe(false);
+    expect(query).toHaveBeenCalledTimes(2);
+  });
   beforeEach(() => {
     query.mockReset();
     connect.mockReset();
@@ -67,14 +74,15 @@ describe("AI usage protection", () => {
     transactionQuery
       .mockResolvedValueOnce({ rows: [] })
       .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [] });
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ count: 18, unavailableUntil: null }] });
 
     await expect(startAiUsage("user-1", "resume_import", 3200)).resolves.toMatchObject({
       allowed: false,
       reason: "service_unavailable",
     });
     expect(transactionQuery).toHaveBeenNthCalledWith(3, "ROLLBACK");
-    expect(transactionQuery).toHaveBeenCalledTimes(3);
+    expect(transactionQuery).toHaveBeenCalledTimes(4);
   });
 
   it("rolls back the global reservation when the user has exhausted their own quota", async () => {

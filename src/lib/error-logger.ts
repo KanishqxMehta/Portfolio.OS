@@ -26,7 +26,7 @@ export function captureException(
     timestamp: new Date().toISOString(),
   });
 
-  if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  if (process.env.NEXT_PUBLIC_SENTRY_DSN || (typeof window === "undefined" && process.env.SENTRY_DSN)) {
     Sentry.withScope((scope) => {
       if (context?.tags) scope.setTags(context.tags);
       if (context?.extra) scope.setExtras(context.extra);

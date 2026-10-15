@@ -105,6 +105,27 @@ function ProjectItemUI({
         )}
       />
 
+      <div className="grid grid-cols-[1fr_6rem] gap-2">
+        <Input
+          aria-label="Project tags"
+          placeholder="Tags: React, AI, Backend"
+          defaultValue={(item.tags || []).join(", ")}
+          onBlur={(e) => updateProject && updateProject(idx, {
+            tags: [...new Set(e.target.value.split(",").map((tag) => tag.trim()).filter(Boolean))].slice(0, 20),
+          })}
+          className={fieldClass}
+        />
+        <Input
+          aria-label="Project year"
+          placeholder="Year"
+          maxLength={4}
+          inputMode="numeric"
+          value={item.year || ""}
+          onChange={(e) => updateProject && updateProject(idx, { year: e.target.value.replace(/\D/g, "") })}
+          className={fieldClass}
+        />
+      </div>
+
       <div className="relative">
         <Textarea
           placeholder="Short description of what you built and tech used..."
@@ -142,6 +163,7 @@ function ProjectItemUI({
               );
             } finally {
               setIsEnhancing(false);
+              window.dispatchEvent(new Event("ai-usage-updated"));
             }
           }}
           disabled={!item.description || isEnhancing}

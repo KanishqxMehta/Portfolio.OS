@@ -3,9 +3,9 @@ import { hash } from "argon2";
 import { pool } from "@/lib/db";
 import {
   buildRateLimitKey,
-  checkRateLimit,
   getClientIp,
 } from "@/lib/rate-limit";
+import { checkPersistentRateLimit } from "@/lib/persistent-rate-limit";
 import { rateLimitExceededResponse } from "@/lib/api/rate-limit-response";
 import {
   isValidEmail,
@@ -20,7 +20,7 @@ const SIGNUP_RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 export async function POST(req: Request) {
   try {
     const ip = getClientIp(req);
-    const rateLimit = checkRateLimit(buildRateLimitKey("signup", ip), SIGNUP_RATE_LIMIT);
+    const rateLimit = await checkPersistentRateLimit(buildRateLimitKey("signup", ip), SIGNUP_RATE_LIMIT);
     if (!rateLimit.allowed) {
       return rateLimitExceededResponse(rateLimit);
     }

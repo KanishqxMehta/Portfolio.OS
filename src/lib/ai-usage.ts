@@ -11,6 +11,7 @@ export const AI_USAGE_LIMITS = {
   requestsPerMinute: 5,
   providerRequestsPerDay: 20,
   providerRequestSafetyReserve: 2,
+  busyCooldownSeconds: 300,
 } as const;
 
 export type AiUsageAction = "resume_import" | "text_replacement";
@@ -19,6 +20,7 @@ export type AiUsageOutcome = "succeeded" | "failed";
 export type AiServiceAvailability = {
   available: boolean;
   resetsAt: string;
+  reason?: "busy" | "daily_capacity";
 };
 
 type UsageRow = { count: number };
@@ -51,7 +53,11 @@ function getAvailability(count: number, unavailableUntil: Date | null): AiServic
 
   return {
     available: !unavailableByProvider && count < publicProviderRequestLimit(),
-    resetsAt: nextUtcMidnight(),
+    resetsAt: count >= publicProviderRequestLimit() ? nextUtcMidnight() : unavailableByProvider ? unavailableUntil!.toISOString() : nextUtcMidnight(),
+    ...((unavailableByProvider || count >= publicProviderRequestLimit()) ? {
+      reason: count >= publicProviderRequestLimit() || unavailableUntil!.getTime() >= new Date(nextUtcMidnight()).getTime()
+        ? "daily_capacity" as const : "busy" as const,
+    } : {}),
   };
 }
 
@@ -71,6 +77,21 @@ export async function getAiServiceAvailability(): Promise<AiServiceAvailability>
 
   const usage = result.rows[0];
   return getAvailability(usage?.count ?? 0, usage?.unavailableUntil ?? null);
+}
+
+/** Reserve each additional outbound call, including fallback models. */
+export async function reserveAiProviderAttempt(): Promise<boolean> {
+  const result = await pool.query<UsageRow>(
+    `INSERT INTO "AiGlobalUsage" (id, "usageDate", count, "createdAt", "updatedAt")
+     SELECT $1, CURRENT_DATE, 1, NOW(), NOW() WHERE $2 > 0
+     ON CONFLICT ("usageDate") DO UPDATE
+       SET count = "AiGlobalUsage".count + 1, "updatedAt" = NOW()
+       WHERE "AiGlobalUsage".count < $2
+         AND ("AiGlobalUsage"."unavailableUntil" IS NULL OR "AiGlobalUsage"."unavailableUntil" <= NOW())
+     RETURNING count`,
+    [crypto.randomUUID(), publicProviderRequestLimit()],
+  );
+  return result.rows.length > 0;
 }
 
 export async function getAiUsageSummary(userId: string) {
@@ -116,7 +137,7 @@ export async function startAiUsage(
       service: AiServiceAvailability;
     }
   | { allowed: false; reason: "user_quota"; limit: number; resetsAt: string }
-  | { allowed: false; reason: "service_unavailable"; resetsAt: string }
+  | { allowed: false; reason: "service_unavailable"; resetsAt: string; service: AiServiceAvailability }
 > {
   const { limit } = ACTION_LIMITS[action];
   const client = await pool.connect();
@@ -137,7 +158,9 @@ export async function startAiUsage(
 
     if (globalUsageResult.rows.length === 0) {
       await client.query("ROLLBACK");
-      return { allowed: false, reason: "service_unavailable", resetsAt: nextUtcMidnight() };
+      const current = await client.query<GlobalUsageRow>('SELECT count, "unavailableUntil" FROM "AiGlobalUsage" WHERE "usageDate" = CURRENT_DATE');
+      const service = getAvailability(current.rows[0]?.count ?? 0, current.rows[0]?.unavailableUntil ?? null);
+      return { allowed: false, reason: "service_unavailable", resetsAt: service.resetsAt, service };
     }
 
     const usageResult = await client.query<UsageRow>(
@@ -183,17 +206,38 @@ export async function startAiUsage(
  * Opens a daily circuit breaker when the AI provider reports its own quota.
  * This prevents subsequent users from reaching the same provider error.
  */
-export async function markAiServiceUnavailable(): Promise<AiServiceAvailability> {
-  const resetsAt = nextUtcMidnight();
+export async function markAiServiceUnavailable(busy = false): Promise<AiServiceAvailability> {
+  const resetsAt = busy ? new Date(Date.now() + AI_USAGE_LIMITS.busyCooldownSeconds * 1000).toISOString() : nextUtcMidnight();
   await pool.query(
     `INSERT INTO "AiGlobalUsage" (id, "usageDate", count, "unavailableUntil", "createdAt", "updatedAt")
      VALUES ($1, CURRENT_DATE, 0, $2, NOW(), NOW())
      ON CONFLICT ("usageDate") DO UPDATE
-       SET "unavailableUntil" = EXCLUDED."unavailableUntil", "updatedAt" = NOW()`,
+       SET "unavailableUntil" = GREATEST("AiGlobalUsage"."unavailableUntil", EXCLUDED."unavailableUntil"), "updatedAt" = NOW()`,
     [crypto.randomUUID(), resetsAt],
   );
 
-  return { available: false, resetsAt };
+  return { available: false, resetsAt, reason: busy ? "busy" : "daily_capacity" };
+}
+
+export function isAiProviderBusyError(error: unknown): boolean {
+  const status = typeof error === "object" && error !== null && "status" in error ? error.status : undefined;
+  const message = error instanceof Error ? error.message : String(error);
+  return status === 503 || /\b503\b|high\s*demand|"status"\s*:\s*"UNAVAILABLE"/i.test(message);
+}
+
+/** Refund personal quota exactly once; provider attempts remain counted. */
+export async function refundFailedAiUsage(eventId: string, durationMs: number): Promise<void> {
+  await pool.query(
+    `WITH refunded AS (
+       UPDATE "AiUsageEvent" SET status = 'failed_refunded', "durationMs" = $2
+       WHERE id = $1 AND status = 'started'
+       RETURNING "userId", action, "createdAt"
+     )
+     UPDATE "AiUsage" AS usage SET count = GREATEST(0, usage.count - 1), "updatedAt" = NOW()
+     FROM refunded WHERE usage."userId" = refunded."userId" AND usage.action = refunded.action
+       AND usage."usageDate" = refunded."createdAt"::date`,
+    [eventId, durationMs],
+  );
 }
 
 export function isAiProviderCapacityError(error: unknown): boolean {

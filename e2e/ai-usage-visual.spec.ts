@@ -61,4 +61,25 @@ test("shows the remaining daily AI resume-import allowance in the editor", async
   await expect(page.getByText("Something went wrong")).toHaveCount(0);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors.some((message) => message.includes("AI resume import failed"))).toBe(true);
+
+  // A focus refresh must pick up a temporary provider outage, then recover at
+  // its reset time without requiring a page reload.
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Hero", exact: true }).click();
+  const nameInput = page.getByPlaceholder("Enter your full name");
+  await nameInput.fill("Unsaved edit survives focus");
+  const busyUntil = Date.now() + 2500;
+  await page.route("**/api/ai-usage", async (route) => {
+    const busy = Date.now() < busyUntil;
+    await route.fulfill({ json: {
+      resumeImport: { used: 0, remaining: 1, limit: 1 },
+      service: { available: !busy, reason: busy ? "busy" : undefined, resetsAt: busy ? new Date(busyUntil).toISOString() : new Date(Date.now() + 86_400_000).toISOString() },
+    } });
+  });
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect(importButton).toContainText("AI is busy");
+  await expect(importButton).toBeDisabled();
+  await expect(importButton).toBeEnabled({ timeout: 8000 });
+  await expect(importButton).toContainText("1 left today");
+  await expect(nameInput).toHaveValue("Unsaved edit survives focus");
 });

@@ -185,6 +185,7 @@ function ExperienceItemUI({
               );
             } finally {
               setIsEnhancing(false);
+              window.dispatchEvent(new Event("ai-usage-updated"));
             }
           }}
           disabled={!item.description || isEnhancing}

@@ -25,13 +25,14 @@ export const sendPasswordResetEmail = async (
 
   try {
     // For seamless local testing, if SMTP is not configured, just log the link
-    if (!process.env.SMTP_HOST) {
+    if (!process.env.SMTP_HOST && process.env.NODE_ENV === "development" && process.env.APP_ENV === "development") {
       console.log("=========================================");
       console.log("🚧 LOCAL TESTING MODE: Password Reset Link 🚧");
       console.log(resetLink);
       console.log("=========================================");
       return true;
     }
+    if (!process.env.SMTP_HOST) return false;
 
     const info = await transporter.sendMail({
       from: process.env.EMAIL_FROM || `"Portfolio.OS" <${process.env.SMTP_USER}>`,
@@ -54,7 +55,7 @@ export const sendPasswordResetEmail = async (
       `,
     });
     console.log("Message sent: %s", info.messageId);
-    return true;
+    return Array.isArray(info.accepted) && info.accepted.length > 0;
   } catch (error) {
     console.error("Error sending password reset email:", error);
     return false;

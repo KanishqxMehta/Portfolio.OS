@@ -4,6 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 // import GitHub from "next-auth/providers/github";
 import { verify } from "argon2";
 import { pool } from "./db";
+import { checkPersistentRateLimit } from "./persistent-rate-limit";
+import { getClientIp } from "./rate-limit";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
@@ -31,9 +33,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        const email = credentials?.email as string;
-        const password = credentials?.password as string;
+      async authorize(credentials, request) {
+        if (typeof credentials?.email !== "string" || typeof credentials?.password !== "string") return null;
+        const email = credentials.email.toLowerCase().trim();
+        const password = credentials.password;
+        const ipLimit = await checkPersistentRateLimit(`login:ip:${getClientIp(request)}`, { limit: 30, windowMs: 15 * 60_000 });
+        if (!ipLimit.allowed) return null;
+        const accountLimit = await checkPersistentRateLimit(`login:email:${email}`, { limit: 10, windowMs: 15 * 60_000 });
+        if (!accountLimit.allowed) return null;
 
         const result = await pool.query(
           'SELECT id, email, username, name, image, "passwordHash" FROM "User" WHERE email = $1',

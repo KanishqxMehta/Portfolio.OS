@@ -8,15 +8,16 @@ import { UploadCloud, Wand2, FileText, CheckCircle2 } from "lucide-react";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 class ResumeImportError extends Error {}
+type Availability = { available: boolean; resetsAt: string; reason?: "busy" | "daily_capacity" };
 
 
 interface ResumeParserModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   usage?: { remaining: number; limit: number } | null;
-  availability?: { available: boolean; resetsAt: string } | null;
+  availability?: Availability | null;
   onUsageChange?: (usage: { remaining: number; limit: number }) => void;
-  onAvailabilityChange?: (availability: { available: boolean; resetsAt: string }) => void;
+  onAvailabilityChange?: (availability: Availability) => void;
 }
 
 export function ResumeParserModal({
@@ -32,6 +33,9 @@ export function ResumeParserModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { sections, setProposedSections } = usePortfolioStore();
   const isServiceUnavailable = availability?.available === false;
+  const unavailableMessage = availability?.reason === "busy"
+    ? "AI is busy right now. Please try again in a few minutes."
+    : "AI resume import is temporarily unavailable. Please try again tomorrow.";
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,11 +94,11 @@ export function ResumeParserModal({
 
       const responseData = await response.json();
       if (!response.ok) {
-        if (responseData.code === "AI_SERVICE_UNAVAILABLE") {
-          onAvailabilityChange?.({ available: false, resetsAt: responseData.resetsAt });
-          throw new ResumeImportError(
-            "AI resume import is temporarily unavailable. Please try again tomorrow.",
-          );
+        if (responseData.code === "AI_SERVICE_UNAVAILABLE" || responseData.code === "AI_SERVICE_BUSY") {
+          onAvailabilityChange?.({ available: false, resetsAt: responseData.resetsAt, reason: responseData.reason });
+          setErrorMsg("");
+          setParsingState("idle");
+          return;
         }
         if (responseData.code === "AI_QUOTA_EXCEEDED") {
           onUsageChange?.({ remaining: 0, limit: responseData.limit });
@@ -139,6 +143,9 @@ export function ResumeParserModal({
           : "We couldn’t read this PDF. Please try another PDF file.",
       );
       setParsingState("error");
+    } finally {
+      window.dispatchEvent(new Event("ai-usage-updated"));
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -347,7 +354,7 @@ export function ResumeParserModal({
                     }
                   >
                     {isServiceUnavailable
-                      ? "Temporarily unavailable"
+                      ? availability?.reason === "busy" ? "AI is busy" : "Temporarily unavailable"
                       : usage
                         ? `${usage.remaining} left today`
                         : "Checking usage…"}
@@ -404,7 +411,7 @@ export function ResumeParserModal({
                 role="status"
                 className="mx-6 mb-6 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-center text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-200"
               >
-                AI resume import is temporarily unavailable. Please try again tomorrow.
+                {unavailableMessage}
               </div>
             )}
 

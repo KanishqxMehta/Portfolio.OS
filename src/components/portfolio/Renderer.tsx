@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import * as motion from "framer-motion/client";
 import { ArrowRight, ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send, Phone } from "lucide-react";
 import { Timeline, TimelineItem } from "./Timeline";
@@ -627,10 +627,10 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
   const activeTheme = THEMES[theme] || THEMES["classic"];
   
   // Reorder sections so that CONTACT_FORM is always rendered at the very bottom
-  const visibleSections = sections.filter((s) => s.isVisible !== false);
-  const nonContactSections = visibleSections.filter((s) => s.type !== "CONTACT_FORM");
-  const contactSections = visibleSections.filter((s) => s.type === "CONTACT_FORM");
-  const orderedSections = [...nonContactSections, ...contactSections];
+  const orderedSections = useMemo(() => {
+    const visible = sections.filter((s) => s.isVisible !== false);
+    return [...visible.filter((s) => s.type !== "CONTACT_FORM"), ...visible.filter((s) => s.type === "CONTACT_FORM")];
+  }, [sections]);
 
   const [activeTerminalTab, setActiveTerminalTab] = useState(orderedSections[0]?.id || "");
   useEffect(() => {
@@ -738,7 +738,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
       <div data-theme={theme} className="theme-bg min-h-full font-sans transition-colors duration-500 relative p-4 md:p-8 md:py-16 bento-wrapper" style={baseStyle}>
         {noiseOverlay}{renderInkSplashes()}{sharedStyles}
         <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
-          {orderedSections.map((section, i) => {
+          {orderedSections.map((section) => {
             const Component = BlockMap[section.type];
             if (!Component) return null;
             const items = (section.content as any)?.items;

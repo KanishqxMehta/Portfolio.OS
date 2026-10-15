@@ -48,6 +48,7 @@ type ResumeImportUsage = {
 type AiServiceAvailability = {
   available: boolean;
   resetsAt: string;
+  reason?: "busy" | "daily_capacity";
 };
 
 
@@ -182,34 +183,39 @@ export default function EditPortfolioPage() {
 
   // Auth redirection is handled by middleware.ts, client side only loads when authenticated.
 
+  const sessionUsername = (session?.user as { username?: string } | undefined)?.username;
   useEffect(() => {
     if (status === "authenticated") {
-      const sessionUsername = (session?.user as any)?.username;
-      if (sessionUsername && !username) {
+      if (sessionUsername && !usePortfolioStore.getState().username) {
         setUsername(sessionUsername);
       }
-      loadPortfolio();
     }
-  }, [status]);
+  }, [status, sessionUsername, setUsername]);
+
+  useEffect(() => {
+    if (status === "authenticated") void loadPortfolio();
+  }, [status, session?.user?.id, loadPortfolio]);
 
   useEffect(() => {
     if (status !== "authenticated") return;
 
     let isCurrent = true;
+    let requestVersion = 0;
 
     const loadAiUsage = async () => {
+      const version = ++requestVersion;
       try {
-        const response = await fetch("/api/ai-usage");
+        const response = await fetch("/api/ai-usage", { cache: "no-store" });
         if (!response.ok) return;
 
         const usage = await response.json() as {
           resumeImport?: ResumeImportUsage;
           service?: AiServiceAvailability;
         };
-        if (isCurrent && usage.resumeImport) {
+        if (isCurrent && version === requestVersion && usage.resumeImport) {
           setResumeImportUsage(usage.resumeImport);
         }
-        if (isCurrent && usage.service) {
+        if (isCurrent && version === requestVersion && usage.service) {
           setAiServiceAvailability(usage.service);
         }
       } catch {
@@ -218,10 +224,22 @@ export default function EditPortfolioPage() {
     };
 
     void loadAiUsage();
+    const refresh = () => { if (document.visibilityState === "visible") void loadAiUsage(); };
+    window.addEventListener("focus", refresh);
+    window.addEventListener("ai-usage-updated", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    const interval = window.setInterval(refresh, 60_000);
+    const resetTime = aiServiceAvailability?.resetsAt;
+    const resetTimer = resetTime ? window.setTimeout(refresh, Math.min(2_147_483_647, Math.max(1000, new Date(resetTime).getTime() - Date.now() + 100))) : undefined;
     return () => {
       isCurrent = false;
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("ai-usage-updated", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+      window.clearInterval(interval);
+      window.clearTimeout(resetTimer);
     };
-  }, [status]);
+  }, [status, isParserOpen, aiServiceAvailability?.resetsAt]);
 
   // Monitor changes to sections or theme to mark form as dirty
   useEffect(() => {
@@ -488,7 +506,7 @@ export default function EditPortfolioPage() {
                   }
                   title={
                     aiServiceAvailability?.available === false
-                      ? "AI resume import is temporarily unavailable. Please try again tomorrow."
+                      ? aiServiceAvailability.reason === "busy" ? "AI is busy right now. Please try again in a few minutes." : "AI resume import is temporarily unavailable. Please try again tomorrow."
                       : resumeImportUsage
                       ? `${resumeImportUsage.remaining} of ${resumeImportUsage.limit} AI resume imports left today`
                       : "AI Resume Import"
@@ -504,7 +522,7 @@ export default function EditPortfolioPage() {
                     className="inline-flex shrink-0 items-center rounded-full border border-white/25 bg-white/15 px-2 py-0.5 text-[10px] font-bold tabular-nums tracking-wide shadow-sm"
                   >
                     {aiServiceAvailability?.available === false
-                      ? "Temporarily unavailable"
+                      ? aiServiceAvailability.reason === "busy" ? "AI is busy" : "Temporarily unavailable"
                       : resumeImportUsage
                       ? `${resumeImportUsage.remaining} left today`
                       : "Checking usage…"}

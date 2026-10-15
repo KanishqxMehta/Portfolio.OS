@@ -5,9 +5,13 @@ import type { Metadata } from "next";
 import { getVisibleProjects } from "@/lib/project-collection";
 import { getPublicPortfolio } from "@/lib/public-portfolio";
 import { THEMES } from "@/lib/themes";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import type { ProjectsContent } from "@/lib/validations/portfolio";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -25,14 +29,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function PublicProjectArchivePage({ params }: PageProps) {
+export default async function PublicProjectArchivePage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const content = await getPublicPortfolio(slug);
   if (!content) notFound();
 
   const sections = content.sections ?? [];
   const projectsSection = sections.find((section: any) => section.type === "PROJECTS");
-  const projects = getVisibleProjects(projectsSection?.content?.items);
+  if (!projectsSection || projectsSection.isVisible === false) notFound();
+  const projects = getVisibleProjects<ProjectsContent["items"][number]>(projectsSection.content?.items);
+  const filters = await searchParams ?? {};
+  const query = typeof filters.q === "string" ? filters.q.trim() : "";
+  const tag = typeof filters.tag === "string" ? filters.tag : "";
+  const year = typeof filters.year === "string" ? filters.year : "";
+  const tags = [...new Set(projects.flatMap((project) => project.tags ?? []))].sort();
+  const years = [...new Set(projects.map((project) => project.year).filter((value): value is string => Boolean(value)))].sort().reverse();
+  const filtered = projects.filter((project) =>
+    (!query || `${project.title} ${project.description} ${(project.tags ?? []).join(" ")}`.toLowerCase().includes(query.toLowerCase())) &&
+    (!tag || project.tags?.includes(tag)) && (!year || project.year === year),
+  );
   const hero = sections.find((section: any) => section.type === "HERO");
   const name = hero?.content?.fullName || slug;
   const theme = content.theme || "classic";
@@ -67,9 +82,23 @@ export default async function PublicProjectArchivePage({ params }: PageProps) {
           </p>
         </header>
 
-        {projects.length > 0 ? (
+        <form className="mb-8 grid gap-3 sm:grid-cols-[1fr_auto_auto_auto]" action={`/p/${slug}/projects`}>
+          <Input aria-label="Search projects" name="q" placeholder="Search projects" defaultValue={query} className="border-[var(--p-border)] bg-[var(--p-bg-card)] text-[var(--p-fg)]" />
+          <select aria-label="Filter by technology" name="tag" defaultValue={tag} className="rounded-md border border-[var(--p-border)] bg-[var(--p-bg-card)] px-3 py-2 text-sm">
+            <option value="">All technologies</option>
+            {tags.map((value) => <option key={value} value={value}>{value}</option>)}
+          </select>
+          <select aria-label="Filter by year" name="year" defaultValue={year} className="rounded-md border border-[var(--p-border)] bg-[var(--p-bg-card)] px-3 py-2 text-sm">
+            <option value="">All years</option>
+            {years.map((value) => <option key={value} value={value}>{value}</option>)}
+          </select>
+          <Button type="submit">Apply filters</Button>
+        </form>
+        {(query || tag || year) && <p className="mb-6 text-sm text-[var(--p-fg-muted)]">Showing {filtered.length} of {projects.length} projects · <Link href={`/p/${slug}/projects`} className="underline">Clear filters</Link></p>}
+
+        {filtered.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {projects.map((project: any, index) => (
+            {filtered.map((project, index) => (
               <article
                 key={project.id || `${project.title}-${index}`}
                 className="rounded-[var(--p-radius)] border border-[var(--p-border)] bg-[var(--p-bg-card)] p-6 shadow-[var(--p-shadow)] sm:p-8"
@@ -90,6 +119,8 @@ export default async function PublicProjectArchivePage({ params }: PageProps) {
                   )}
                 </div>
                 <h2 className="text-2xl font-bold tracking-tight">{project.title || "Untitled Project"}</h2>
+                {project.year && <p className="mt-2 text-xs text-[var(--p-fg-muted)]">{project.year}</p>}
+                {!!project.tags?.length && <div className="mt-3 flex flex-wrap gap-2">{project.tags.map((value) => <span key={value} className="rounded-full border border-[var(--p-border)] px-2 py-1 text-xs">{value}</span>)}</div>}
                 <p className="mt-3 text-sm leading-relaxed text-[var(--p-fg-muted)]">
                   {project.description || "Project description will appear here."}
                 </p>
@@ -98,7 +129,7 @@ export default async function PublicProjectArchivePage({ params }: PageProps) {
           </div>
         ) : (
           <p className="rounded-xl border border-dashed border-[var(--p-border)] px-6 py-12 text-center text-[var(--p-fg-muted)]">
-            No public projects have been added yet.
+            {projects.length ? "No projects match these filters." : "No public projects have been added yet."}
           </p>
         )}
       </div>

@@ -148,7 +148,15 @@ model AiGlobalUsage {
   id               String    @id @default(cuid())
   usageDate        DateTime  @unique @db.Date
   count            Int       @default(0)
-  unavailableUntil DateTime?
+  unavailableUntil DateTime? @db.Timestamptz(3)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+}
+
+model RateLimitBucket {
+  key     String   @id
+  count   Int
+  resetAt DateTime @db.Timestamptz
+
+  @@index([resetAt])
 }

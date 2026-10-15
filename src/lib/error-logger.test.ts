@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { captureException, captureMessage } from "./error-logger";
+import * as Sentry from "@sentry/nextjs";
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  withScope: (callback: (scope: unknown) => void) => callback({ setTags: vi.fn(), setExtras: vi.fn(), setUser: vi.fn() }),
+}));
 
 describe("error-logger", () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
@@ -12,9 +17,17 @@ describe("error-logger", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   describe("captureException", () => {
+    it("sends server failures when only the private Sentry DSN is configured", () => {
+      vi.stubEnv("SENTRY_DSN", "https://example.test");
+      vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", "");
+      const error = new Error("Safe failure");
+      captureException(error, { tags: { feature: "resume_import" } });
+      expect(Sentry.captureException).toHaveBeenCalledWith(error);
+    });
     it("should log Error objects to console.error", () => {
       const err = new Error("Test exception");
       captureException(err, { extra: { tag: "test" } });

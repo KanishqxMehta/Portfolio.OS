@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import {
   buildRateLimitKey,
-  checkRateLimit,
   getClientIp,
 } from "@/lib/rate-limit";
+import { checkPersistentRateLimit } from "@/lib/persistent-rate-limit";
 import { rateLimitExceededResponse } from "@/lib/api/rate-limit-response";
 import { escapeHtml } from "@/lib/sanitize";
 import { isValidEmail } from "@/lib/validations/user";
@@ -13,7 +13,7 @@ const CONTACT_RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 export async function POST(req: Request) {
   try {
     const ip = getClientIp(req);
-    const rateLimit = checkRateLimit(buildRateLimitKey("contact", ip), CONTACT_RATE_LIMIT);
+    const rateLimit = await checkPersistentRateLimit(buildRateLimitKey("contact", ip), CONTACT_RATE_LIMIT);
     if (!rateLimit.allowed) {
       return rateLimitExceededResponse(rateLimit);
     }
