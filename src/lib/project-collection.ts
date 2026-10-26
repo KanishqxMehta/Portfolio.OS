@@ -1,5 +1,29 @@
 export const MAIN_PORTFOLIO_PROJECT_LIMIT = 4;
 
+export const CASE_STUDY_FIELDS = {
+  problem: "The problem",
+  role: "My role",
+  approach: "Approach and solution",
+  challenges: "Challenges and lessons",
+  results: "Results and impact",
+} as const;
+
+type CaseStudyProject = {
+  caseStudyEnabled?: boolean;
+  caseStudy?: Partial<Record<keyof typeof CASE_STUDY_FIELDS, string>>;
+};
+
+export function hasCaseStudyContent(project: CaseStudyProject): boolean {
+  return Object.keys(CASE_STUDY_FIELDS).some((key) =>
+    Boolean(project.caseStudy?.[key as keyof typeof CASE_STUDY_FIELDS]?.trim()),
+  );
+}
+
+/** Keep previously written studies accessible, but never expose empty pages. */
+export function isCaseStudyPublished(project: CaseStudyProject): boolean {
+  return project.caseStudyEnabled !== false && hasCaseStudyContent(project);
+}
+
 export type ProjectCollectionItem = {
   id?: string;
   isVisible?: boolean;
@@ -23,4 +47,9 @@ export function selectMainPortfolioProjects<T extends ProjectCollectionItem>(
 
 export function getVisibleProjects<T extends ProjectCollectionItem>(items: T[] | undefined): T[] {
   return (items ?? []).filter((item) => item.isVisible !== false);
+}
+
+/** IDs are stable for new projects; the index fallback keeps legacy records reachable. */
+export function getProjectKey(project: ProjectCollectionItem, index: number): string {
+  return project.id || `project-${index + 1}`;
 }

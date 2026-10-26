@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { Pool } from "pg";
 
 const isolatedDatabase = process.env.DATABASE_URL?.endsWith("/portfolio_verification");
@@ -37,12 +37,14 @@ test.describe("project archive protection", () => {
     await page.getByRole("textbox", { name: "Search projects" }).fill("project 2");
     await page.getByRole("button", { name: "Apply filters" }).click();
     await expect(page.getByRole("heading", { level: 2, name: /Visible project/ })).toHaveCount(1);
+    await page.waitForLoadState('networkidle');
     expect(errors).toEqual([]);
     await expect(page.getByText("Page Error Detected")).toHaveCount(0);
   });
   test("denies direct archive access when the entire section is hidden", async ({ page }) => {
     await pool.query('UPDATE "Portfolio" SET content = $1 WHERE id = $2', [content(false), userId]);
     await page.goto(`/p/${slug}/projects`);
+    await page.waitForLoadState('networkidle');
     await expect(page.getByText("Visible project 1", { exact: true })).toHaveCount(0);
     await expect(page.getByText(/404|not found/i).first()).toBeVisible();
   });

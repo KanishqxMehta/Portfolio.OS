@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Authentication E2E Suite", () => {
   test("should render login page with email and password inputs", async ({ page }) => {

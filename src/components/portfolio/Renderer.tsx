@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import * as motion from "framer-motion/client";
-import { ArrowRight, ExternalLink, Terminal, Briefcase, Zap, Code2, GraduationCap, MessageSquare, Quote, Send, Phone } from "lucide-react";
+import { ArrowRight, Terminal, Briefcase, Zap, GraduationCap, MessageSquare, Quote, Send, Phone } from "lucide-react";
 import { Timeline, TimelineItem } from "./Timeline";
-import { getVisibleProjects, selectMainPortfolioProjects } from "@/lib/project-collection";
+import { getProjectKey, getVisibleProjects, selectMainPortfolioProjects } from "@/lib/project-collection";
+import { ProjectCard } from "./ProjectCard";
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -103,6 +104,7 @@ const Hero = ({ data }: { data: HeroContent }) => {
         {data.bio || "Crafting digital experiences with code and design."}
       </motion.p>
 
+      {data.resumeUrl && <a href={data.resumeUrl} data-engagement-action="resume" target="_blank" rel="noreferrer" className="theme-pill mt-6 inline-flex px-4 py-2 text-sm font-semibold text-[var(--p-primary)]">View resume</a>}
       {/* Social links row */}
       {(data.phone || data.github || data.linkedin || data.instagram || data.twitter) && (
         <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -198,43 +200,11 @@ const Projects = ({ data, projectArchiveHref }: { data: ProjectsContent; project
           </span>
         </motion.div>
 
-        <div className={`grid grid-cols-1 gap-8 ${items.length === 1 ? "md:grid-cols-1 md:max-w-2xl md:mx-auto" : "md:grid-cols-2"}`}>
-          {items.map((item: any, i: number) => (
-            <motion.div
-              key={i}
-              variants={fadeInUp}
-              className="theme-card group relative bg-[var(--p-bg-card)] border-[var(--p-border)] p-6 sm:p-8 hover:bg-[var(--p-bg-secondary)] transition-all duration-300 hover:border-[var(--p-primary)] flex flex-col h-full"
-            >
-              <div className="flex justify-between items-start mb-6">
-                {item.link ? (
-                  <a 
-                    href={item.link} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="theme-card w-12 h-12 bg-[var(--p-bg-secondary)] border-[var(--p-border)] flex items-center justify-center text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] hover:border-[var(--p-primary)] transition-all duration-200"
-                  >
-                    <ExternalLink className="w-5 h-5" />
-                  </a>
-                ) : (
-                  <div className="theme-card w-12 h-12 bg-[var(--p-bg-secondary)] border-[var(--p-border)] flex items-center justify-center text-[var(--p-fg-muted)] transition-colors cursor-default">
-                    <Code2 className="w-5 h-5" />
-                  </div>
-                )}
-                
-                <span className="font-mono text-xs text-[var(--p-fg-muted)] transition-colors duration-500">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              </div>
-
-              <h3 className="text-2xl font-bold text-[var(--p-fg)] tracking-tight group-hover:text-[var(--p-primary)] transition-colors mb-4">
-                {item.title || "Untitled Project"}
-              </h3>
-              
-              <p className="text-[var(--p-fg-muted)] leading-relaxed text-sm flex-1 transition-colors duration-500">
-                {item.description || "Project description will appear here once added in the editor."}
-              </p>
-            </motion.div>
-          ))}
+        <div className={`grid grid-cols-1 items-start gap-8 ${items.length === 1 ? "md:grid-cols-1 md:max-w-2xl md:mx-auto" : "md:grid-cols-2"}`}>
+          {items.map((item, i) => {
+            const projectId = getProjectKey(item, data.items.indexOf(item));
+            return <ProjectCard key={projectId} project={item} projectId={projectId} index={i} caseStudyHref={projectArchiveHref ? `${projectArchiveHref}/${encodeURIComponent(projectId)}` : undefined} />;
+          })}
 
           {items.length === 0 && (
             <div className="col-span-full py-20 rounded-2xl border border-dashed border-[var(--p-border)] text-center text-[var(--p-fg-muted)] transition-colors duration-500">
@@ -553,7 +523,7 @@ const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles, projectArchi
       <style>{`
         .terminal-content section { padding: 0 !important; min-height: auto !important; border: none !important; background: transparent !important; }
         .terminal-content section > div { max-width: 100% !important; margin: 0 !important; }
-        .terminal-content section .absolute { display: none !important; }
+        .terminal-content section .absolute:not([data-project-actions]) { display: none !important; }
         .terminal-content h1 { font-size: 2rem !important; }
       `}</style>
       <div className="w-full max-w-[1000px] border border-[var(--p-border)] rounded-xl flex flex-col overflow-hidden h-[85vh] bg-[var(--p-bg)] shadow-2xl">
@@ -770,6 +740,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
           <div className="mb-12">
             <h1 className="text-xl font-black text-[var(--p-fg)] tracking-tight mb-3 leading-tight">{name}</h1>
             <p className="text-sm text-[var(--p-fg-muted)] leading-relaxed line-clamp-3">{bio}</p>
+            {heroData?.resumeUrl && <a href={heroData.resumeUrl} data-engagement-action="resume" target="_blank" rel="noreferrer" className="mt-4 inline-flex text-sm font-semibold text-[var(--p-primary)]">View resume</a>}
             
             {/* Socials */}
             {(heroData?.phone || heroData?.github || heroData?.linkedin || heroData?.twitter || heroData?.instagram) && (

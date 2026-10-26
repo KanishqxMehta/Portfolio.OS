@@ -4,6 +4,8 @@ import { pool } from "@/lib/db";
 import Link from "next/link";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { AnalyticsDashboardClient } from "./AnalyticsDashboardClient";
+import { getProjectKey } from "@/lib/project-collection";
+import type { ProjectsContent } from "@/lib/validations/portfolio";
 
 export default async function AnalyticsPage() {
   const session = await auth();
@@ -13,7 +15,7 @@ export default async function AnalyticsPage() {
 
   // Get user portfolio
   const portfolioResult = await pool.query(
-    'SELECT id, "publicSlug" FROM "Portfolio" WHERE "userId" = $1 LIMIT 1',
+    'SELECT id, "publicSlug", content FROM "Portfolio" WHERE "userId" = $1 LIMIT 1',
     [session.user.id]
   );
 
@@ -30,6 +32,11 @@ export default async function AnalyticsPage() {
 
   const portfolioId = portfolioResult.rows[0].id;
   const publicSlug = portfolioResult.rows[0].publicSlug;
+  const projectItems = (portfolioResult.rows[0].content?.sections?.find((section: { type: string }) => section.type === "PROJECTS")?.content?.items ?? []) as ProjectsContent["items"];
+  const projectTitles = Object.fromEntries(projectItems.map((project, index) => [getProjectKey(project, index), project.title]));
+  const actionsResult = await pool.query(
+    'SELECT action, "projectId", "createdAt" FROM "PortfolioAction" WHERE "portfolioId" = $1 ORDER BY "createdAt" ASC', [portfolioId],
+  );
 
   // Total lifetime views
   const totalViewsResult = await pool.query(
@@ -83,6 +90,8 @@ export default async function AnalyticsPage() {
           totalViews={totalViews}
           rawPageViews={allViewsResult.rows}
           rawVisitors={allVisitorsResult.rows}
+          rawActions={actionsResult.rows}
+          projectTitles={projectTitles}
         />
       </main>
     </div>

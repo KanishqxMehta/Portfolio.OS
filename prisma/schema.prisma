@@ -22,6 +22,32 @@ model User {
   visitsMade    ProfileVisit[] @relation("VisitorUser")
   aiUsage       AiUsage[]
   aiUsageEvents AiUsageEvent[]
+  portfolioDraft PortfolioDraft?
+}
+
+model PortfolioDraft {
+  userId    String   @id
+  snapshot  Json
+  revision  Int      @default(1)
+  updatedAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Keep tombstones after deletion so stale drafts cannot republish deleted files.
+// No cascading user FK: abandoned uploads still need cleanup after account removal.
+model ProjectUpload {
+  id          String    @id
+  ownerId     String
+  storageBase String
+  bucket      String
+  paths       String[]
+  urls        String[]
+  status      String    @default("active")
+  unusedSince DateTime? @default(now()) @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([status, unusedSince])
+  @@index([ownerId])
 }
 
 model Account {
@@ -80,6 +106,7 @@ model Portfolio {
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   pageViews        PageView[]
   profileVisits    ProfileVisit[]
+  actions          PortfolioAction[]
 
   @@index([userId])
   @@index([isPublicOnSearch])
@@ -95,6 +122,19 @@ model PageView {
 
   @@index([portfolioId])
   @@index([visitorSessionId])
+}
+
+model PortfolioAction {
+  id          String   @id
+  portfolioId String
+  action      String
+  projectId   String?
+  target      String?
+  visitorHash String
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioId, createdAt])
 }
 
 model ProfileVisit {

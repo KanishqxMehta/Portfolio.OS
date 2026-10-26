@@ -1,8 +1,11 @@
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, FolderKanban } from "lucide-react";
+import { ArrowLeft, FolderKanban } from "lucide-react";
+import { ProjectCard } from "@/components/portfolio/ProjectCard";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getVisibleProjects } from "@/lib/project-collection";
+import { getProjectKey, getVisibleProjects } from "@/lib/project-collection";
+import { ActionTracker } from "@/components/portfolio/ActionTracker";
+import { getEngagementTargets } from "@/lib/engagement";
 import { getPublicPortfolio } from "@/lib/public-portfolio";
 import { THEMES } from "@/lib/themes";
 import { Input } from "@/components/ui/input";
@@ -37,7 +40,8 @@ export default async function PublicProjectArchivePage({ params, searchParams }:
   const sections = content.sections ?? [];
   const projectsSection = sections.find((section: any) => section.type === "PROJECTS");
   if (!projectsSection || projectsSection.isVisible === false) notFound();
-  const projects = getVisibleProjects<ProjectsContent["items"][number]>(projectsSection.content?.items);
+  const allItems = (projectsSection.content?.items ?? []) as ProjectsContent["items"];
+  const projects = getVisibleProjects(allItems);
   const filters = await searchParams ?? {};
   const query = typeof filters.q === "string" ? filters.q.trim() : "";
   const tag = typeof filters.tag === "string" ? filters.tag : "";
@@ -63,6 +67,7 @@ export default async function PublicProjectArchivePage({ params, searchParams }:
       } as React.CSSProperties}
     >
       <div className="mx-auto max-w-5xl">
+        <ActionTracker slug={slug} targets={getEngagementTargets(content, slug)} />
         <Link
           href={`/p/${slug}`}
           className="mb-10 inline-flex items-center gap-2 text-sm font-semibold text-[var(--p-fg-muted)] transition-colors hover:text-[var(--p-primary)]"
@@ -97,35 +102,11 @@ export default async function PublicProjectArchivePage({ params, searchParams }:
         {(query || tag || year) && <p className="mb-6 text-sm text-[var(--p-fg-muted)]">Showing {filtered.length} of {projects.length} projects · <Link href={`/p/${slug}/projects`} className="underline">Clear filters</Link></p>}
 
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {filtered.map((project, index) => (
-              <article
-                key={project.id || `${project.title}-${index}`}
-                className="rounded-[var(--p-radius)] border border-[var(--p-border)] bg-[var(--p-bg-card)] p-6 shadow-[var(--p-shadow)] sm:p-8"
-              >
-                <div className="mb-6 flex items-start justify-between gap-4">
-                  <span className="font-mono text-xs text-[var(--p-fg-muted)]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  {project.link && (
-                    <a
-                      href={project.link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--p-primary)] transition-colors hover:opacity-75"
-                    >
-                      View project <ExternalLink className="h-4 w-4" />
-                    </a>
-                  )}
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight">{project.title || "Untitled Project"}</h2>
-                {project.year && <p className="mt-2 text-xs text-[var(--p-fg-muted)]">{project.year}</p>}
-                {!!project.tags?.length && <div className="mt-3 flex flex-wrap gap-2">{project.tags.map((value) => <span key={value} className="rounded-full border border-[var(--p-border)] px-2 py-1 text-xs">{value}</span>)}</div>}
-                <p className="mt-3 text-sm leading-relaxed text-[var(--p-fg-muted)]">
-                  {project.description || "Project description will appear here."}
-                </p>
-              </article>
-            ))}
+          <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
+            {filtered.map((project, index) => {
+              const projectId = getProjectKey(project, allItems.indexOf(project));
+              return <ProjectCard key={projectId} project={project} projectId={projectId} index={index} headingLevel={2} caseStudyHref={`/p/${encodeURIComponent(slug)}/projects/${encodeURIComponent(projectId)}`} />;
+            })}
           </div>
         ) : (
           <p className="rounded-xl border border-dashed border-[var(--p-border)] px-6 py-12 text-center text-[var(--p-fg-muted)]">

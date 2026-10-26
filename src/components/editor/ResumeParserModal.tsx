@@ -109,7 +109,7 @@ export function ResumeParserModal({
 
         throw new ResumeImportError(
           "We couldn’t import your resume right now. Please try again.",
-        );
+        ); 
       }
 
       const { data: parsedData, aiUsage, aiService } = responseData as {

@@ -49,3 +49,7 @@ next-env.d.ts
 
 # git worktrees
 /.worktrees/
+
+# agent skills & local ai tools
+/.agents/
+

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Search & Explorer E2E Suite", () => {
   test("should render search page with hero, search input, and popular skill tags", async ({ page }) => {

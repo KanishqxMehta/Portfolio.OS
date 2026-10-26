@@ -5,6 +5,8 @@ import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { THEMES } from "@/lib/themes";
 import { ViewTracker } from "@/components/portfolio/ViewTracker";
+import { ActionTracker } from "@/components/portfolio/ActionTracker";
+import { getEngagementTargets } from "@/lib/engagement";
 import { getPublicPortfolio } from "@/lib/public-portfolio";
 import { Suspense } from "react";
 import Loading from "./loading";
@@ -161,6 +163,7 @@ async function PortfolioContent({ slug }: { slug: string }) {
       />
 
       <ViewTracker slug={slug} />
+      <ActionTracker slug={slug} targets={getEngagementTargets(content, slug)} />
 
       {/* Hero watermark — "Made with Portfolio.os" top-right */}
       <div className="absolute top-4 right-4 z-20">

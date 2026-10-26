@@ -81,6 +81,12 @@ export function HeroBlockEditor({
         )}
       </div>
 
+      <label className="block space-y-1.5">
+        <span className={labelClass}>Public resume URL (optional)</span>
+        <Input aria-label="Public resume URL" placeholder="https://…/resume.pdf" maxLength={2048} value={content.resumeUrl ?? ""} onChange={(e) => handleUpdate({ resumeUrl: e.target.value })} className={fieldClass} />
+        <span className="block text-[10px] text-zinc-500">Adds a View resume link to your portfolio. Use a publicly accessible PDF link.</span>
+      </label>
+
       {/* Social Links Sub-section */}
       <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/80 space-y-3">
         <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 block">

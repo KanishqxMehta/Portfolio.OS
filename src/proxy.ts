@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const publicApiPaths = ["/api/auth", "/api/contact", "/api/views"];
+// The cron route authenticates its own bearer secret, not a browser session.
+const publicApiPaths = ["/api/auth", "/api/contact", "/api/views", "/api/engagement", "/api/cron/project-images"];
 
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

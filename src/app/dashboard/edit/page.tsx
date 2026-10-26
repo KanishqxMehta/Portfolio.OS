@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useSession } from "next-auth/react";
 import { DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
@@ -29,6 +29,7 @@ import {
   Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DRAFT_DEBOUNCE_MS, draftFingerprint, draftSnapshot, writeLocalDraft } from "@/lib/draft-storage";
 
 const BLOCK_TYPES = [
   { type: "HERO", label: "Hero", description: "Name & bio" },
@@ -115,8 +116,16 @@ export default function EditPortfolioPage() {
     isSaving,
     isLoading,
     loadPortfolio,
+    draftOwnerId,
+    draftRevision,
+    draftStatus,
+    draftMessage,
+    lastDraftSnapshot,
+    saveDraft,
+    discardDraft,
     reorderBlocks,
   } = usePortfolioStore();
+  const currentDraftFingerprint = useMemo(() => draftFingerprint(draftSnapshot({ sections, username, theme, layout })), [sections, username, theme, layout]);
 
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const isDraggingBlock = usePortfolioStore((state) => state.isDraggingBlock); 
@@ -193,8 +202,25 @@ export default function EditPortfolioPage() {
   }, [status, sessionUsername, setUsername]);
 
   useEffect(() => {
-    if (status === "authenticated") void loadPortfolio();
-  }, [status, session?.user?.id, loadPortfolio]);
+    if (status === "authenticated" && session?.user?.id) void loadPortfolio({ userId: session.user.id, username: sessionUsername });
+  }, [status, session?.user?.id, sessionUsername, loadPortfolio]);
+
+  useEffect(() => {
+    if (isLoading || isSaving || !draftOwnerId) return;
+    const state = usePortfolioStore.getState();
+    const snapshot = draftSnapshot(state);
+    if (currentDraftFingerprint === state.lastDraftSnapshot) return;
+    writeLocalDraft(draftOwnerId, snapshot, draftRevision, state.lastDraftSnapshot);
+    if (draftStatus === 'conflict' || draftStatus === 'error' || draftStatus === 'saving') return;
+    const timer = window.setTimeout(() => { void saveDraft(); }, DRAFT_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [currentDraftFingerprint, isLoading, isSaving, draftOwnerId, draftRevision, draftStatus, saveDraft]);
+
+  useEffect(() => {
+    const retry = () => { if (usePortfolioStore.getState().draftStatus === 'error') void saveDraft(); };
+    window.addEventListener('online', retry);
+    return () => window.removeEventListener('online', retry);
+  }, [saveDraft]);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -252,6 +278,8 @@ export default function EditPortfolioPage() {
     // If we finished loading, ignore the first state sync
     if (initialLoadRef.current) {
       initialLoadRef.current = false;
+      const state = usePortfolioStore.getState();
+      if (state.draftStatus === 'restored' || ((state.draftStatus === 'error' || state.draftStatus === 'conflict') && draftFingerprint(draftSnapshot(state)) !== state.lastDraftSnapshot)) setIsDirty(true);
       return;
     }
 
@@ -276,13 +304,13 @@ export default function EditPortfolioPage() {
     const success = await savePortfolio();
     if (success) {
       setIsSuccessOpen(true);
-      setIsDirty(false);
+      const state = usePortfolioStore.getState();
+      setIsDirty(draftFingerprint(draftSnapshot(state)) !== state.lastDraftSnapshot);
     }
   };
 
   const handleDiscard = async () => {
-    await loadPortfolio();
-    setIsDirty(false);
+    if (await discardDraft()) setIsDirty(false);
   };
 
   const publicUrl = `${process.env.NEXT_PUBLIC_BASE_URL}p/${username}`;
@@ -298,6 +326,12 @@ export default function EditPortfolioPage() {
         onSave={handleSave}
         onDiscard={handleDiscard}
       />
+
+      <div className="flex shrink-0 items-center gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-1.5 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+        <span role="status" aria-live="polite">{draftStatus === 'loading' ? 'Recovering draft…' : draftStatus === 'saving' ? 'Saving private draft…' : draftStatus === 'restored' ? 'Draft recovered. Your live portfolio is unchanged.' : draftStatus === 'error' || draftStatus === 'conflict' ? draftMessage : currentDraftFingerprint !== lastDraftSnapshot ? 'Changes pending private autosave…' : 'Draft saved privately · Publish to update your live portfolio'}</span>
+        {draftStatus === 'error' && <Button variant="outline" size="sm" onClick={() => void saveDraft()}>Retry draft save</Button>}
+        {draftStatus === 'conflict' && <Button variant="outline" size="sm" onClick={() => window.location.reload()}>Reload latest draft</Button>}
+      </div>
 
       {/* Main Workspace */}
       <div className="flex flex-1 overflow-hidden relative">

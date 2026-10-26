@@ -35,7 +35,7 @@ export default function PrivacyPage() {
               Privacy Policy
             </h1>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Last updated: June 20, 2026
+              Last updated: October 15, 2026
             </p>
           </div>
 
@@ -61,6 +61,15 @@ export default function PrivacyPage() {
                 </li>
                 <li>
                   <strong className="text-zinc-800 dark:text-zinc-200">Anonymized Analytics:</strong> When a user visits your public portfolio, we log pageview events (timestamp, relative page path, and hashed identifiers) to compile traffic analytics without logging raw IP addresses or personally identifiable information.
+                </li>
+                <li>
+                  <strong className="text-zinc-800 dark:text-zinc-200">Visitor Actions:</strong> We record clicks on published project, social, contact and resume links using timestamps, action types, project identifiers and portfolio-scoped session hashes. These action records do not contain raw IP addresses or destination URLs. Action tracking respects your browser&apos;s Do Not Track setting.
+                </li>
+                <li>
+                  <strong className="text-zinc-800 dark:text-zinc-200">Project Images:</strong> Uploaded screenshots are stored in Supabase Storage and are publicly accessible by URL, including before you publish a portfolio. Only upload images you intend to share publicly.
+                </li>
+                <li>
+                  <strong className="text-zinc-800 dark:text-zinc-200">Private Drafts:</strong> Editor changes are saved separately from your public portfolio. An account-scoped browser recovery copy is eligible for restoration for 30 days; expired copies are removed when next checked. Publishing is always a separate action. Eligible new image uploads may be permanently removed after at least 7 days unused by any saved draft or published portfolio when storage cleanup is enabled.
                 </li>
               </ul>
             </section>

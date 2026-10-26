@@ -33,6 +33,7 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "test-zod*.ts",
     ".worktrees/**",
+    ".agents/**",
   ]),
 ]);
 

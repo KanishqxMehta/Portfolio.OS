@@ -7,6 +7,7 @@ import { format, subDays, subHours, subMonths, isAfter } from "date-fns";
 import { Eye, TrendingUp, Calendar, Globe, UserCheck } from "lucide-react";
 import { AnalyticsChart } from "./ChartWrapper";
 import { DateRangePicker, DateRangeOption } from "./DateRangePicker";
+import { ENGAGEMENT_LABELS, type EngagementAction } from "@/lib/engagement";
 
 interface PageView {
   createdAt: Date;
@@ -28,6 +29,8 @@ interface AnalyticsDashboardClientProps {
   totalViews: number;
   rawPageViews: PageView[];
   rawVisitors: Visitor[];
+  rawActions: Array<{ action: EngagementAction; projectId: string | null; createdAt: Date }>;
+  projectTitles: Record<string, string>;
 }
 
 export function AnalyticsDashboardClient({
@@ -35,11 +38,13 @@ export function AnalyticsDashboardClient({
   totalViews,
   rawPageViews,
   rawVisitors,
+  rawActions,
+  projectTitles,
 }: AnalyticsDashboardClientProps) {
   const [range, setRange] = useState<DateRangeOption>("1m");
 
   // Compute filtered data based on range
-  const { chartData, viewsInSelectedRange, filteredVisitors, rangeLabel } = useMemo(() => {
+  const { chartData, viewsInSelectedRange, filteredVisitors, rangeLabel, actionCounts, topProjects } = useMemo(() => {
     const now = new Date();
     let startDate: Date | null = null;
     let label = "Last 1 Month";
@@ -118,7 +123,7 @@ export function AnalyticsDashboardClient({
       });
 
     // Filter visitors
-    let filteredV = rawVisitors;
+    let filteredV = [...rawVisitors];
     if (startDate) {
       filteredV = rawVisitors.filter((v) => isAfter(new Date(v.lastSeen), startDate));
     }
@@ -126,13 +131,23 @@ export function AnalyticsDashboardClient({
     // Take top 10 recent
     filteredV = filteredV.sort((a, b) => new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime()).slice(0, 10);
 
+    const actionCounts = Object.fromEntries(Object.keys(ENGAGEMENT_LABELS).map((action) => [action, 0])) as Record<EngagementAction, number>;
+    const projects = new Map<string, number>();
+    rawActions.forEach((event) => {
+      if (startDate && !isAfter(new Date(event.createdAt), startDate)) return;
+      if (!(event.action in ENGAGEMENT_LABELS)) return;
+      actionCounts[event.action]++;
+      if (event.projectId) projects.set(event.projectId, (projects.get(event.projectId) ?? 0) + 1);
+    });
     return {
+      actionCounts,
+      topProjects: [...projects.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5),
       chartData: cData,
       viewsInSelectedRange: currentViews,
       filteredVisitors: filteredV,
       rangeLabel: label,
     };
-  }, [range, rawPageViews, rawVisitors]);
+  }, [range, rawPageViews, rawVisitors, rawActions]);
 
   return (
     <div className="space-y-8">
@@ -213,6 +228,16 @@ export function AnalyticsDashboardClient({
           <AnalyticsChart data={chartData} />
         )}
       </div>
+
+      <section aria-label="Visitor actions" className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800/80 dark:bg-zinc-900/40">
+        <h2 className="text-lg font-bold">Visitor actions</h2>
+        <p className="mt-1 text-xs text-zinc-500">{rangeLabel}. Clicks indicate interest—not completed downloads, messages, or unique people. Your own signed-in clicks are excluded.</p>
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {(Object.entries(ENGAGEMENT_LABELS) as Array<[EngagementAction, string]>).map(([key, label]) => <div key={key} className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/50"><p className="text-2xl font-bold" data-testid={`action-${key}`}>{actionCounts[key]}</p><p className="mt-1 text-xs text-zinc-500">{label}</p></div>)}
+        </div>
+        <h3 className="mt-6 text-sm font-semibold">Most-clicked projects</h3>
+        {topProjects.length ? <ol className="mt-3 space-y-3">{topProjects.map(([id, count]) => <li key={id} className="flex items-center justify-between gap-4 text-sm"><span className="truncate">{projectTitles[id] || "Removed project"}</span><span className="shrink-0 text-zinc-500">{count} {count === 1 ? "click" : "clicks"}</span></li>)}</ol> : <p className="mt-3 text-sm text-zinc-500">No project clicks in this period yet. Share your portfolio to start collecting visitor actions.</p>}
+      </section>
 
       {/* Who Viewed Your Portfolio */}
       <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none transition-colors">

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Public Portfolio E2E Suite", () => {
   test("should handle non-existent portfolio gracefully with 404 or error boundary", async ({ page }) => {

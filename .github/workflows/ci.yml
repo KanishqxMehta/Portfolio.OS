@@ -12,7 +12,15 @@ concurrency:
 
 jobs:
   test:
-    name: Lint, typecheck & unit tests
+    name: Migrations, build, unit/integration & browser tests
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/portfolio_verification
+      APP_ENV: development
+      AUTH_SECRET: ci-test-secret
+      AUTH_TRUST_HOST: "true"
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
+      RUN_DB_TESTS: "1"
     runs-on: ubuntu-latest
 
     services:
@@ -21,7 +29,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: portfolio_db
+          POSTGRES_DB: portfolio_verification
         ports:
           - 5432:5432
         options: >-
@@ -37,7 +45,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -45,10 +53,11 @@ jobs:
 
       - name: Setup database
         run: |
-          npx prisma db push --accept-data-loss
           npx prisma generate
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/portfolio_db"
+          npx prisma migrate deploy
+
+      - name: Verify migration/schema agreement
+        run: npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
 
       - name: Lint
         run: npm run lint
@@ -58,13 +67,12 @@ jobs:
 
       - name: Unit tests
         run: npm run test
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/portfolio_db"
 
       - name: Unit test coverage
         run: npm run test:coverage
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/portfolio_db"
+
+      - name: Production build
+        run: npm run build
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
@@ -72,6 +80,14 @@ jobs:
       - name: Run Playwright E2E tests
         run: npx playwright test
         env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/portfolio_db"
-          NEXTAUTH_SECRET: "ci-test-secret"
-          NEXTAUTH_URL: "http://localhost:3000"
+          NODE_ENV: production
+
+      - name: Upload browser test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

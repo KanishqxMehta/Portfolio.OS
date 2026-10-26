@@ -1,8 +1,16 @@
 import { z } from "zod";
 
+export const PublicMediaUrlSchema = z.string().url().max(2048).refine((value) => /^https?:\/\//i.test(value), "Use an HTTP or HTTPS URL");
+export const ProjectScreenshotSchema = z.object({
+  url: PublicMediaUrlSchema,
+  thumbnailUrl: PublicMediaUrlSchema.optional(),
+  caption: z.string().max(200).optional(),
+});
+
 // Per-block schema validations
 export const HeroContentSchema = z.object({
   fullName: z.string().min(1, "Full Name is required"),
+  resumeUrl: PublicMediaUrlSchema.optional().or(z.literal("")),
   bio: z.string().optional().or(z.literal("")),
   phone: z.string()
     .regex(/^[0-9+\-() ]*$/, "Please enter a valid phone number (only numbers, spaces, and + - ( ) are allowed)")
@@ -37,6 +45,16 @@ export const ProjectItemSchema = z.object({
   link: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
   isVisible: z.boolean().default(true).optional(),
   featured: z.boolean().default(false).optional(),
+  sourceUrl: PublicMediaUrlSchema.optional().or(z.literal("")),
+  screenshots: z.array(ProjectScreenshotSchema).max(8).optional(),
+  caseStudyEnabled: z.boolean().optional(),
+  caseStudy: z.object({
+    problem: z.string().max(10000).optional(),
+    role: z.string().max(10000).optional(),
+    approach: z.string().max(10000).optional(),
+    challenges: z.string().max(10000).optional(),
+    results: z.string().max(10000).optional(),
+  }).optional(),
   tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
   year: z.string().regex(/^\d{4}$/).optional().or(z.literal("")),
 });

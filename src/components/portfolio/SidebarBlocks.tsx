@@ -1,7 +1,8 @@
 import React from "react";
 import * as motion from "framer-motion/client";
-import { ArrowRight, Quote, Send, Globe } from "lucide-react";
-import { getVisibleProjects, selectMainPortfolioProjects } from "@/lib/project-collection";
+import { ArrowRight, Quote, Send } from "lucide-react";
+import { getProjectKey, getVisibleProjects, selectMainPortfolioProjects } from "@/lib/project-collection";
+import { ProjectCard } from "./ProjectCard";
 import {
   HeroContent,
   SkillsContent,
@@ -135,34 +136,11 @@ const SidebarProjects = ({ data, projectArchiveHref }: { data: ProjectsContent; 
       <motion.h2 variants={fadeInUp} className="text-2xl font-bold text-[var(--p-fg)] tracking-tight mb-10">
         Selected Work
       </motion.h2>
-      <div className="grid grid-cols-1 gap-8">
-        {items.map((project: any, i: number) => (
-          <motion.div
-            key={i}
-            variants={fadeInUp}
-            className="theme-card group relative p-6 sm:p-8 bg-[var(--p-bg-card)] border-[var(--p-border)] hover:bg-[var(--p-bg-secondary)] transition-all duration-300 hover:border-[var(--p-primary)] flex flex-col"
-          >
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-[var(--p-border)] group-hover:bg-[var(--p-primary)] rounded-r-md transition-colors duration-300" />
-            
-            {project.link && (
-              <a
-                href={project.link}
-                target="_blank"
-                rel="noreferrer"
-                className="theme-card absolute top-5 sm:top-6 right-5 sm:right-6 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold bg-[var(--p-bg-secondary)] border border-[var(--p-border)] text-[var(--p-fg)] hover:text-[var(--p-primary)] hover:border-[var(--p-primary)] transition-all duration-300 shadow-sm z-10"
-              >
-                <Globe className="w-3.5 h-3.5" /> <span className="hidden sm:inline">View Project</span><span className="sm:hidden">View</span>
-              </a>
-            )}
-
-            <h3 className="text-xl sm:text-2xl font-bold text-[var(--p-fg)] mb-3 group-hover:text-[var(--p-primary)] transition-colors pr-20 sm:pr-32">
-              {project.title || "Untitled Project"}
-            </h3>
-            <p className="text-[var(--p-fg-muted)] text-sm leading-relaxed mb-0 whitespace-pre-wrap">
-              {project.description || "Project description will appear here."}
-            </p>
-          </motion.div>
-        ))}
+      <div className="grid grid-cols-1 items-start gap-8">
+        {items.map((project, i) => {
+          const projectId = getProjectKey(project, data.items.indexOf(project));
+          return <ProjectCard key={projectId} project={project} projectId={projectId} index={i} caseStudyHref={projectArchiveHref ? `${projectArchiveHref}/${encodeURIComponent(projectId)}` : undefined} />;
+        })}
         {items.length === 0 && (
           <div className="py-12 rounded-2xl border border-dashed border-[var(--p-border)] text-center text-[var(--p-fg-muted)]">
             Add projects in the editor to see them here.

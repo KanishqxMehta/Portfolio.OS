@@ -22,7 +22,7 @@ export function AnalyticsChart({ data }: { data: any[] }) {
 
   return (
     <div className="w-full h-[400px]">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={400} minWidth={0}>
         <AreaChart
           data={data}
           margin={{ top: 10, right: 10, left: -20, bottom: 0 }}

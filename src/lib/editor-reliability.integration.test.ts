@@ -1,0 +1,120 @@
+import { createHash } from 'node:crypto';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+const session = vi.hoisted(() => ({ userId: '' }));
+vi.mock('@/lib/auth', () => ({ auth: async () => session.userId ? { user: { id: session.userId } } : null }));
+vi.mock('@/lib/persistent-rate-limit', () => ({ checkPersistentRateLimit: async () => ({ allowed: true }) }));
+import { pool } from './db';
+import { GET as getDraft, PUT as putDraft } from '@/app/api/portfolio-draft/route';
+import { POST as publish } from '@/app/api/portfolios/route';
+import { GET as cron } from '@/app/api/cron/project-images/route';
+import { cleanupProjectUploads } from './project-upload-cleanup';
+import { assertUploadsAvailable, withPortfolioWrite } from './portfolio-write';
+
+const enabled = process.env.RUN_DB_TESTS === '1' && process.env.DATABASE_URL?.endsWith('/portfolio_verification');
+describe.skipIf(!enabled)('draft and managed upload lifecycle in PostgreSQL', () => {
+  const owner = crypto.randomUUID();
+  const other = crypto.randomUUID();
+  const slug = `r-${Date.now()}`;
+  const base = `https://${owner}.example.test`;
+  const snapshot = { username: slug, theme: 'classic', layout: 'classic', sections: [{ id: 'hero', type: 'HERO', title: 'Hero', isVisible: true, content: { fullName: 'Draft Owner' } }] };
+  const requestDraft = (revision: number, value = snapshot) => new Request('http://localhost/api/portfolio-draft', { method: 'PUT', headers: { 'Content-Type': 'application/json', origin: 'http://localhost' }, body: JSON.stringify({ revision, snapshot: value }) });
+  const requestPublish = (revision: number) => new Request('http://localhost/api/portfolios', { method: 'POST', body: JSON.stringify({ username: slug, content: { theme: 'classic', layout: 'classic', sections: snapshot.sections }, draftRevision: revision }) });
+  const upload = async (ageDays: number, pathsOverride?: string[]) => {
+    const id = crypto.randomUUID();
+    const folder = createHash('sha256').update(owner).digest('hex');
+    const paths = pathsOverride || [`${folder}/${id}.png`, `${folder}/${id}-preview.webp`];
+    const urls = paths.map((path) => `${base}/storage/v1/object/public/project-images/${path}`);
+    await pool.query(`INSERT INTO "ProjectUpload" (id, "ownerId", "storageBase", bucket, paths, urls, "unusedSince") VALUES ($1,$2,$3,'project-images',$4,$5,NOW() - $6 * INTERVAL '1 day')`, [id, owner, base, paths, urls, ageDays]);
+    return { id, paths, urls };
+  };
+  beforeAll(async () => {
+    for (const [id, name] of [[owner, slug], [other, `${slug}-o`]]) await pool.query('INSERT INTO "User" (id, email, username, "updatedAt") VALUES ($1,$2,$3,NOW())', [id, `${id}@example.test`, name]);
+    session.userId = owner;
+  });
+  afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); session.userId = owner; });
+  afterAll(async () => {
+    await pool.query('DELETE FROM "ProjectUpload" WHERE "ownerId" = $1', [owner]);
+    await pool.query('DELETE FROM "User" WHERE id = ANY($1::text[])', [[owner, other]]);
+    await pool.end();
+  });
+  it('saves privately, rejects stale writers, and publishes only on explicit request', async () => {
+    expect((await getDraft()).headers.get('cache-control')).toContain('no-store');
+    expect((await putDraft(requestDraft(0))).status).toBe(200);
+    expect((await pool.query('SELECT id FROM "Portfolio" WHERE "userId"=$1', [owner])).rowCount).toBe(0);
+    expect((await putDraft(requestDraft(0))).status).toBe(409);
+    expect((await publish(requestPublish(0))).status).toBe(409);
+    const result = await publish(requestPublish(1));
+    expect(result.status).toBe(200);
+    expect((await result.json()).draftRevision).toBe(2);
+    expect((await putDraft(requestDraft(1))).status).toBe(409);
+    session.userId = other;
+    expect((await (await getDraft()).json()).snapshot).toBeNull();
+    session.userId = '';
+    expect((await putDraft(requestDraft(0))).status).toBe(401);
+  });
+  it('keeps incomplete input without relaxing published validation', async () => {
+    const incomplete = { ...snapshot, sections: [{ ...snapshot.sections[0], content: { fullName: '' } }] };
+    expect((await putDraft(requestDraft(2, incomplete))).status).toBe(200);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const invalidPublish = new Request('http://localhost/api/portfolios', { method: 'POST', body: JSON.stringify({ username: slug, content: { theme: incomplete.theme, layout: incomplete.layout, sections: incomplete.sections }, draftRevision: 3 }) });
+    expect((await publish(invalidPublish)).status).toBe(400);
+    const published = await pool.query('SELECT content FROM "Portfolio" WHERE "userId"=$1', [owner]);
+    expect(published.rows[0].content.sections[0].content.fullName).toBe('Draft Owner');
+    expect((await putDraft(new Request('http://localhost/api/portfolio-draft', { method: 'PUT', headers: { origin: 'https://evil.test' }, body: '{}' }))).status).toBe(403);
+  });
+  it('protects published/draft references across owners, honors grace, and supports dry-run', async () => {
+    vi.stubEnv('SUPABASE_URL', base); vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-only');
+    const old = await upload(8);
+    const live = await upload(8);
+    const draft = await upload(8);
+    const young = await upload(1);
+    await pool.query('UPDATE "Portfolio" SET content=$1 WHERE "userId"=$2', [{ sections: [{ image: live.urls[0] }] }, owner]);
+    await pool.query('INSERT INTO "PortfolioDraft" ("userId",snapshot) VALUES ($1,$2)', [other, { nested: { thumbnail: draft.urls[1] } }]);
+    const remote = vi.fn().mockResolvedValue(new Response('[]', { status: 200 }));
+    vi.stubGlobal('fetch', remote);
+    const preview = await cleanupProjectUploads(true);
+    expect(preview).toMatchObject({ dryRun: true, eligible: 1, deleted: 0 });
+    expect(remote).not.toHaveBeenCalled();
+    const result = await cleanupProjectUploads(false);
+    expect(result).toMatchObject({ deleted: 1, failed: 0 });
+    expect(JSON.parse(remote.mock.calls[0][1].body).prefixes).toEqual(old.paths);
+    const rows = await pool.query('SELECT id,status,"unusedSince" FROM "ProjectUpload" WHERE id = ANY($1::text[])', [[old.id, live.id, draft.id, young.id]]);
+    expect(rows.rows.find((row) => row.id === old.id).status).toBe('deleted');
+    for (const id of [live.id, draft.id]) expect(rows.rows.find((row) => row.id === id).unusedSince).toBeNull();
+    expect(rows.rows.find((row) => row.id === young.id).status).toBe('active');
+    await expect(withPortfolioWrite((client) => assertUploadsAvailable(client, { url: old.urls[0] }))).rejects.toThrow('upload it again');
+    await pool.query('UPDATE "PortfolioDraft" SET snapshot=\'{}\' WHERE "userId"=$1', [other]);
+    await cleanupProjectUploads(false);
+    const grace = (await pool.query('SELECT "unusedSince" FROM "ProjectUpload" WHERE id=$1', [draft.id])).rows[0].unusedSince;
+    expect(new Date(grace).getTime()).toBeGreaterThan(Date.now() - 10_000);
+  });
+  it('keeps a failed deletion tombstoned and retries it safely', async () => {
+    vi.stubEnv('SUPABASE_URL', base); vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-only');
+    const old = await upload(8);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const remote = vi.fn().mockResolvedValue(new Response('temporary failure', { status: 503 })); vi.stubGlobal('fetch', remote);
+    expect((await cleanupProjectUploads(false)).failed).toBe(1);
+    expect((await pool.query('SELECT status FROM "ProjectUpload" WHERE id=$1', [old.id])).rows[0].status).toBe('deleting');
+    await expect(withPortfolioWrite((client) => assertUploadsAvailable(client, { url: old.urls[1] }))).rejects.toThrow();
+    remote.mockResolvedValue(new Response('[]', { status: 200 }));
+    expect((await cleanupProjectUploads(false)).deleted).toBe(1);
+  });
+  it('fails closed for missing/incorrect cron secrets and defaults to dry-run', async () => {
+    vi.stubEnv('CRON_SECRET', '');
+    expect((await cron(new Request('http://localhost/api/cron/project-images'))).status).toBe(503);
+    vi.stubEnv('CRON_SECRET', 'test-only-secret');
+    expect((await cron(new Request('http://localhost/api/cron/project-images'))).status).toBe(401);
+    vi.stubEnv('PROJECT_UPLOAD_CLEANUP_ENABLED', 'false');
+    const result = await cron(new Request('http://localhost/api/cron/project-images', { headers: { authorization: 'Bearer test-only-secret' } }));
+    expect(result.status).toBe(200);
+    expect((await result.json()).dryRun).toBe(true);
+  });
+  it('never sends broad or malformed object paths to storage', async () => {
+    vi.stubEnv('SUPABASE_URL', base); vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-only');
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await upload(8, ['/', '../other-user']);
+    const remote = vi.fn(); vi.stubGlobal('fetch', remote);
+    expect((await cleanupProjectUploads(false)).failed).toBe(1);
+    expect(remote).not.toHaveBeenCalled();
+  });
+});
