@@ -660,7 +660,13 @@ export default function EditPortfolioPage() {
                 onApplyChanges={applyDiffChanges}
               />
             ) : (
-              <PortfolioRenderer sections={sections} theme={theme} layout={layout} />
+              <PortfolioRenderer
+                sections={sections}
+                theme={theme}
+                layout={layout}
+                projectArchiveHref={username ? `/p/${encodeURIComponent(username)}/projects` : "/p/me/projects"}
+                isPreview={true}
+              />
             )}
 
               {sections.length === 0 && !isLoading && (

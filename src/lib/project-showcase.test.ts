@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ProjectItemSchema, HeroContentSchema } from "./validations/portfolio";
 import { getEngagementTargets } from "./engagement";
 import { getProjectKey, hasCaseStudyContent, isCaseStudyPublished } from "./project-collection";
@@ -9,6 +9,11 @@ describe("project showcase compatibility and validation", () => {
   it("keeps existing project and hero content valid", () => {
     expect(ProjectItemSchema.safeParse(oldProject).success).toBe(true);
     expect(HeroContentSchema.safeParse({ fullName: "Example" }).success).toBe(true);
+    expect(ProjectItemSchema.parse(oldProject).isMobile).toBe(false);
+  });
+  it("supports isMobile flag for mobile app projects", () => {
+    const mobileProject = { ...oldProject, isMobile: true };
+    expect(ProjectItemSchema.parse(mobileProject).isMobile).toBe(true);
   });
   it("retains screenshots, source code and case-study content", () => {
     const content = { ...oldProject, sourceUrl: "https://example.test/code", screenshots: [{ url: "https://example.test/image.png", caption: "Dashboard" }], caseStudy: { problem: "A problem", results: "A result" } };
@@ -70,5 +75,56 @@ describe("published engagement targets", () => {
       { type: "CONTACT_FORM", content: { emailTarget: "hello@example.test" } },
     ] }, "jane");
     expect(targets.map((target) => target.action)).toEqual(["social", "resume", "contact", "contact"]);
+  });
+});
+
+describe("draft preview resolution", () => {
+  it("resolves draft snapshot when isPreview is true and user is authenticated owner", async () => {
+    const { getPortfolioContent } = await import("./public-portfolio");
+    const { pool } = await import("./db");
+    const draftSnapshot = {
+      sections: [{ type: "PROJECTS", content: { items: [{ title: "Draft Project", isMobile: true }] } }],
+      theme: "classic",
+    };
+    const querySpy = vi.spyOn(pool, "query").mockResolvedValueOnce({
+      rows: [{ snapshot: draftSnapshot }],
+      rowCount: 1,
+      command: "SELECT",
+      oid: 0,
+      fields: [],
+    } as any);
+
+    const result = await getPortfolioContent({ slug: "testuser", isPreview: true, userId: "user-123" });
+    expect(result.isDraft).toBe(true);
+    expect(result.content).toEqual(draftSnapshot);
+    expect(querySpy).toHaveBeenCalledWith(
+      expect.stringContaining('PortfolioDraft'),
+      ["user-123", "testuser"]
+    );
+    querySpy.mockRestore();
+  });
+
+  it("falls back to public portfolio when isPreview is false or userId is absent", async () => {
+    const { getPortfolioContent } = await import("./public-portfolio");
+    const { pool } = await import("./db");
+    const publicContent = {
+      sections: [{ type: "PROJECTS", content: { items: [{ title: "Published Project" }] } }],
+    };
+    const querySpy = vi.spyOn(pool, "query").mockResolvedValueOnce({
+      rows: [{ content: publicContent }],
+      rowCount: 1,
+      command: "SELECT",
+      oid: 0,
+      fields: [],
+    } as any);
+
+    const result = await getPortfolioContent({ slug: "testuser", isPreview: false });
+    expect(result.isDraft).toBe(false);
+    expect(result.content).toEqual(publicContent);
+    expect(querySpy).toHaveBeenCalledWith(
+      expect.stringContaining('SELECT content FROM "Portfolio"'),
+      ["testuser"]
+    );
+    querySpy.mockRestore();
   });
 });

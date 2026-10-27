@@ -245,7 +245,21 @@ function ProjectItemUI({
           </div>}
         </div>
       </details>
-      <div className="space-y-2 border-t border-zinc-200 pt-3 dark:border-zinc-700">
+      <div className="space-y-3 border-t border-zinc-200 pt-3 dark:border-zinc-700">
+        <label className="flex cursor-pointer items-center justify-between gap-3 text-xs font-semibold">
+          <div className="space-y-0.5">
+            <span>Mobile App (iOS / Android)</span>
+            <p className="text-[10px] font-normal text-zinc-500">Display screenshots inside an authentic iPhone device frame</p>
+          </div>
+          <input
+            type="checkbox"
+            role="switch"
+            aria-label="Mobile App (iOS / Android)"
+            checked={Boolean(item.isMobile)}
+            onChange={(event) => updateProject?.(idx, { isMobile: event.target.checked })}
+            className="h-4 w-4 accent-violet-600"
+          />
+        </label>
         <label className="flex cursor-pointer items-center justify-between gap-3 text-xs font-semibold">
           <span>Enable case study</span>
           <input type="checkbox" role="switch" aria-label="Enable case study" checked={caseStudyEnabled} onChange={(event) => updateProject?.(idx, { caseStudyEnabled: event.target.checked })} className="h-4 w-4 accent-violet-600" />

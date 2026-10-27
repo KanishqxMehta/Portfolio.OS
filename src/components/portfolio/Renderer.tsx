@@ -176,7 +176,7 @@ const Hero = ({ data }: { data: HeroContent }) => {
 );
 };
 
-const Projects = ({ data, projectArchiveHref }: { data: ProjectsContent; projectArchiveHref?: string }) => {
+const Projects = ({ data, projectArchiveHref, isPreview }: { data: ProjectsContent; projectArchiveHref?: string; isPreview?: boolean }) => {
   const allProjects = getVisibleProjects(data.items);
   const items = selectMainPortfolioProjects(data.items);
   const hasMoreProjects = allProjects.length > items.length;
@@ -203,7 +203,16 @@ const Projects = ({ data, projectArchiveHref }: { data: ProjectsContent; project
         <div className={`grid grid-cols-1 items-start gap-8 ${items.length === 1 ? "md:grid-cols-1 md:max-w-2xl md:mx-auto" : "md:grid-cols-2"}`}>
           {items.map((item, i) => {
             const projectId = getProjectKey(item, data.items.indexOf(item));
-            return <ProjectCard key={projectId} project={item} projectId={projectId} index={i} caseStudyHref={projectArchiveHref ? `${projectArchiveHref}/${encodeURIComponent(projectId)}` : undefined} />;
+            return (
+              <ProjectCard
+                key={projectId}
+                project={item}
+                projectId={projectId}
+                index={i}
+                caseStudyHref={projectArchiveHref ? `${projectArchiveHref}/${encodeURIComponent(projectId)}` : undefined}
+                isPreview={isPreview}
+              />
+            );
           })}
 
           {items.length === 0 && (
@@ -217,7 +226,7 @@ const Projects = ({ data, projectArchiveHref }: { data: ProjectsContent; project
           <motion.div variants={fadeInUp} className="mt-10 flex justify-center">
             {projectArchiveHref ? (
               <a
-                href={projectArchiveHref}
+                href={isPreview ? `${projectArchiveHref}${projectArchiveHref.includes('?') ? '&' : '?'}preview=true` : projectArchiveHref}
                 className="theme-pill inline-flex items-center gap-2 border-[var(--p-border)] px-5 py-2.5 text-sm font-semibold text-[var(--p-fg)] transition-[transform,background-color] duration-150 ease-out hover:border-[var(--p-primary)] hover:text-[var(--p-primary)] active:scale-[0.98]"
               >
                 View all {allProjects.length} projects
@@ -428,6 +437,7 @@ const ContactForm = ({ data }: { data: ContactFormContent }) => {
 type PortfolioBlockProps = {
   data: any;
   projectArchiveHref?: string;
+  isPreview?: boolean;
 };
 
 const BlockMap: Record<string, React.FC<PortfolioBlockProps>> = {
@@ -465,7 +475,7 @@ const InkSplashes = () => (
   </div>
 );
 
-const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles, projectArchiveHref }: { sections: Section[], theme: string, baseStyle: React.CSSProperties, sharedStyles: React.ReactNode, projectArchiveHref?: string }) => {
+const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles, projectArchiveHref, isPreview }: { sections: Section[], theme: string, baseStyle: React.CSSProperties, sharedStyles: React.ReactNode, projectArchiveHref?: string, isPreview?: boolean }) => {
   const [history, setHistory] = useState<{type: 'input' | 'output' | 'component', content: any}[]>([
     { type: 'output', content: 'Welcome to Portfolio OS v1.0.0\nType "help" for a list of available commands.' }
   ]);
@@ -566,7 +576,7 @@ const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles, projectArchi
               const contentKey = Array.isArray(items) ? items.length : 0;
               return (
                 <div key={`${i}-v${contentKey}`} className="mb-6 ml-1 sm:ml-4 pl-3 sm:pl-4 border-l-2 border-[var(--p-primary)]/50 py-2 relative overflow-hidden">
-                   <Component data={latestSection.content} projectArchiveHref={projectArchiveHref} />
+                   <Component data={latestSection.content} projectArchiveHref={projectArchiveHref} isPreview={isPreview} />
                 </div>
               );
             }
@@ -593,7 +603,7 @@ const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles, projectArchi
   );
 };
 
-export const PortfolioRenderer = ({ sections, theme = "classic", layout = "classic", projectArchiveHref }: { sections: Section[], theme?: string, layout?: string, projectArchiveHref?: string }) => {
+export const PortfolioRenderer = ({ sections, theme = "classic", layout = "classic", projectArchiveHref, isPreview = false }: { sections: Section[], theme?: string, layout?: string, projectArchiveHref?: string, isPreview?: boolean }) => {
   const activeTheme = THEMES[theme] || THEMES["classic"];
   
   // Reorder sections so that CONTACT_FORM is always rendered at the very bottom
@@ -717,7 +727,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
             const colSpan = isFullWidth ? "lg:col-span-2" : "lg:col-span-1";
             return (
               <div key={`${section.id}-v${contentKey}`} className={`${colSpan} theme-card theme-bg-secondary flex flex-col justify-start overflow-hidden`}>
-                <Component data={section.content} projectArchiveHref={projectArchiveHref} />
+                <Component data={section.content} projectArchiveHref={projectArchiveHref} isPreview={isPreview} />
               </div>
             );
           })}
@@ -802,7 +812,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
                const contentKey = Array.isArray(items) ? items.length : 0;
                return (
                  <div key={`${s.id}-v${contentKey}`} className="w-full">
-                    <Component data={s.content} projectArchiveHref={projectArchiveHref} />
+                    <Component data={s.content} projectArchiveHref={projectArchiveHref} isPreview={isPreview} />
                  </div>
                );
              })}
@@ -813,7 +823,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
   }
 
   if (layout === "terminal") {
-    return <TerminalLayout sections={orderedSections} theme={theme} baseStyle={baseStyle} sharedStyles={sharedStyles} projectArchiveHref={projectArchiveHref} />;
+    return <TerminalLayout sections={orderedSections} theme={theme} baseStyle={baseStyle} sharedStyles={sharedStyles} projectArchiveHref={projectArchiveHref} isPreview={isPreview} />;
   }
 
   // Classic Layout (Default)
@@ -885,7 +895,7 @@ export const PortfolioRenderer = ({ sections, theme = "classic", layout = "class
           if (!Component) return null;
           const items = (section.content as any)?.items;
           const contentKey = Array.isArray(items) ? items.length : 0;
-          return <Component key={`${section.id}-v${contentKey}`} data={section.content} projectArchiveHref={projectArchiveHref} />;
+          return <Component key={`${section.id}-v${contentKey}`} data={section.content} projectArchiveHref={projectArchiveHref} isPreview={isPreview} />;
         })}
       </div>
     </div>

@@ -121,7 +121,7 @@ const SidebarExperience = ({ data }: { data: ExperienceContent }) => {
 };
 
 /* ─── PROJECTS ─── */
-const SidebarProjects = ({ data, projectArchiveHref }: { data: ProjectsContent; projectArchiveHref?: string }) => {
+const SidebarProjects = ({ data, projectArchiveHref, isPreview }: { data: ProjectsContent; projectArchiveHref?: string; isPreview?: boolean }) => {
   const allProjects = getVisibleProjects(data.items);
   const items = selectMainPortfolioProjects(data.items);
   const hasMoreProjects = allProjects.length > items.length;
@@ -139,7 +139,16 @@ const SidebarProjects = ({ data, projectArchiveHref }: { data: ProjectsContent; 
       <div className="grid grid-cols-1 items-start gap-8">
         {items.map((project, i) => {
           const projectId = getProjectKey(project, data.items.indexOf(project));
-          return <ProjectCard key={projectId} project={project} projectId={projectId} index={i} caseStudyHref={projectArchiveHref ? `${projectArchiveHref}/${encodeURIComponent(projectId)}` : undefined} />;
+          return (
+            <ProjectCard
+              key={projectId}
+              project={project}
+              projectId={projectId}
+              index={i}
+              caseStudyHref={projectArchiveHref ? `${projectArchiveHref}/${encodeURIComponent(projectId)}` : undefined}
+              isPreview={isPreview}
+            />
+          );
         })}
         {items.length === 0 && (
           <div className="py-12 rounded-2xl border border-dashed border-[var(--p-border)] text-center text-[var(--p-fg-muted)]">
@@ -151,7 +160,7 @@ const SidebarProjects = ({ data, projectArchiveHref }: { data: ProjectsContent; 
         <div className="mt-8 flex justify-center">
           {projectArchiveHref ? (
             <a
-              href={projectArchiveHref}
+              href={isPreview ? `${projectArchiveHref}${projectArchiveHref.includes('?') ? '&' : '?'}preview=true` : projectArchiveHref}
               className="theme-pill inline-flex items-center gap-2 border-[var(--p-border)] px-4 py-2 text-xs font-semibold text-[var(--p-fg)] transition-[transform,background-color] duration-150 ease-out hover:border-[var(--p-primary)] hover:text-[var(--p-primary)] active:scale-[0.98]"
             >
               View all {allProjects.length} projects

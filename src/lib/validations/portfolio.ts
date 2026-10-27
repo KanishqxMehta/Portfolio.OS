@@ -45,6 +45,7 @@ export const ProjectItemSchema = z.object({
   link: z.string().url("Please enter a valid URL (e.g., https://...)").optional().or(z.literal("")),
   isVisible: z.boolean().default(true).optional(),
   featured: z.boolean().default(false).optional(),
+  isMobile: z.boolean().default(false).optional(),
   sourceUrl: PublicMediaUrlSchema.optional().or(z.literal("")),
   screenshots: z.array(ProjectScreenshotSchema).max(8).optional(),
   caseStudyEnabled: z.boolean().optional(),

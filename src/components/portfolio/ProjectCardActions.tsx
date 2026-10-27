@@ -14,7 +14,7 @@ interface Props {
  */
 export function ProjectCardActions({ title, link, projectId, index }: Props) {
   const controlClass =
-    "flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-zinc-950/85 text-white shadow-md backdrop-blur-md transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+    "flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-zinc-950 text-white shadow-md transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
 
   return (
     <>
@@ -48,7 +48,7 @@ export function ProjectCardActions({ title, link, projectId, index }: Props) {
 
         <span
           aria-label={`Project ${index + 1}`}
-          className="rounded-xl border border-white/20 bg-zinc-950/85 px-3 py-2 font-mono text-xs font-semibold text-white shadow-md backdrop-blur-md"
+          className="rounded-xl border border-white/20 bg-zinc-950 px-3 py-2 font-mono text-xs font-semibold text-white shadow-md"
         >
           {String(index + 1).padStart(2, "0")}
         </span>
