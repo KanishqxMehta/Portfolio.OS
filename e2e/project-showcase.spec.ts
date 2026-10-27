@@ -51,7 +51,7 @@ test.describe("project showcase and visitor actions", () => {
       const cover = page.locator("[data-project-cover]").first();
       const frame = await cover.boundingBox();
       expect(frame).not.toBeNull();
-      expect(frame!.width / frame!.height).toBeCloseTo(1.6, 1);
+      expect(frame!.width / frame!.height).toBeCloseTo(4 / 3.4, 1);
       const edge = await cover.evaluate((element) => {
         const card = element.closest(".theme-card")!;
         const frame = element.getBoundingClientRect();
@@ -60,8 +60,8 @@ test.describe("project showcase and visitor actions", () => {
       });
       expect(edge.left).toBeLessThanOrEqual(2);
       expect(edge.top).toBeLessThanOrEqual(2);
-      await expect(page.getByRole("link", { name: "View case study" })).toHaveAttribute("href", `/p/${slug}/projects/project-one`);
-      await expect(page.getByRole("link", { name: "View case study" })).toHaveCount(1);
+      await expect(page.getByRole("link", { name: "View case study" }).first()).toHaveAttribute("href", `/p/${slug}/projects/project-one`);
+      await expect(page.getByRole("link", { name: "View case study" })).toHaveCount(3);
       await expect(page.getByLabel("Project details").first()).toContainText("2026");
       await expect(page.getByLabel("Project details").first()).toContainText("PostgreSQL");
       await expect(page.getByText("Hidden project", { exact: true })).toHaveCount(0);
@@ -71,8 +71,9 @@ test.describe("project showcase and visitor actions", () => {
     await page.waitForLoadState("networkidle");
     await expect.poll(() => page.evaluate(() => sessionStorage.getItem("portfolio_action_session"))).not.toBeNull();
     await page.mouse.wheel(0, 800);
-    await expect(page.getByRole("link", { name: "View case study" })).toBeInViewport();
-    await page.getByRole("link", { name: "View case study" }).click();
+    await page.locator('[data-project-card][data-project-id="project-one"]').hover();
+    await expect(page.getByRole("link", { name: "View case study" }).first()).toBeInViewport();
+    await page.getByRole("link", { name: "View case study" }).first().click();
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole("heading", { level: 1, name: "Showcase dashboard" })).toBeVisible();
     // keepalive responses can outlive the old document during hard navigation;
@@ -120,7 +121,8 @@ test.describe("project showcase and visitor actions", () => {
     expect(await hidden.text()).toContain("NEXT_HTTP_ERROR_FALLBACK;404");
     for (const projectId of ["empty", "disabled"]) {
       const unavailable = await request.get(`/p/${slug}/projects/${projectId}`);
-      expect(await unavailable.text()).toContain("NEXT_HTTP_ERROR_FALLBACK;404");
+      expect(unavailable.status()).toBe(200);
+      expect(await unavailable.text()).toContain("Case study has not been published or updated yet");
       expect((await request.post("/api/engagement", { data: { ...event, id: crypto.randomUUID(), action: "project_open", projectId } })).status()).toBe(400);
     }
     await pool.query('UPDATE "Portfolio" SET content = $1 WHERE id = $2', [content("classic", false), owner]);
@@ -217,7 +219,8 @@ test.describe("project showcase and visitor actions", () => {
     const portrait = content();
     const longDescription = "A long project description with useful context. ".repeat(50);
     portrait.sections[1].content.items![0].description = longDescription;
-    const portraitProject = portrait.sections[1].content.items![0] as typeof project;
+    const portraitProject = portrait.sections[1].content.items![0] as typeof project & { isMobile?: boolean };
+    portraitProject.isMobile = true;
     portraitProject.screenshots = [{ url: "https://example.test/mobile.png", caption: "Mobile application" }];
     await pool.query('UPDATE "Portfolio" SET content = $1 WHERE id = $2', [portrait, owner]);
     await page.route("https://example.test/mobile.png", (route) => route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844"><rect width="390" height="844" rx="32" fill="#202031"/><text x="28" y="76" fill="white" font-family="sans-serif" font-size="30">My mobile app</text><rect x="24" y="120" width="342" height="200" rx="16" fill="#7c3aed"/><rect x="24" y="350" width="342" height="420" rx="16" fill="#34344a"/><text x="30" y="820" fill="white" font-size="20">Bottom navigation</text></svg>' }));
@@ -226,8 +229,10 @@ test.describe("project showcase and visitor actions", () => {
     const img = page.getByRole("img", { name: "Mobile application" });
     await page.mouse.wheel(0, 800);
     await expect(img).toBeInViewport();
-    await expect(page.locator('[data-project-card][data-project-id="project-one"]')).toHaveCSS("opacity", "1");
-    await expect(img).toHaveCSS("object-fit", "contain");
+    const card = page.locator('[data-project-card][data-project-id="project-one"]');
+    await expect(card).toHaveCSS("opacity", "1");
+    await card.hover();
+    await expect(img).toHaveCSS("object-fit", "cover");
     const description = page.getByText(longDescription, { exact: true });
     await expect(description).toHaveCSS("-webkit-line-clamp", "3");
     expect(await description.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
@@ -265,14 +270,14 @@ test.describe("project showcase and visitor actions", () => {
         return {
           photo: photoCard.querySelector("[data-project-cover]")!.getBoundingClientRect().height,
           fallback: textCard.querySelector("[data-project-fallback]")!.getBoundingClientRect().height,
-          photoTitle: photoCard.querySelector("h3")!.getBoundingClientRect().top,
-          fallbackTitle: textCard.querySelector("h3")!.getBoundingClientRect().top,
+          photoPanelBottom: photoCard.querySelector("[data-project-content]")!.getBoundingClientRect().bottom,
+          fallbackPanelBottom: textCard.querySelector("[data-project-content]")!.getBoundingClientRect().bottom,
           photoCardHeight: photoCard.getBoundingClientRect().height,
           fallbackCardHeight: textCard.getBoundingClientRect().height,
         };
       });
       expect(sizes.fallback).toBeCloseTo(sizes.photo, 0);
-      expect(sizes.fallbackTitle).toBeCloseTo(sizes.photoTitle, 0);
+      expect(sizes.fallbackPanelBottom).toBeCloseTo(sizes.photoPanelBottom, 0);
       expect(sizes.fallbackCardHeight).toBeCloseTo(sizes.photoCardHeight, 0);
       await page.screenshot({ path: testInfo.outputPath(`cover-${tone === "#fff" ? "light" : tone === "#111" ? "dark" : "mixed"}.png`), fullPage: true });
     }
@@ -306,8 +311,8 @@ test.describe("project showcase and visitor actions", () => {
         controlRadius: getComputedStyle(control).borderRadius,
         numberRadius: getComputedStyle(num).borderRadius,
         coverRatio: Math.round(100 * cover.getBoundingClientRect().width / cover.getBoundingClientRect().height) / 100,
-        titleInset: Math.round(heading.getBoundingClientRect().top - cover.getBoundingClientRect().bottom),
-        aligned: Math.abs(heading.getBoundingClientRect().left - control.getBoundingClientRect().left) < 2,
+        panelBottomInset: Math.round(cover.getBoundingClientRect().bottom - body.getBoundingClientRect().bottom),
+        aligned: Math.abs(body.getBoundingClientRect().left - num.getBoundingClientRect().left) < 4,
       };
     }));
     for (const width of [1280, 390]) {

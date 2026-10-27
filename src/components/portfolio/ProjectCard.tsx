@@ -5,7 +5,6 @@ import * as motion from "framer-motion/client";
 import Image from "next/image";
 import { ArrowRight, ChevronLeft, ChevronRight, Code2, Loader2 } from "lucide-react";
 import type { ProjectsContent } from "@/lib/validations/portfolio";
-import { isCaseStudyPublished } from "@/lib/project-collection";
 import { cn } from "@/lib/utils";
 import { ProjectCardActions } from "./ProjectCardActions";
 import { ProjectMetadata } from "./ProjectMetadata";
@@ -30,17 +29,20 @@ interface Props {
 export function ProjectCard({ project, projectId, index, caseStudyHref, headingLevel = 3, isPreview = false }: Props) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [loadedUrls, setLoadedUrls] = useState<Record<string, boolean>>({});
+  const [failedUrls, setFailedUrls] = useState<Record<string, boolean>>({});
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const isTargetPreview = isPreview || Boolean(caseStudyHref?.includes("preview=true"));
-  const targetCaseStudyHref = caseStudyHref
-    ? isTargetPreview && !caseStudyHref.includes("preview=true")
-      ? `${caseStudyHref}${caseStudyHref.includes("?") ? "&" : "?"}preview=true`
-      : caseStudyHref
-    : undefined;
+  const isTargetPreview = isPreview || !caseStudyHref || Boolean(caseStudyHref?.includes("preview=true"));
+  const baseCaseStudyHref = caseStudyHref || `/p/me/projects/${encodeURIComponent(projectId)}`;
+  const targetCaseStudyHref =
+    isTargetPreview && !baseCaseStudyHref.includes("preview=true")
+      ? `${baseCaseStudyHref}${baseCaseStudyHref.includes("?") ? "&" : "?"}preview=true`
+      : baseCaseStudyHref;
 
   const validScreenshots = (project.screenshots ?? []).filter((shot) => {
     if (!shot?.url) return false;
+    const renderUrl = shot.thumbnailUrl || shot.url;
+    if (failedUrls[renderUrl] || failedUrls[shot.url]) return false;
     try {
       return ["http:", "https:"].includes(new URL(shot.url).protocol);
     } catch {
@@ -65,10 +67,10 @@ export function ProjectCard({ project, projectId, index, caseStudyHref, headingL
       transition={{ duration: 0.35, ease: "easeOut" }}
       className={cn(
         "theme-card project-card group relative isolate flex aspect-[4/3.4] min-h-[340px] w-full min-w-0 flex-col self-stretch overflow-hidden rounded-[var(--p-radius)] border-[length:var(--p-border-width)] border-[var(--p-border)] [border-style:var(--p-border-style)] bg-[var(--p-bg-secondary)] shadow-[var(--p-shadow)] transition-[border-color,box-shadow] duration-200 hover:border-[var(--p-primary)] hover:shadow-[var(--p-shadow-hover)]",
-        "[--card-overlay-bg:rgba(18,18,22,0.88)] [--card-overlay-bg-hover:rgba(12,12,16,0.96)] [--card-overlay-border:rgba(255,255,255,0.16)] [--card-overlay-divider:rgba(255,255,255,0.14)] [--card-overlay-pill:rgba(255,255,255,0.06)] [--card-overlay-fg:var(--p-fg)] [--card-overlay-muted:var(--p-fg-muted)]",
-        "[[data-theme=light]_&]:[--card-overlay-bg:rgba(255,255,255,0.88)] [[data-theme=light]_&]:[--card-overlay-bg-hover:rgba(255,255,255,0.96)] [[data-theme=light]_&]:[--card-overlay-border:rgba(255,255,255,0.85)] [[data-theme=light]_&]:[--card-overlay-divider:rgba(0,0,0,0.1)] [[data-theme=light]_&]:[--card-overlay-pill:rgba(0,0,0,0.04)]",
-        "[[data-theme=paper]_&]:[--card-overlay-bg:rgba(255,255,255,0.88)] [[data-theme=paper]_&]:[--card-overlay-bg-hover:rgba(255,255,255,0.96)] [[data-theme=paper]_&]:[--card-overlay-border:rgba(255,255,255,0.85)] [[data-theme=paper]_&]:[--card-overlay-divider:rgba(0,0,0,0.1)] [[data-theme=paper]_&]:[--card-overlay-pill:rgba(0,0,0,0.04)]",
-        "[[data-theme=neobrutalism]_&]:[--card-overlay-bg:rgba(255,255,255,0.90)] [[data-theme=neobrutalism]_&]:[--card-overlay-bg-hover:rgba(255,255,255,0.98)] [[data-theme=neobrutalism]_&]:[--card-overlay-border:var(--p-border)] [[data-theme=neobrutalism]_&]:[--card-overlay-divider:rgba(0,0,0,0.15)] [[data-theme=neobrutalism]_&]:[--card-overlay-pill:rgba(0,0,0,0.05)]"
+        "[--card-overlay-bg:rgba(18,18,22,0.88)] [--card-overlay-bg-hover:rgba(12,12,16,0.96)] [--card-overlay-border:rgba(255,255,255,0.16)] [--card-overlay-divider:rgba(255,255,255,0.14)] [--card-overlay-pill:rgba(255,255,255,0.06)] [--card-overlay-fg:#ffffff] [--card-overlay-muted:var(--p-fg-muted)]",
+        "[[data-theme=light]_&]:[--card-overlay-bg:rgba(255,255,255,0.88)] [[data-theme=light]_&]:[--card-overlay-bg-hover:rgba(255,255,255,0.96)] [[data-theme=light]_&]:[--card-overlay-border:rgba(255,255,255,0.85)] [[data-theme=light]_&]:[--card-overlay-divider:rgba(0,0,0,0.1)] [[data-theme=light]_&]:[--card-overlay-pill:rgba(0,0,0,0.04)] [[data-theme=light]_&]:[--card-overlay-fg:var(--p-fg)]",
+        "[[data-theme=paper]_&]:[--card-overlay-bg:rgba(255,255,255,0.88)] [[data-theme=paper]_&]:[--card-overlay-bg-hover:rgba(255,255,255,0.96)] [[data-theme=paper]_&]:[--card-overlay-border:rgba(255,255,255,0.85)] [[data-theme=paper]_&]:[--card-overlay-divider:rgba(0,0,0,0.1)] [[data-theme=paper]_&]:[--card-overlay-pill:rgba(0,0,0,0.04)] [[data-theme=paper]_&]:[--card-overlay-fg:var(--p-fg)]",
+        "[[data-theme=neobrutalism]_&]:[--card-overlay-bg:rgba(255,255,255,0.90)] [[data-theme=neobrutalism]_&]:[--card-overlay-bg-hover:rgba(255,255,255,0.98)] [[data-theme=neobrutalism]_&]:[--card-overlay-border:var(--p-border)] [[data-theme=neobrutalism]_&]:[--card-overlay-divider:rgba(0,0,0,0.15)] [[data-theme=neobrutalism]_&]:[--card-overlay-pill:rgba(0,0,0,0.05)] [[data-theme=neobrutalism]_&]:[--card-overlay-fg:var(--p-fg)]"
       )}
     >
       {/* Full-bleed Media Stage */}
@@ -127,6 +129,12 @@ export function ProjectCard({ project, projectId, index, caseStudyHref, headingL
                         setLoadedUrls((prev) => (prev[shot.url] ? prev : { ...prev, [shot.url]: true }));
                       }
                     }}
+                    onError={() => {
+                      const renderUrl = shot.thumbnailUrl || shot.url;
+                      if (renderUrl) {
+                        setFailedUrls((prev) => (prev[renderUrl] ? prev : { ...prev, [renderUrl]: true }));
+                      }
+                    }}
                     className={cn(
                       "absolute inset-0 block h-full w-full object-cover object-top transition-opacity duration-200 ease-out",
                       isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
@@ -164,6 +172,12 @@ export function ProjectCard({ project, projectId, index, caseStudyHref, headingL
                 onLoad={() => {
                   if (shot.url) {
                     setLoadedUrls((prev) => (prev[shot.url] ? prev : { ...prev, [shot.url]: true }));
+                  }
+                }}
+                onError={() => {
+                  const renderUrl = shot.thumbnailUrl || shot.url;
+                  if (renderUrl) {
+                    setFailedUrls((prev) => (prev[renderUrl] ? prev : { ...prev, [renderUrl]: true }));
                   }
                 }}
                 className={cn(
@@ -232,66 +246,58 @@ export function ProjectCard({ project, projectId, index, caseStudyHref, headingL
         data-project-content
         className="absolute inset-x-3 bottom-3 z-20 flex flex-col rounded-xl border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] px-4 py-3.5 text-left text-[var(--card-overlay-fg)] shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition-colors duration-200 sm:px-[18px] sm:py-4"
       >
-        {/* Resting visible header: Title + Year row, followed by Tags */}
+        {/* Resting visible header: Title row, followed by Tags + Year */}
         <div className="flex items-baseline justify-between gap-3">
           <Heading className="m-0 min-w-0 truncate text-lg font-bold leading-snug tracking-tight text-[var(--card-overlay-fg)] transition-colors group-hover:text-[var(--p-primary)] sm:text-xl">
             {project.title || "Untitled Project"}
           </Heading>
-          {project.year && (
-            <span className="shrink-0 font-mono text-xs font-semibold text-[var(--card-overlay-muted)]">
-              {project.year}
-            </span>
-          )}
         </div>
 
-        <ProjectMetadata tags={project.tags} variant="overlay" className="my-0 mt-2" />
+        <ProjectMetadata tags={project.tags} year={project.year} variant="overlay" className="my-0 mt-2" />
 
         {/* Sliding Drawer: Reveals description & case study link on hover / focus / touch */}
         <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-350 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:grid-rows-[1fr] group-focus-within:grid-rows-[1fr] [@media(hover:none)]:grid-rows-[1fr]">
           <div className="overflow-hidden">
             <div className="mt-2.5 flex flex-col items-start gap-2.5 border-t border-[var(--card-overlay-divider)] pt-2.5">
-              <p className="m-0 line-clamp-2 w-full break-words text-sm leading-relaxed text-[var(--card-overlay-muted)] sm:line-clamp-3">
+              <p className="m-0 line-clamp-3 w-full break-words text-sm leading-relaxed text-[var(--card-overlay-muted)]">
                 {project.description || "Project description will appear here once added in the editor."}
               </p>
-              {Boolean(targetCaseStudyHref) && (project.caseStudyEnabled !== false || isCaseStudyPublished(project)) && (
-                <a
-                  href={targetCaseStudyHref || "#"}
-                  data-project-id={projectId}
-                  onClick={async (e) => {
-                    if (!targetCaseStudyHref || targetCaseStudyHref === "#") {
-                      e.preventDefault();
-                      return;
-                    }
+              <a
+                href={targetCaseStudyHref}
+                data-project-id={projectId}
+                onClick={async (e) => {
+                  if (e.defaultPrevented) return;
+                  if (isTargetPreview) {
                     e.preventDefault();
                     setIsNavigating(true);
-                    if (isTargetPreview) {
-                      try {
-                        const store = usePortfolioStore.getState();
-                        if (store.draftOwnerId) {
-                          writeLocalDraft(store.draftOwnerId, draftSnapshot(store), store.draftRevision, store.lastDraftSnapshot);
-                          await store.saveDraft();
-                        }
-                      } catch {
-                        // Fall through to navigation
+                    try {
+                      const store = usePortfolioStore.getState();
+                      if (store.draftOwnerId) {
+                        writeLocalDraft(store.draftOwnerId, draftSnapshot(store), store.draftRevision, store.lastDraftSnapshot);
+                        await store.saveDraft();
                       }
+                    } catch {
+                      // Fall through to navigation
                     }
                     window.location.href = targetCaseStudyHref;
-                  }}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--p-primary)] transition-colors hover:underline"
-                >
-                  {isNavigating ? (
-                    <>
-                      <span>{isTargetPreview ? "Opening preview..." : "Opening case study..."}</span>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      <span>View case study</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
-                </a>
-              )}
+                  } else if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                    setIsNavigating(true);
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--p-primary)] transition-colors hover:underline"
+              >
+                {isNavigating ? (
+                  <>
+                    <span>{isTargetPreview ? "Opening preview..." : "Opening case study..."}</span>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    <span>View case study</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </a>
             </div>
           </div>
         </div>

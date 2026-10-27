@@ -1,3 +1,5 @@
 {
+  "installCommand": "unset npm_config_cache_dir NPM_CONFIG_CACHE_DIR && npm ci --loglevel=error",
+  "buildCommand": "unset npm_config_cache_dir NPM_CONFIG_CACHE_DIR && npm run build",
   "crons": [{ "path": "/api/cron/project-images", "schedule": "0 3 * * *" }]
 }

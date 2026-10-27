@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { getPortfolioContent } from "@/lib/public-portfolio";
-import { CASE_STUDY_FIELDS, getProjectKey, isCaseStudyPublished } from "@/lib/project-collection";
+import { CASE_STUDY_FIELDS, getProjectKey } from "@/lib/project-collection";
 import { ProjectMetadata } from "@/components/portfolio/ProjectMetadata";
 import type { ProjectsContent } from "@/lib/validations/portfolio";
 import { THEMES } from "@/lib/themes";
@@ -31,7 +31,7 @@ async function getProject(slug: string, projectSlug: string, isPreview = false) 
     const matchesSlug = getProjectKey(item, index) === projectSlug;
     if (!matchesSlug) return false;
     if (isPreview) return true;
-    return item.isVisible !== false && (item.caseStudyEnabled !== false || isCaseStudyPublished(item));
+    return item.isVisible !== false;
   });
   if (!project) return null;
   return { content, project, isDraft, isPreview };
@@ -66,7 +66,9 @@ export default async function ProjectCaseStudyPage({ params, searchParams }: Pag
   const { content, project } = result;
   const theme = content.theme || "classic";
   const activeTheme = THEMES[theme] || THEMES.classic;
-  const entries = (Object.entries(CASE_STUDY_FIELDS) as Array<[keyof typeof CASE_STUDY_FIELDS, string]>).filter(([key]) => project.caseStudy?.[key]?.trim());
+  const entries = project.caseStudyEnabled === false
+    ? []
+    : (Object.entries(CASE_STUDY_FIELDS) as Array<[keyof typeof CASE_STUDY_FIELDS, string]>).filter(([key]) => project.caseStudy?.[key]?.trim());
   return (
     <main data-theme={theme} className="min-h-screen bg-[var(--p-bg)] text-[var(--p-fg)]" style={{ ...activeTheme.cssVars, fontFamily: activeTheme.cssVars["--p-font"] } as React.CSSProperties}>
       {result.isPreview && (
@@ -120,20 +122,24 @@ export default async function ProjectCaseStudyPage({ params, searchParams }: Pag
             <CaseStudyGallery screenshots={project.screenshots} title={project.title} isMobile={Boolean(project.isMobile)} />
           )}
           {entries.length === 0 ? (
-            result.isPreview ? (
-              <div className="rounded-xl border border-dashed border-[var(--p-border)] p-8 text-center">
-                <p className="text-base font-semibold text-[var(--p-fg)]">No case study narrative written yet</p>
-                <p className="mt-1 text-sm text-[var(--p-fg-muted)]">
-                  In the editor, open this project and add sections like Problem, Role, Solution, or Results to see your case study story appear here.
-                </p>
+            <section aria-label="Case study status" className="rounded-xl border border-dashed border-[var(--p-border)] p-8 text-center">
+              <p className="text-base font-semibold text-[var(--p-fg)]">
+                Case study has not been published or updated yet
+              </p>
+              <p className="mt-1 text-sm text-[var(--p-fg-muted)]">
+                {result.isPreview
+                  ? "In the editor, open this project, enable the case study toggle, and add sections like Problem, Role, Solution, or Results to see your case study story appear here."
+                  : "The detailed case study breakdown for this project has not been published or updated yet."}
+              </p>
+              {result.isPreview && (
                 <Link
                   href="/dashboard/edit"
                   className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--p-primary)] hover:underline"
                 >
                   Back to editor &rarr;
                 </Link>
-              </div>
-            ) : null
+              )}
+            </section>
           ) : (
             entries.map(([key, label]) => (
               <section key={key} className="space-y-3">
