@@ -31,7 +31,7 @@ async function getProject(slug: string, projectSlug: string, isPreview = false) 
     const matchesSlug = getProjectKey(item, index) === projectSlug;
     if (!matchesSlug) return false;
     if (isPreview) return true;
-    return item.isVisible !== false && isCaseStudyPublished(item);
+    return item.isVisible !== false && (item.caseStudyEnabled !== false || isCaseStudyPublished(item));
   });
   if (!project) return null;
   return { content, project, isDraft, isPreview };
@@ -89,21 +89,20 @@ export default async function ProjectCaseStudyPage({ params, searchParams }: Pag
       <div className="px-6 py-12 sm:px-10">
         {!result.isPreview && <ActionTracker slug={slug} targets={getEngagementTargets(content, slug)} />}
         <article className="mx-auto max-w-4xl space-y-10">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Link
-              href={result.isPreview ? `/p/${encodeURIComponent(slug)}/projects?preview=true` : `/p/${encodeURIComponent(slug)}/projects`}
+              href={result.isPreview ? "/dashboard/edit" : `/p/${encodeURIComponent(slug)}`}
               className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--p-fg-muted)] hover:text-[var(--p-primary)]"
             >
-              <ArrowLeft className="h-4 w-4" /> All projects
+              <ArrowLeft className="h-4 w-4" /> {result.isPreview ? "Back to editor" : "Back to portfolio"}
             </Link>
-            {result.isPreview && (
-              <Link
-                href="/dashboard/edit"
-                className="inline-flex items-center text-xs font-medium text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] hover:underline"
-              >
-                (or return to editor)
-              </Link>
-            )}
+            <span className="text-xs text-[var(--p-fg-muted)] opacity-50">·</span>
+            <Link
+              href={result.isPreview ? `/p/${encodeURIComponent(slug)}/projects?preview=true` : `/p/${encodeURIComponent(slug)}/projects`}
+              className="inline-flex items-center text-xs font-medium text-[var(--p-fg-muted)] hover:text-[var(--p-primary)] hover:underline"
+            >
+              All projects
+            </Link>
           </div>
           <header className="space-y-5 border-b border-[var(--p-border)] pb-8">
             <p className="text-xs font-semibold uppercase tracking-widest text-[var(--p-primary)]">

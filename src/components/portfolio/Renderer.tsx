@@ -533,7 +533,7 @@ const TerminalLayout = ({ sections, theme, baseStyle, sharedStyles, projectArchi
       <style>{`
         .terminal-content section { padding: 0 !important; min-height: auto !important; border: none !important; background: transparent !important; }
         .terminal-content section > div { max-width: 100% !important; margin: 0 !important; }
-        .terminal-content section .absolute:not([data-project-actions]) { display: none !important; }
+        .terminal-content section .absolute:not([data-project-actions]):not([data-project-card] *) { display: none !important; }
         .terminal-content h1 { font-size: 2rem !important; }
       `}</style>
       <div className="w-full max-w-[1000px] border border-[var(--p-border)] rounded-xl flex flex-col overflow-hidden h-[85vh] bg-[var(--p-bg)] shadow-2xl">

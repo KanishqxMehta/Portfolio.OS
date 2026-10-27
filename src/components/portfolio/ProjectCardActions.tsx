@@ -3,32 +3,61 @@ import { Code2, ExternalLink } from "lucide-react";
 interface Props {
   title: string;
   link?: string;
+  sourceUrl?: string;
   projectId: string;
   index: number;
   hasCover?: boolean;
+  photoCounter?: string;
 }
 
-/** 
- * Opaque controls with consistent top-corner positioning across all cards
- * (both with uploaded photos and with the fallback illustration) to guarantee perfect horizontal alignment.
+/**
+ * Top-bar controls for the full-bleed project card:
+ * index + optional photo counter on the top-left, live & source links on the top-right.
+ * Inherits `--card-overlay-*` tokens from `[data-project-card]` so light themes render matching
+ * translucent-white pills and dark themes render matching translucent-dark pills.
  */
-export function ProjectCardActions({ title, link, projectId, index }: Props) {
+export function ProjectCardActions({ title, link, sourceUrl, projectId, index, photoCounter }: Props) {
   const controlClass =
-    "flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-zinc-950 text-white shadow-md transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] text-[var(--card-overlay-fg)] shadow-md transition-all hover:bg-[var(--card-overlay-bg-hover)] hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--p-primary)]";
 
   return (
-    <>
-      {/* Subtle top scrim to guarantee high contrast over light images or backgrounds */}
-      <div
-        data-project-actions
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-24 bg-gradient-to-b from-black/75 via-black/35 to-transparent"
-      />
+    <div
+      data-project-actions
+      className="pointer-events-none absolute inset-x-3.5 top-3.5 z-20 flex items-center justify-between gap-2"
+    >
+      {/* Top-left: Project index + optional 1/N screenshot counter */}
+      <div className="pointer-events-auto flex items-center gap-1.5">
+        <span
+          aria-label={`Project ${index + 1}`}
+          className="inline-flex h-7 items-center rounded-full border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] px-2.5 font-mono text-[11px] font-bold text-[var(--card-overlay-fg)] shadow-md"
+        >
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        {photoCounter && (
+          <span
+            aria-label={`Screenshot ${photoCounter}`}
+            className="inline-flex h-7 items-center rounded-full border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] px-2.5 font-mono text-[10px] font-bold text-[var(--card-overlay-muted)] shadow-md"
+          >
+            {photoCounter}
+          </span>
+        )}
+      </div>
 
-      <div
-        data-project-actions
-        className="absolute inset-x-5 top-5 z-10 flex items-start justify-between gap-3 sm:inset-x-6 sm:top-6"
-      >
+      {/* Top-right (.fb-actions): Live link & Source code buttons */}
+      <div className="pointer-events-auto flex items-center gap-1.5">
+        {sourceUrl && (
+          <a
+            href={sourceUrl}
+            data-project-id={projectId}
+            data-engagement-action="project_source"
+            aria-label={`View ${title} source code`}
+            target="_blank"
+            rel="noreferrer"
+            className={controlClass}
+          >
+            <Code2 className="h-4 w-4" />
+          </a>
+        )}
         {link ? (
           <a
             href={link}
@@ -38,21 +67,16 @@ export function ProjectCardActions({ title, link, projectId, index }: Props) {
             rel="noreferrer"
             className={controlClass}
           >
-            <ExternalLink className="h-5 w-5" />
+            <ExternalLink className="h-4 w-4" />
           </a>
         ) : (
-          <span aria-hidden="true" className={controlClass}>
-            <Code2 className="h-5 w-5" />
-          </span>
+          !sourceUrl && (
+            <span aria-hidden="true" className={controlClass}>
+              <Code2 className="h-4 w-4" />
+            </span>
+          )
         )}
-
-        <span
-          aria-label={`Project ${index + 1}`}
-          className="rounded-xl border border-white/20 bg-zinc-950 px-3 py-2 font-mono text-xs font-semibold text-white shadow-md"
-        >
-          {String(index + 1).padStart(2, "0")}
-        </span>
       </div>
-    </>
+    </div>
   );
 }
