@@ -211,7 +211,7 @@ export function ProjectCard({ project, projectId, index, caseStudyHref, headingL
               e.stopPropagation();
               setCurrentPhotoIndex((prev) => (prev - 1 + totalPhotos) % totalPhotos);
             }}
-            className="absolute left-3 top-[38%] z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] text-[var(--card-overlay-fg)] opacity-0 shadow-lg transition-all hover:scale-110 hover:bg-[var(--card-overlay-bg-hover)] active:scale-95 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p-primary)] group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+            className="absolute left-3 top-[38%] z-30 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] text-[var(--card-overlay-fg)] opacity-0 shadow-lg transition-all hover:scale-110 hover:bg-[var(--card-overlay-bg-hover)] active:scale-95 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p-primary)] group-hover:opacity-100 [@media(hover:none)]:opacity-100"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -223,7 +223,7 @@ export function ProjectCard({ project, projectId, index, caseStudyHref, headingL
               e.stopPropagation();
               setCurrentPhotoIndex((prev) => (prev + 1) % totalPhotos);
             }}
-            className="absolute right-3 top-[38%] z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] text-[var(--card-overlay-fg)] opacity-0 shadow-lg transition-all hover:scale-110 hover:bg-[var(--card-overlay-bg-hover)] active:scale-95 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p-primary)] group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+            className="absolute right-3 top-[38%] z-30 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] text-[var(--card-overlay-fg)] opacity-0 shadow-lg transition-all hover:scale-110 hover:bg-[var(--card-overlay-bg-hover)] active:scale-95 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p-primary)] group-hover:opacity-100 [@media(hover:none)]:opacity-100"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -241,22 +241,22 @@ export function ProjectCard({ project, projectId, index, caseStudyHref, headingL
         photoCounter={totalPhotos > 1 ? `${currentPhotoIndex + 1}/${totalPhotos}` : undefined}
       />
 
-      {/* Sliding Caption Panel (.fb-panel): translucent-white in light themes, translucent-dark in dark themes */}
+      {/* Sliding Caption Panel (.fb-panel): expands on hover of the caption panel/title */}
       <div
         data-project-content
-        className="absolute inset-x-3 bottom-3 z-20 flex flex-col rounded-xl border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] px-4 py-3.5 text-left text-[var(--card-overlay-fg)] shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition-colors duration-200 sm:px-[18px] sm:py-4"
+        className="group/caption absolute inset-x-3 bottom-3 z-20 flex flex-col rounded-xl border border-[var(--card-overlay-border)] bg-[var(--card-overlay-bg)] px-4 py-3.5 text-left text-[var(--card-overlay-fg)] shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition-colors duration-200 sm:px-[18px] sm:py-4"
       >
         {/* Resting visible header: Title row, followed by Tags + Year */}
         <div className="flex items-baseline justify-between gap-3">
-          <Heading className="m-0 min-w-0 truncate text-lg font-bold leading-snug tracking-tight text-[var(--card-overlay-fg)] transition-colors group-hover:text-[var(--p-primary)] sm:text-xl">
+          <Heading className="m-0 min-w-0 truncate text-lg font-bold leading-snug tracking-tight text-[var(--card-overlay-fg)] transition-colors group-hover/caption:text-[var(--p-primary)] sm:text-xl">
             {project.title || "Untitled Project"}
           </Heading>
         </div>
 
         <ProjectMetadata tags={project.tags} year={project.year} variant="overlay" className="my-0 mt-2" />
 
-        {/* Sliding Drawer: Reveals description & case study link on hover / focus / touch */}
-        <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-350 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:grid-rows-[1fr] group-focus-within:grid-rows-[1fr] [@media(hover:none)]:grid-rows-[1fr]">
+        {/* Sliding Drawer: Reveals description & case study link when hovering the caption panel, focusing, or on touch */}
+        <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-350 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover/caption:grid-rows-[1fr] group-focus-within/caption:grid-rows-[1fr] [@media(hover:none)]:grid-rows-[1fr]">
           <div className="overflow-hidden">
             <div className="mt-2.5 flex flex-col items-start gap-2.5 border-t border-[var(--card-overlay-divider)] pt-2.5">
               <p className="m-0 line-clamp-3 w-full break-words text-sm leading-relaxed text-[var(--card-overlay-muted)]">

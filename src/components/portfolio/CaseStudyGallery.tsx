@@ -39,30 +39,50 @@ export function CaseStudyGallery({ screenshots, title, isMobile = false }: CaseS
             <Iphone className="w-full">
               {screenshots.map((shot, idx) => {
                 const isActive = idx === currentIndex;
+                const isFullLoaded = Boolean(loadedUrls[shot.url]);
                 return (
-                  <Image
+                  <div
                     key={`${shot.url}-${idx}`}
-                    src={shot.url}
-                    alt={shot.caption || `${title} mobile screenshot ${idx + 1}`}
-                    fill
-                    unoptimized
-                    priority={idx === 0}
-                    onLoad={() => {
-                      if (shot.url) {
-                        setLoadedUrls((prev) => (prev[shot.url] ? prev : { ...prev, [shot.url]: true }));
-                      }
-                    }}
                     className={cn(
-                      "absolute inset-0 block h-full w-full object-cover object-top transition-opacity duration-200 ease-out",
+                      "absolute inset-0 transition-opacity duration-300 ease-out",
                       isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                     )}
-                  />
+                  >
+                    {/* Instant WebP preview thumbnail */}
+                    {shot.thumbnailUrl && (
+                      <Image
+                        src={shot.thumbnailUrl}
+                        alt=""
+                        fill
+                        unoptimized
+                        priority={idx === 0}
+                        className="h-full w-full object-cover object-top blur-[0.5px] transition-opacity duration-300"
+                      />
+                    )}
+                    {/* Full resolution original image */}
+                    <Image
+                      src={shot.url}
+                      alt={shot.caption || `${title} mobile screenshot ${idx + 1}`}
+                      fill
+                      unoptimized
+                      priority={idx === 0}
+                      onLoad={() => {
+                        if (shot.url) {
+                          setLoadedUrls((prev) => (prev[shot.url] ? prev : { ...prev, [shot.url]: true }));
+                        }
+                      }}
+                      className={cn(
+                        "h-full w-full object-cover object-top transition-opacity duration-300 ease-out",
+                        isFullLoaded || !shot.thumbnailUrl ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </div>
                 );
               })}
 
-              {/* Blackout loading overlay inside the iPhone screen */}
-              {isCurrentLoading && (
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950 transition-opacity duration-200 p-2 text-center">
+              {/* Minimal spinner overlay if neither thumbnail nor full image has loaded yet */}
+              {isCurrentLoading && !active.thumbnailUrl && (
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/80 transition-opacity duration-200 p-2 text-center">
                   <div className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white mb-1.5" />
                   <span className="text-[10px] font-medium text-zinc-300 tracking-wider">Loading...</span>
                 </div>
@@ -107,30 +127,50 @@ export function CaseStudyGallery({ screenshots, title, isMobile = false }: CaseS
         <div className="group relative isolate mx-auto aspect-[16/10] w-full max-w-3xl overflow-hidden rounded-2xl border border-[var(--p-border)] bg-zinc-950 shadow-2xl select-none flex items-center justify-center">
           {screenshots.map((shot, idx) => {
             const isActive = idx === currentIndex;
+            const isFullLoaded = Boolean(loadedUrls[shot.url]);
             return (
-              <Image
+              <div
                 key={`${shot.url}-${idx}`}
-                src={shot.url}
-                alt={shot.caption || `${title} screenshot ${idx + 1}`}
-                fill
-                unoptimized
-                priority={idx === 0}
-                onLoad={() => {
-                  if (shot.url) {
-                    setLoadedUrls((prev) => (prev[shot.url] ? prev : { ...prev, [shot.url]: true }));
-                  }
-                }}
                 className={cn(
-                  "h-full w-full object-cover transition-opacity duration-200 ease-out",
+                  "absolute inset-0 transition-opacity duration-300 ease-out",
                   isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                 )}
-              />
+              >
+                {/* Instant WebP preview thumbnail */}
+                {shot.thumbnailUrl && (
+                  <Image
+                    src={shot.thumbnailUrl}
+                    alt=""
+                    fill
+                    unoptimized
+                    priority={idx === 0}
+                    className="h-full w-full object-cover blur-[0.5px] transition-opacity duration-300"
+                  />
+                )}
+                {/* Full resolution original image */}
+                <Image
+                  src={shot.url}
+                  alt={shot.caption || `${title} screenshot ${idx + 1}`}
+                  fill
+                  unoptimized
+                  priority={idx === 0}
+                  onLoad={() => {
+                    if (shot.url) {
+                      setLoadedUrls((prev) => (prev[shot.url] ? prev : { ...prev, [shot.url]: true }));
+                    }
+                  }}
+                  className={cn(
+                    "h-full w-full object-cover transition-opacity duration-300 ease-out",
+                    isFullLoaded || !shot.thumbnailUrl ? "opacity-100" : "opacity-0"
+                  )}
+                />
+              </div>
             );
           })}
 
-          {/* Blackout loading overlay if active screenshot is still loading */}
-          {isCurrentLoading && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-950/90 transition-opacity duration-200">
+          {/* Minimal spinner overlay only if neither thumbnail nor full image has loaded yet */}
+          {isCurrentLoading && !active.thumbnailUrl && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-950/80 transition-opacity duration-200">
               <div className="flex items-center gap-2 rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-200 border border-white/10 shadow-xl">
                 <div className="size-3.5 animate-spin rounded-full border-2 border-white/20 border-t-white" />
                 <span>Loading image...</span>

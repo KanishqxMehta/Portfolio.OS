@@ -337,7 +337,7 @@ function ProjectItemUI({
               </details>
             ))}
           </div>
-        </details> : <p className="text-[10px] text-zinc-500">No case-study link or page will be shown.</p>}
+        </details> : null}
       </div>
     </div>
   );

@@ -73,7 +73,7 @@ test.describe("project showcase and visitor actions", () => {
     const firstCard = page.locator('[data-project-card][data-project-id="project-one"]');
     await firstCard.scrollIntoViewIfNeeded();
     await expect(firstCard).toHaveCSS("opacity", "1");
-    await firstCard.hover();
+    await firstCard.locator('[data-project-content]').hover();
     const caseStudyLink = firstCard.getByRole("link", { name: "View case study" });
     await expect(caseStudyLink).toBeInViewport();
     await caseStudyLink.click();
@@ -234,7 +234,7 @@ test.describe("project showcase and visitor actions", () => {
     await card.scrollIntoViewIfNeeded();
     await expect(img).toBeInViewport();
     await expect(card).toHaveCSS("opacity", "1");
-    await card.hover();
+    await card.locator('[data-project-content]').hover();
     await expect(img).toHaveCSS("object-fit", "cover");
     const description = page.getByText(longDescription, { exact: true });
     await expect(description).toBeInViewport();

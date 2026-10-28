@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { ProjectsContent } from "@/lib/validations/portfolio";
 import { auth } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -55,7 +56,7 @@ export default async function PublicProjectArchivePage({ params, searchParams }:
     const session = await auth();
     userId = session?.user?.id ?? null;
   }
-  const { content } = await getPortfolioContent({ slug, isPreview, userId });
+  const { content, hasUnpublishedChanges } = await getPortfolioContent({ slug, isPreview, userId });
   if (!content) notFound();
 
   const sections = content.sections ?? [];
@@ -89,15 +90,34 @@ export default async function PublicProjectArchivePage({ params, searchParams }:
       {isPreview && (
         <aside
           aria-label="Draft preview notice"
-          className="sticky top-0 z-50 flex items-center justify-between border-b border-amber-500/30 bg-amber-500/10 px-6 py-2.5 backdrop-blur-md text-amber-950 dark:text-amber-200"
+          className={cn(
+            "sticky top-0 z-50 flex items-center justify-between border-b px-6 py-2.5 backdrop-blur-md",
+            hasUnpublishedChanges
+              ? "border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-200"
+              : "border-zinc-200 bg-zinc-100/90 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-200"
+          )}
         >
           <div className="flex items-center gap-2 text-xs font-semibold">
-            <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-            <span>Draft Preview · Showing your current unpublished edits</span>
+            <span
+              className={cn(
+                "flex h-2 w-2 rounded-full",
+                hasUnpublishedChanges ? "bg-amber-500 animate-pulse" : "bg-emerald-500"
+              )}
+            />
+            <span>
+              {hasUnpublishedChanges
+                ? "Draft Preview · Showing your current unpublished edits"
+                : "Portfolio Preview · All changes are published"}
+            </span>
           </div>
           <Link
             href="/dashboard/edit"
-            className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-950 dark:text-amber-100 transition-colors hover:bg-amber-500/30"
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-bold transition-colors",
+              hasUnpublishedChanges
+                ? "bg-amber-500/20 text-amber-950 hover:bg-amber-500/30 dark:text-amber-100"
+                : "bg-zinc-200 text-zinc-900 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+            )}
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Back to Editor
           </Link>

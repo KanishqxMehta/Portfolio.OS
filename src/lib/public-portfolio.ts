@@ -25,10 +25,10 @@ export async function getPortfolioContent({
   slug: string;
   isPreview?: boolean;
   userId?: string | null;
-}): Promise<{ content: PublicPortfolioContent | null; isDraft: boolean }> {
+}): Promise<{ content: PublicPortfolioContent | null; isDraft: boolean; hasUnpublishedChanges: boolean }> {
   if (isPreview && userId) {
-    const draftRes = await pool.query<{ snapshot: PublicPortfolioContent }>(
-      `SELECT d.snapshot
+    const draftRes = await pool.query<{ snapshot: PublicPortfolioContent; published_content: PublicPortfolioContent | null }>(
+      `SELECT d.snapshot, p.content as published_content
        FROM "PortfolioDraft" d
        JOIN "User" u ON d."userId" = u.id
        LEFT JOIN "Portfolio" p ON p."userId" = u.id
@@ -42,10 +42,25 @@ export async function getPortfolioContent({
       [userId, slug],
     );
     if (draftRes.rows[0]?.snapshot) {
-      return { content: draftRes.rows[0].snapshot, isDraft: true };
+      const snapshot = draftRes.rows[0].snapshot;
+      const published = draftRes.rows[0].published_content;
+      const normSnapshot = JSON.stringify({
+        theme: snapshot.theme,
+        layout: snapshot.layout || "classic",
+        sections: snapshot.sections,
+      });
+      const normPublished = published
+        ? JSON.stringify({
+            theme: published.theme,
+            layout: published.layout || "classic",
+            sections: published.sections,
+          })
+        : null;
+      const hasUnpublishedChanges = normSnapshot !== normPublished;
+      return { content: snapshot, isDraft: true, hasUnpublishedChanges };
     }
   }
 
   const content = await getPublicPortfolio(slug);
-  return { content, isDraft: false };
+  return { content, isDraft: false, hasUnpublishedChanges: false };
 }

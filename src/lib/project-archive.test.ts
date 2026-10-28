@@ -3,7 +3,7 @@ const { getPortfolio } = vi.hoisted(() => ({ getPortfolio: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ auth: vi.fn(async () => null) }));
 vi.mock("@/lib/public-portfolio", () => ({
   getPublicPortfolio: getPortfolio,
-  getPortfolioContent: vi.fn(async ({ slug }: { slug: string }) => ({ content: await getPortfolio(slug), isDraft: false })),
+  getPortfolioContent: vi.fn(async ({ slug }: { slug: string }) => ({ content: await getPortfolio(slug), isDraft: false, hasUnpublishedChanges: false })),
 }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
 import ArchivePage from "@/app/p/[slug]/projects/page";
