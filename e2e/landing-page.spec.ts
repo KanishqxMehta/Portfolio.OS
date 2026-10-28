@@ -1,8 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Landing Page E2E Suite", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await page.waitForLoadState("networkidle");
   });
 
   test("should load landing page with correct title and brand header", async ({ page }) => {
@@ -41,6 +42,7 @@ test.describe("Landing Page E2E Suite", () => {
     });
 
     await page.goto("/");
+    await page.waitForLoadState("networkidle");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByText("Page Error Detected")).toHaveCount(0);
     await expect(page.getByText("Something went wrong")).toHaveCount(0);
