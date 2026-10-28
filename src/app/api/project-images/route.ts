@@ -67,3 +67,84 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "We couldn’t upload this image right now. Please try again or use an image link." }, { status: 503 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return NextResponse.json({ error: "Please sign in to manage images." }, { status: 401 });
+    const origin = request.headers.get("origin");
+    if (origin && origin !== new URL(request.url).origin) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
+
+    const body = (await request.json().catch(() => null)) as { url?: string } | null;
+    const url = body?.url?.trim();
+    if (!url) return NextResponse.json({ error: "Image URL is required." }, { status: 400 });
+
+    const storageUrl = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const bucket = process.env.SUPABASE_PROJECT_IMAGES_BUCKET || "project-images";
+
+    if (!storageUrl || !key) {
+      // If storage is unconfigured or not in use, still allow removing the reference
+      return NextResponse.json({ success: true, deletedFromStorage: false });
+    }
+
+    const base = storageUrl.replace(/\/$/, "");
+    const publicPrefix = `${base}/storage/v1/object/public/${encodeURIComponent(bucket)}/`;
+    const ownerFolder = createHash("sha256").update(session.user.id).digest("hex");
+
+    // If the image is not hosted on our Supabase Storage bucket, it is an external link
+    if (!url.startsWith(publicPrefix)) {
+      return NextResponse.json({ success: true, deletedFromStorage: false });
+    }
+
+    // Check if tracked in ProjectUpload for this owner
+    const uploadRes = await pool.query(
+      'SELECT id, "ownerId", paths, urls FROM "ProjectUpload" WHERE "ownerId" = $1 AND ($2 = ANY(urls) OR $2 = ANY(paths))',
+      [session.user.id, url]
+    );
+
+    let pathsToDelete: string[] = [];
+    let uploadId: string | null = null;
+
+    if (uploadRes.rows.length > 0) {
+      const upload = uploadRes.rows[0];
+      pathsToDelete = upload.paths;
+      uploadId = upload.id;
+    } else {
+      // Direct path resolution with ownership verification
+      const relativePath = decodeURIComponent(url.slice(publicPrefix.length));
+      if (!relativePath.startsWith(`${ownerFolder}/`)) {
+        return NextResponse.json({ error: "You do not have permission to delete this image." }, { status: 403 });
+      }
+      const stem = relativePath.replace(/-preview\.webp$/, "").replace(/\.[^.]+$/, "");
+      pathsToDelete = Array.from(new Set([relativePath, `${stem}-preview.webp`, `${stem}.png`, `${stem}.jpg`, `${stem}.jpeg`, `${stem}.webp`]));
+    }
+
+    // Call Supabase Storage DELETE API
+    const response = await fetch(`${base}/storage/v1/object/${encodeURIComponent(bucket)}`, {
+      method: "DELETE",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prefixes: pathsToDelete }),
+      signal: AbortSignal.timeout(15_000),
+      redirect: "error",
+    });
+
+    if (!response.ok) {
+      console.error("Supabase Storage deletion failed", { status: response.status });
+      return NextResponse.json({ error: "Could not remove image from storage bucket. Please try again." }, { status: 502 });
+    }
+
+    if (uploadId) {
+      await pool.query('UPDATE "ProjectUpload" SET status = \'deleted\', "unusedSince" = NOW() WHERE id = $1', [uploadId]);
+    }
+
+    return NextResponse.json({ success: true, deletedFromStorage: true });
+  } catch (error) {
+    console.error("Project image deletion failed:", error);
+    return NextResponse.json({ error: "Could not remove image from storage right now. Please try again." }, { status: 500 });
+  }
+}

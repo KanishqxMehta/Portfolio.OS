@@ -4,7 +4,7 @@ vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
 vi.mock("@/lib/persistent-rate-limit", () => ({ checkPersistentRateLimit: mocks.limit }));
 vi.mock("@/lib/db", () => ({ pool: { query: mocks.query } }));
 vi.mock("@/lib/project-thumbnail", () => ({ createProjectThumbnail: mocks.thumbnail }));
-import { POST } from "@/app/api/project-images/route";
+import { POST, DELETE } from "@/app/api/project-images/route";
 import { MAX_PROJECT_IMAGE_BYTES } from "./project-media";
 
 describe("project image uploads", () => {
@@ -66,5 +66,83 @@ describe("project image uploads", () => {
     const response = await POST(request());
     expect(response.status).toBe(503);
     expect(await response.text()).not.toContain("Sensitive internal failure");
+  });
+
+  describe("project image deletion", () => {
+    const deleteRequest = (body: object = {}) =>
+      new Request("http://localhost/api/project-images", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", origin: "http://localhost" },
+        body: JSON.stringify(body),
+      });
+
+    it("requires authentication", async () => {
+      mocks.auth.mockResolvedValue(null);
+      const res = await DELETE(deleteRequest({ url: "https://storage.example.test/pic.png" }));
+      expect(res.status).toBe(401);
+    });
+
+    it("requires image URL", async () => {
+      const res = await DELETE(deleteRequest({}));
+      expect(res.status).toBe(400);
+    });
+
+    it("deletes managed paths from storage bucket and marks database record as deleted", async () => {
+      const storageUrl = "https://storage.example.test/storage/v1/object/public/project-images/owner-hash/img-123.png";
+      mocks.query
+        .mockResolvedValueOnce({
+          rows: [
+            {
+              id: "img-123",
+              ownerId: "owner",
+              paths: ["owner-hash/img-123.png", "owner-hash/img-123-preview.webp"],
+              urls: [storageUrl],
+            },
+          ],
+        })
+        .mockResolvedValueOnce({ rows: [] });
+
+      const res = await DELETE(deleteRequest({ url: storageUrl }));
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.success).toBe(true);
+      expect(data.deletedFromStorage).toBe(true);
+      expect(mocks.fetch).toHaveBeenCalledWith(
+        "https://storage.example.test/storage/v1/object/project-images",
+        expect.objectContaining({
+          method: "DELETE",
+          body: JSON.stringify({ prefixes: ["owner-hash/img-123.png", "owner-hash/img-123-preview.webp"] }),
+        })
+      );
+      expect(mocks.query).toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE "ProjectUpload" SET status = \'deleted\''),
+        ["img-123"]
+      );
+    });
+
+    it("handles non-storage external URLs gracefully", async () => {
+      const res = await DELETE(deleteRequest({ url: "https://images.unsplash.com/photo-123" }));
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.success).toBe(true);
+      expect(data.deletedFromStorage).toBe(false);
+      expect(mocks.fetch).not.toHaveBeenCalled();
+    });
+
+    it("returns 502 when Supabase Storage deletion fails", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const storageUrl = "https://storage.example.test/storage/v1/object/public/project-images/owner-hash/img-123.png";
+      mocks.query.mockResolvedValueOnce({
+        rows: [{ id: "img-123", ownerId: "owner", paths: ["owner-hash/img-123.png"], urls: [storageUrl] }],
+      });
+      mocks.fetch.mockResolvedValueOnce(new Response("Storage error", { status: 500 }));
+
+      const res = await DELETE(deleteRequest({ url: storageUrl }));
+      expect(res.status).toBe(502);
+      expect(mocks.query).not.toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE "ProjectUpload" SET status = \'deleted\''),
+        expect.anything()
+      );
+    });
   });
 });

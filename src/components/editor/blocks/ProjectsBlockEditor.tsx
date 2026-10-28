@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Eye, EyeOff, GripVertical, Sparkles, Star } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, GripVertical, Sparkles, Star, Loader2 } from "lucide-react";
 import { Section, PublicMediaUrlSchema } from "@/lib/validations/portfolio";
 import { CASE_STUDY_FIELDS, hasCaseStudyContent } from "@/lib/project-collection";
 import { MAX_PROJECT_IMAGE_BYTES, PROJECT_IMAGE_TYPES } from "@/lib/project-media";
@@ -47,8 +47,42 @@ function ProjectItemUI({
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [deletingUrls, setDeletingUrls] = useState<Record<string, boolean>>({});
   const screenshots: Array<{ url: string; thumbnailUrl?: string; caption?: string }> = item.screenshots ?? [];
   const caseStudyEnabled: boolean = item.caseStudyEnabled ?? hasCaseStudyContent(item);
+
+  const handleRemoveScreenshot = async (screenshotIndex: number) => {
+    const target = screenshots[screenshotIndex];
+    if (!target) return;
+    const targetUrl = target.url;
+    if (deletingUrls[targetUrl]) return;
+
+    setDeletingUrls((prev) => ({ ...prev, [targetUrl]: true }));
+    try {
+      const res = await fetch("/api/project-images", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: targetUrl }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error || "Could not delete image from storage.");
+      }
+      // Transaction successful: Now remove from UI
+      updateProject?.(idx, {
+        screenshots: screenshots.filter((_, n) => n !== screenshotIndex),
+      });
+      useToastStore.getState().toast("Image deleted from storage and project.", "success");
+    } catch (error: any) {
+      useToastStore.getState().toast(error?.message || "Failed to delete image. Please try again.", "error");
+    } finally {
+      setDeletingUrls((prev) => {
+        const next = { ...prev };
+        delete next[targetUrl];
+        return next;
+      });
+    }
+  };
   return (
     <div
       className={cn(
@@ -216,10 +250,38 @@ function ProjectItemUI({
               <Input aria-label={`Screenshot ${screenshotIndex + 1} URL`} value={screenshot.url} maxLength={2048} className={fieldClass} onChange={(e) => updateProject?.(idx, { screenshots: screenshots.map((shot, n) => n === screenshotIndex ? { ...shot, url: e.target.value, thumbnailUrl: undefined } : shot) })} />
               <Input aria-label={`Screenshot ${screenshotIndex + 1} caption`} placeholder="Describe this screenshot (also used as alt text)" value={screenshot.caption ?? ""} maxLength={200} className={fieldClass} onChange={(e) => updateProject?.(idx, { screenshots: screenshots.map((shot, n) => n === screenshotIndex ? { ...shot, caption: e.target.value } : shot) })} />
               <div className="flex gap-2">
-                {screenshotIndex > 0 && <Button type="button" variant="outline" size="sm" onClick={() => updateProject?.(idx, { screenshots: [screenshot, ...screenshots.filter((_, n) => n !== screenshotIndex)] })}>Make cover</Button>}
-                <Button type="button" variant="outline" size="sm" onClick={() => updateProject?.(idx, { screenshots: screenshots.filter((_, n) => n !== screenshotIndex) })}>Remove image</Button>
+                {screenshotIndex > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={Boolean(deletingUrls[screenshot.url])}
+                    onClick={() => updateProject?.(idx, { screenshots: [screenshot, ...screenshots.filter((_, n) => n !== screenshotIndex)] })}
+                  >
+                    Make cover
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={Boolean(deletingUrls[screenshot.url])}
+                  onClick={() => handleRemoveScreenshot(screenshotIndex)}
+                  className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                >
+                  {deletingUrls[screenshot.url] ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Deleting…</span>
+                    </>
+                  ) : (
+                    "Remove image"
+                  )}
+                </Button>
               </div>
-              <p className="text-[10px] text-zinc-500">Removes this image from your live portfolio after publishing. New uploads are eligible for cleanup only after 7 days unused by any saved draft or published portfolio.</p>
+              <p className="text-[10px] text-zinc-500">
+                Deletes this image immediately from your Supabase Storage bucket and removes it from this project.
+              </p>
               </div>
             </details>
           ))}
