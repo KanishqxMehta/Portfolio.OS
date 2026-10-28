@@ -51,7 +51,7 @@ test.describe("project showcase and visitor actions", () => {
       const cover = page.locator("[data-project-cover]").first();
       const frame = await cover.boundingBox();
       expect(frame).not.toBeNull();
-      expect(frame!.width / frame!.height).toBeCloseTo(4 / 3.4, 1);
+      expect(frame!.width / frame!.height).toBeCloseTo(16 / 10, 1);
       const edge = await cover.evaluate((element) => {
         const card = element.closest(".theme-card")!;
         const frame = element.getBoundingClientRect();
